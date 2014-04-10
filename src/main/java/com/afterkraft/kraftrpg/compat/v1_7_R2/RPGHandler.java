@@ -18,7 +18,7 @@ package com.afterkraft.kraftrpg.compat.v1_7_R2;
 import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.Set;
-
+import java.util.UUID;
 
 import net.minecraft.server.v1_7_R2.DamageSource;
 import net.minecraft.server.v1_7_R2.EntityGolem;
@@ -29,14 +29,14 @@ import net.minecraft.server.v1_7_R2.MobEffect;
 import net.minecraft.server.v1_7_R2.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R2.PacketPlayOutRemoveEntityEffect;
 import net.minecraft.server.v1_7_R2.PacketPlayOutWorldParticles;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_7_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R2.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R2.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R2.event.CraftEventFactory;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Enderman;
@@ -50,15 +50,17 @@ import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
+import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
 
 /**
- * Author: gabizou
+ * @author gabizou
  */
 public class RPGHandler extends CraftBukkitHandler {
 
@@ -66,14 +68,32 @@ public class RPGHandler extends CraftBukkitHandler {
     private Field ldbpt;
     private Random random;
 
-    public RPGHandler() {
+    public RPGHandler(ServerType type) {
+        super(type);
         try {
             ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
             ldbpt.setAccessible(true);
         } catch (final SecurityException e) {
+            // do nothing
         } catch (final NoSuchFieldException e) {
+            // do nothing
         }
         random = new Random();
+    }
+
+    @Override
+    public EntityAttributeModifier getEntityAttribute(UUID uuid, String name) {
+        return null;
+    }
+
+    @Override
+    public double loadOrCreate(EntityAttribute attribute, LivingEntity entity, double value) {
+        return 0;
+    }
+
+    @Override
+    public double loadOrCreateAttribute(com.afterkraft.kraftrpg.api.entity.Monster monster, LivingEntity entity, EntityAttribute.EntityAttributeType type, double value) {
+        return 0;
     }
 
     @Override
@@ -84,7 +104,7 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public void bukkit_setArrowDamage(Arrow arrow, double damage) {
+    public void setArrowDamage(Arrow arrow, double damage) {
         ((CraftArrow) arrow).getHandle().b(damage);
     }
 
@@ -117,7 +137,9 @@ public class RPGHandler extends CraftBukkitHandler {
         try {
             ldbpt.set(((CraftLivingEntity)entity).getHandle(), 60);
         } catch (final IllegalArgumentException e) {
+            // do nothing
         } catch (final IllegalAccessException e) {
+            // do nothing
         }
     }
 
@@ -160,7 +182,9 @@ public class RPGHandler extends CraftBukkitHandler {
             try {
                 ldbpt.set(el, 60);
             } catch (final IllegalArgumentException e) {
+                // do nothing
             } catch (final IllegalAccessException e) {
+                // do nothing
             }
         }
         el.setHealth((float) newHealth);
