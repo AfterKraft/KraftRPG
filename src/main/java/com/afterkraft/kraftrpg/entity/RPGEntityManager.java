@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 Gabriel Harris-Rouquette
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http:www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.afterkraft.kraftrpg.entity;
 
 import java.util.HashMap;
@@ -16,11 +31,10 @@ import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Monster;
+import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.storage.RPGStorage;
 
-/**
- * @author gabizou
- */
+
 public class RPGEntityManager implements EntityManager {
 
     private final KraftRPGPlugin plugin;
@@ -46,11 +60,17 @@ public class RPGEntityManager implements EntityManager {
     }
 
     @Override
-    public void initialize() {
-
+    public IEntity getEntity(SkillCaster caster) {
+        if (caster instanceof Champion) {
+            return (Champion) caster;
+        } else if (caster instanceof Monster) {
+            return (Monster) caster;
+        } else if (caster instanceof IEntity) {
+            return (IEntity) caster;
+        } else {
+            return null;
+        }
     }
-
-    public void shutdown() {}
 
     public Champion getChampion(Player player) {
         if (player == null) {
@@ -65,17 +85,23 @@ public class RPGEntityManager implements EntityManager {
             }
         } else {
             champion = createNewChampion(player);
-            plugin.getStorageManager().getStorage().saveChampion(champion, true);
+            plugin.getStorageManager().getStorage().saveChampion(champion, true, true);
         }
         return champion;
     }
 
-    protected Champion createNewChampion(Player player) {
-        return new RPGChampion(this.plugin, player, this.plugin.getRoleManager().getDefaultPrimaryRole(), null);
-    }
-
     public Monster getMonster(LivingEntity entity) {
-        return null;
+        final UUID id = entity.getUniqueId();
+        if (monsters.containsKey(id)) {
+            return monsters.get(id);
+        } else {
+            final Monster monster = new RPGMonster(plugin, entity);
+            monsters.put(id, monster);
+
+            Bukkit.getScheduler().runTaskLater(plugin, new RPGSingleEntityReaper(monster), 200);
+
+            return monster;
+        }
     }
 
     public boolean isMonsterSetup(LivingEntity entity) {
@@ -120,6 +146,21 @@ public class RPGEntityManager implements EntityManager {
         return null;
     }
 
+    protected Champion createNewChampion(Player player) {
+        return new RPGChampion(this.plugin, player, this.plugin.getRoleManager().getDefaultPrimaryRole(), null);
+    }
+
+    public void removeMonster(Monster monster) {
+        monsters.remove(((RPGEntity) monster).uuid);
+    }
+
+    @Override
+    public void initialize() {
+
+    }
+
+    public void shutdown() {}
+
     /**
      * A Timer task to remove the potentially GC'ed LivingEntities either due to
      * death, chunk unload, or reload.
@@ -149,5 +190,22 @@ public class RPGEntityManager implements EntityManager {
             }
 
         }
+    }
+
+    private class RPGSingleEntityReaper implements Runnable {
+
+        private Monster monster;
+
+        public RPGSingleEntityReaper(Monster m) {
+            this.monster = m;
+        }
+
+        @Override
+        public void run() {
+            if (!monster.isEntityValid()) {
+                removeMonster(monster);
+            }
+        }
+
     }
 }

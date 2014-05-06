@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.compat.v1_7_R2;
+package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
-import net.minecraft.server.v1_7_R2.DamageSource;
-import net.minecraft.server.v1_7_R2.EntityGolem;
-import net.minecraft.server.v1_7_R2.EntityLiving;
-import net.minecraft.server.v1_7_R2.EntityMonster;
-import net.minecraft.server.v1_7_R2.EntityPlayer;
-import net.minecraft.server.v1_7_R2.MobEffect;
-import net.minecraft.server.v1_7_R2.PacketPlayOutEntityEffect;
-import net.minecraft.server.v1_7_R2.PacketPlayOutRemoveEntityEffect;
-import net.minecraft.server.v1_7_R2.PacketPlayOutWorldParticles;
-import org.bukkit.craftbukkit.v1_7_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftArrow;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R2.event.CraftEventFactory;
+import net.minecraft.server.v1_7_R3.DamageSource;
+import net.minecraft.server.v1_7_R3.EntityGolem;
+import net.minecraft.server.v1_7_R3.EntityLiving;
+import net.minecraft.server.v1_7_R3.EntityMonster;
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.MobEffect;
+import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
+import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
+import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
+import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

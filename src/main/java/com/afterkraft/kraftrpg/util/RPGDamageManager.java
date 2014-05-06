@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 Gabriel Harris-Rouquette
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http:www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.afterkraft.kraftrpg.util;
 
 import java.util.EnumMap;
@@ -17,52 +32,50 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.Slime;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.Monster;
+import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.spells.SpellUseObject;
+import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
 
-/**
- * @author gabizou
- */
-public class RPGDamangeManager implements DamageManager {
+
+public class RPGDamageManager implements DamageManager {
 
     private final KraftRPGPlugin plugin;
-
+    private final Map<UUID, SkillUseObject> skillTargets = new HashMap<UUID, SkillUseObject>();
     private Map<Material, Double> defaultItemDamage;
     private Map<ProjectileType, Double> defaultProjectileDamage;
     private Map<EntityType, Double> defaultCreatureHealth;
     private Map<EntityType, Double> defaultCreatureDamage;
     private Map<EntityDamageEvent.DamageCause, Double> defaultEnvironmentDamage;
     private Map<Enchantment, Double> defaultEnchantmentDamage;
-    private final Map<UUID, SpellUseObject> spellTargets = new HashMap<UUID, SpellUseObject>();
 
-    public RPGDamangeManager(KraftRPGPlugin plugin) {
+    public RPGDamageManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
     }
 
-    public double getHighestItemDamage(Champion champion, ItemStack item) {
+    public double getHighestItemDamage(SkillCaster caster, ItemStack item) {
         final double defaultDamage = this.defaultItemDamage.get(item.getType()) != null ? this.defaultItemDamage.get(item.getType()) : 0.0D;
         double roleDamage;
         double primaryDamage = 0.0D;
         double secondaryDamage = 0.0D;
         double activeDamage = 0.0D;
-        if (champion.getPrimaryRole() != null) {
-            primaryDamage = champion.getPrimaryRole().getItemDamage(item.getType());
-            primaryDamage += champion.getPrimaryRole().getItemDamagePerLevel(item.getType()) * champion.getLevel(champion.getPrimaryRole());
+        if (caster.getPrimaryRole() != null) {
+            primaryDamage = caster.getPrimaryRole().getItemDamage(item.getType());
+            primaryDamage += caster.getPrimaryRole().getItemDamagePerLevel(item.getType()) * caster.getLevel(caster.getPrimaryRole());
         }
-        if (champion.getSecondaryRole() != null) {
-            secondaryDamage = champion.getSecondaryRole().getItemDamage(item.getType());
-            secondaryDamage += champion.getSecondaryRole().getItemDamagePerLevel(item.getType()) * champion.getLevel(champion.getPrimaryRole());
+        if (caster.getSecondaryRole() != null) {
+            secondaryDamage = caster.getSecondaryRole().getItemDamage(item.getType());
+            secondaryDamage += caster.getSecondaryRole().getItemDamagePerLevel(item.getType()) * caster.getLevel(caster.getPrimaryRole());
         }
-        if (!champion.getAdditionalRoles().isEmpty()) {
-            for (Role role : champion.getAdditionalRoles()) {
-                double tempRoleDamage = role.getItemDamage(item.getType()) + role.getItemDamagePerLevel(item.getType()) * champion.getLevel(role);
+        if (!caster.getAdditionalRoles().isEmpty()) {
+            for (Role role : caster.getAdditionalRoles()) {
+                double tempRoleDamage = role.getItemDamage(item.getType()) + role.getItemDamagePerLevel(item.getType()) * caster.getLevel(role);
                 activeDamage = tempRoleDamage > activeDamage ? tempRoleDamage : activeDamage;
             }
         }
@@ -78,7 +91,7 @@ public class RPGDamangeManager implements DamageManager {
         return this.defaultCreatureDamage.get(type);
     }
 
-    public double getModifiedEntityDamage(final Monster monster, final Location location, final double baseDamage, final boolean fromSpawner) {
+    public double getModifiedEntityDamage(final Monster monster, final Location location, final double baseDamage, final CreatureSpawnEvent.SpawnReason fromSpawner) {
         if (monster == null || !monster.isEntityValid()) {
             return 0D;
         }
@@ -102,11 +115,22 @@ public class RPGDamangeManager implements DamageManager {
             }
         }
         if (plugin.getProperties().isMobDamageDistanceModified()) {
-            double percent = 1 + RPGPluginProperties.mobDamageDistanceModified/100.00D;
-            double modifier = Math.pow(percent, MathUtil.getDistance(spawn, location)/RPGPluginProperties.distanceTierModifier)+0.00D;
+            double percent = 1 + RPGPluginProperties.mobDamageDistanceModified / 100.00D;
+            double modifier = Math.pow(percent, MathUtil.getDistance(spawn, location) / RPGPluginProperties.distanceTierModifier) + 0.00D;
             modifiedDamage = Math.ceil(modifiedDamage * modifier);
         }
         return modifiedDamage;
+    }
+
+    @Override
+    public double getDefaultEntityHealth(LivingEntity entity) {
+        final Double val = defaultCreatureHealth.get(entity.getType());
+        return val != null ? val : entity.getMaxHealth();
+    }
+
+    @Override
+    public double getModifiedEntityHealth(LivingEntity entity) {
+        return 0;
     }
 
 

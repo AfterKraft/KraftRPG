@@ -20,65 +20,73 @@ import java.util.logging.Level;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.EntityManager;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleManager;
+import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
+import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
-import com.afterkraft.kraftrpg.api.spells.SpellConfigManager;
-import com.afterkraft.kraftrpg.api.spells.SpellManager;
-import com.afterkraft.kraftrpg.api.util.ConfigManager;
-import com.afterkraft.kraftrpg.api.util.DamageManager;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
+import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
+import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
 import com.afterkraft.kraftrpg.entity.roles.RPGRoleManager;
-import com.afterkraft.kraftrpg.spells.RPGSpellConfigManager;
-import com.afterkraft.kraftrpg.spells.RPGSpellManager;
+import com.afterkraft.kraftrpg.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.skills.RPGSkillConfigManager;
+import com.afterkraft.kraftrpg.skills.RPGSkillManager;
 import com.afterkraft.kraftrpg.storage.RPGStorageManager;
 import com.afterkraft.kraftrpg.util.RPGConfigManager;
-import com.afterkraft.kraftrpg.util.RPGDamangeManager;
+import com.afterkraft.kraftrpg.util.RPGDamageManager;
 import com.afterkraft.kraftrpg.util.RPGPluginProperties;
 
-/**
- * @author gabizou
- */
-public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
-    private SpellManager spellManager;
-    private SpellConfigManager spellConfigManager;
-    private EntityManager entityManager;
-    private RPGStorageManager storageManager;
-    private RPGPluginProperties properties;
-    private DamageManager damageManager;
-    private ConfigManager configManager;
-    private RoleManager roleManager;
+public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     private static KraftRPGPlugin instance;
 
-    @Override
-    public void onEnable() {
-        instance = this;
-        CraftBukkitHandler.getInterface(); // Initialize CraftBukkitHandler
-        this.properties = new RPGPluginProperties();
-        this.configManager = new RPGConfigManager(this);
-        this.storageManager = new RPGStorageManager(this);
-        this.damageManager = new RPGDamangeManager(this);
-        this.roleManager = new RPGRoleManager(this);
-        this.entityManager = new RPGEntityManager(this);
-        this.spellManager = new RPGSpellManager(this);
-        this.spellConfigManager = new RPGSpellConfigManager(this);
-
-    }
+    private RPGSkillManager skillManager;
+    private RPGSkillConfigManager skillConfigManager;
+    private RPGEntityManager entityManager;
+    private RPGStorageManager storageManager;
+    private RPGPluginProperties properties;
+    private RPGDamageManager damageManager;
+    private RPGConfigManager configManager;
+    private RPGRoleManager roleManager;
+    private RPGPartyManager partyManager;
+    private RPGEffectManager effectManager;
+    private ListenerManager listenerManager;
 
     public static KraftRPGPlugin getInstance() {
         return KraftRPGPlugin.instance;
     }
 
     @Override
-    public SpellConfigManager getSpellConfigManager() {
-        return this.spellConfigManager;
+    public void onEnable() {
+        instance = this;
+        CraftBukkitHandler.getInterface(); // Initialize CraftBukkitHandler so nothing else has to
+        this.properties = new RPGPluginProperties();
+        this.configManager = new RPGConfigManager(this);
+        this.storageManager = new RPGStorageManager(this);
+        this.damageManager = new RPGDamageManager(this);
+        this.roleManager = new RPGRoleManager(this);
+        this.entityManager = new RPGEntityManager(this);
+        this.skillManager = new RPGSkillManager(this);
+        this.skillConfigManager = new RPGSkillConfigManager(this);
+        this.effectManager = new RPGEffectManager(this);
+        this.partyManager = new RPGPartyManager(this);
+        this.listenerManager = new ListenerManager(this);
+
     }
 
     @Override
-    public EntityManager getEntityManager() {
+    public RPGSkillConfigManager getSkillConfigManager() {
+        return this.skillConfigManager;
+    }
+
+    @Override
+    public RPGEntityManager getEntityManager() {
         return this.entityManager;
+    }
+
+    @Override
+    public EffectManager getEffectManager() {
+        return this.effectManager;
     }
 
     @Override
@@ -86,28 +94,33 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         return this.storageManager;
     }
 
-    public RPGPluginProperties getProperties() {
-        return this.properties;
-    }
-
     @Override
-    public ConfigManager getConfigurationManager() {
+    public RPGConfigManager getConfigurationManager() {
         return this.configManager;
     }
 
     @Override
-    public DamageManager getDamageManager() {
+    public RPGDamageManager getDamageManager() {
         return this.damageManager;
     }
 
     @Override
-    public SpellManager getSpellManager() {
-        return this.spellManager;
+    public RPGSkillManager getSkillManager() {
+        return this.skillManager;
     }
 
     @Override
-    public RoleManager getRoleManager() {
+    public RPGRoleManager getRoleManager() {
         return this.roleManager;
+    }
+
+    @Override
+    public PartyManager getPartyManager() {
+        return this.partyManager;
+    }
+
+    public RPGPluginProperties getProperties() {
+        return this.properties;
     }
 
     @Override

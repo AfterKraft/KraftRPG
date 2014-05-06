@@ -1,27 +1,44 @@
+/*
+ * Copyright 2014 Gabriel Harris-Rouquette
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http:www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.afterkraft.kraftrpg.entity.effects;
 
-import com.afterkraft.kraftrpg.api.entity.IEntity;
-import com.afterkraft.kraftrpg.api.entity.effects.Effect;
-import com.afterkraft.kraftrpg.api.entity.effects.ManagedEffect;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @author gabizou
- */
-public class RPGManagedEffect implements ManagedEffect {
+import com.afterkraft.kraftrpg.api.entity.Insentient;
+import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
+import com.afterkraft.kraftrpg.api.entity.effects.Managed;
+import com.afterkraft.kraftrpg.api.entity.effects.Timed;
 
-    private final Effect effect;
-    private final IEntity entity;
 
-    public RPGManagedEffect(IEntity entity, Effect effect) {
-        this.effect = effect;
+public class RPGManagedEffect implements Managed {
+
+    private final Timed effect;
+    private final Insentient entity;
+
+    public RPGManagedEffect(Insentient entity, Timed IEffect) {
+        this.effect = IEffect;
         this.entity = entity;
     }
 
-    public Effect getEffect() {
-        return this.effect;
+    public IEffect getEffect() {
+        return (IEffect) this.effect;
     }
 
-    public IEntity getEntity() {
+    public Insentient getSentientBeing() {
         return this.entity;
     }
 
@@ -50,5 +67,16 @@ public class RPGManagedEffect implements ManagedEffect {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+        return this.effect.getDelay(unit);
+
+    }
+
+    @Override
+    public int compareTo(Delayed o) {
+        return this.effect.compareTo(o);
     }
 }

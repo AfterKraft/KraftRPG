@@ -1,11 +1,23 @@
+/*
+ * Copyright 2014 Gabriel Harris-Rouquette
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http:www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.afterkraft.kraftrpg.entity;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,24 +25,15 @@ import org.bukkit.entity.LivingEntity;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
-import com.afterkraft.kraftrpg.api.entity.effects.Effect;
-import com.afterkraft.kraftrpg.api.entity.effects.EffectType;
-import com.afterkraft.kraftrpg.api.entity.effects.Expirable;
-import com.afterkraft.kraftrpg.api.entity.effects.Periodic;
-import com.afterkraft.kraftrpg.api.events.entity.effects.EffectAddEvent;
-import com.afterkraft.kraftrpg.api.events.entity.effects.EffectRemoveEvent;
 
-/**
- * @author gabizou
- */
+
 public abstract class RPGEntity implements IEntity {
 
-    private final Map<String, Effect> effects = new HashMap<String, Effect>();
     protected final RPGPlugin plugin;
-    private final UUID uuid;
+    protected final String name;
+    protected final UUID uuid;
     protected WeakReference<LivingEntity> lEntity;
     protected Map<String, Double> healthMap = new ConcurrentHashMap<String, Double>();
-    protected final String name;
 
     public RPGEntity(RPGPlugin plugin, LivingEntity lEntity, String name) {
         this.plugin = plugin;
@@ -39,14 +42,17 @@ public abstract class RPGEntity implements IEntity {
         this.uuid = lEntity.getUniqueId();
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public final boolean isValid() {
         return lEntity.get() != null;
     }
 
+    @Override
     public final boolean isEntityValid() {
         return this.isValid() && this.getEntity().isValid();
     }
@@ -55,9 +61,11 @@ public abstract class RPGEntity implements IEntity {
      * Returns the entity associated with this character if the entity has not
      * been garbage collected already (in which case, this RPGEntity will need
      * to be removed from the system.
+     *
      * @return the associated LivingEntity for this RPGEntity or null if the
      * LivingEntity no longer exists
      */
+    @Override
     public final LivingEntity getEntity() {
         if (!isEntityValid()) {
             return null;
@@ -65,134 +73,26 @@ public abstract class RPGEntity implements IEntity {
         return lEntity.get();
     }
 
-    public final void setEntity(LivingEntity entity) {
+    @Override
+    public final boolean setEntity(LivingEntity entity) {
         if (!this.uuid.equals(entity.getUniqueId())) {
-            return;
+            return false;
         }
         this.lEntity = new WeakReference<LivingEntity>(entity);
-    }
-
-    public Effect getEffect(String name) {
-        if (!this.isEntityValid()) {
-            return null;
-        }
-        return effects.get(name.toLowerCase());
-    }
-
-    public Set<Effect> getEffects() {
-        if (!this.isEntityValid()) {
-            return null;
-        }
-        return new HashSet<Effect>(effects.values());
-    }
-
-    public void addEffect(Effect effect) {
-        if (effect == null || !this.isEntityValid())
-            return;
-
-        EffectAddEvent event = new EffectAddEvent(this, effect);
-        plugin.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
-
-        if (hasEffect(effect.getName())) {
-            removeEffect(getEffect(effect.getName()));
-        }
-
-//        plugin.getEffectManager().manageEffect(this, effect);
-
-        effects.put(effect.getName().toLowerCase(), effect);
-//        effect.apply(this);
-    }
-
-    public boolean hasEffect(String name) {
-        if (!this.isEntityValid()) {
-            return false;
-        }
-        return effects.containsKey(name.toLowerCase());
+        return true;
     }
 
     /**
-     * Checks if the character has the effects type specified
-     * @param type
-     * @return true if the character has the effects type
-     */
-    public boolean hasEffectType(EffectType type) {
-        if (!this.isEntityValid()) {
-            return false;
-        }
-        for (final Effect effect : effects.values()) {
-            if (effect.isType(type)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * This method can NOT be called from an iteration over the effects set
-     *
-     * @param effect
-     */
-    public void removeEffect(Effect effect) {
-        if (effect == null || !this.isEntityValid())
-            return;
-
-        EffectRemoveEvent event = new EffectRemoveEvent(this, effect);
-        plugin.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled())
-            return;
-
-        if ((effect instanceof Expirable) || (effect instanceof Periodic)) {
-//            plugin.getEffectManager().queueForRemoval(this, effect);
-        }
-        effect.remove(this);
-        effects.remove(effect.getName().toLowerCase());
-    }
-
-
-    public void manualRemoveEffect(Effect effect) {
-        if (effect != null && this.isEntityValid()) {
-            if ((effect instanceof Expirable) || (effect instanceof Periodic)) {
-//                plugin.getEffectManager().queueForRemoval(this, effect);
-            }
-            effects.remove(effect.getName().toLowerCase());
-        }
-    }
-
-    /**                RPGCombatEffect
-     * Iterates over the effects of this character and force removes them
-     */
-    public void manualClearEffects() {
-        if (!this.isEntityValid()) {
-            return;
-        }
-        for (final Effect effect : this.getEffects()) {
-            this.manualRemoveEffect(effect);
-        }
-    }
-
-    /**
-     * Iterates over the effects this character has and removes them
-     */
-    public void clearEffects() {
-        if (!this.isEntityValid()) {
-            return;
-        }
-        for (final Effect effect : this.getEffects()) {
-            this.removeEffect(effect);
-        }
-    }
-
-    /**
-     * Adds to the character's maximum health.  Maps the amount of health to add to a key.
-     * This operation will fail if the character already has a health value with the specific key.
-     * This operation will add health to the character's current health.
+     * Adds to the character's maximum health.  Maps the amount of health to add
+     * to a key. This operation will fail if the character already has a health
+     * value with the specific key. This operation will add health to the
+     * character's current health.
      *
      * @param key to give
      * @param value amount
      * @return true if the operation was successful
      */
+    @Override
     public boolean addMaxHealth(String key, double value) {
         if (!this.isEntityValid()) {
             return false;
@@ -211,13 +111,13 @@ public abstract class RPGEntity implements IEntity {
     }
 
     /**
-     * Thread-Safe
-     * Removes a maximum health addition on the character.
-     * This will also remove current health from the character, down to a minimum of 1.
+     * Thread-Safe Removes a maximum health addition on the character. This will
+     * also remove current health from the character, down to a minimum of 1.
      *
      * @param key to remove
      * @return true if health was removed.
      */
+    @Override
     public boolean removeMaxHealth(String key) {
         if (!this.isEntityValid()) {
             return false;
@@ -240,10 +140,20 @@ public abstract class RPGEntity implements IEntity {
         return false;
     }
 
+    @Override
+    public double recalculateMaxHealth() {
+        return 0;
+    }
+
+    @Override
+    public void heal(double amount) {
+
+    }
+
     /**
-     * Thread-Safe
-     * removes all max-health bonuses from the character.
+     * Thread-Safe removes all max-health bonuses from the character.
      */
+    @Override
     public void clearHealthBonuses() {
         if (!this.isEntityValid()) {
             return;
