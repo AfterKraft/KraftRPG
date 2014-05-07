@@ -44,14 +44,10 @@ public class RPGStorageManager implements Manager {
             return;
         }
 
-        boolean error;
         try {
-            error = !backend.initialize();
+            backend.initialize();
         } catch (Throwable e) {
-            error = true;
             e.printStackTrace();
-        }
-        if (error) {
             plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup.");
             plugin.cancelEnable();
             return;
