@@ -160,10 +160,10 @@ public class RPGHandler extends TweakkitEnabledHandler {
             case BUKKIT:
             case SPIGOT:
                 EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                expBytes = loadOrCreateAttribute(entity, exp, value.asDouble());
+                expBytes = loadOrCreateAttribute(entity, exp, value.doubleValue());
                 break;
             case TWEAKKIT:
-                expBytes = getEntityData(entity, EXPERIENCE_STRING, value.asDouble());
+                expBytes = getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
                 break;
         }
         return new FixedPoint(expBytes);
@@ -178,7 +178,7 @@ public class RPGHandler extends TweakkitEnabledHandler {
             case BUKKIT:
             case SPIGOT:
                 EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                loadOrCreateAttribute(entity, exp, experience.asDouble());
+                loadOrCreateAttribute(entity, exp, experience.doubleValue());
                 break;
             case TWEAKKIT:
                 if (!entity.getCustomData().hasKey("kraftrpg")) {
