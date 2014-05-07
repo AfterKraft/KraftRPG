@@ -17,25 +17,39 @@ package com.afterkraft.kraftrpg.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 
-public interface EntityListener extends Listener {
+import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
+
+public class EntityListener extends AbstractListener {
+
+    protected EntityListener(RPGPlugin plugin) {
+        super(plugin);
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityDeath(EntityDeathEvent event);
+    public void onEntityDeath(EntityDeathEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityTarget(EntityTargetEvent event);
+    public void onEntityTarget(EntityTargetEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityDamageEvent(EntityDamageEvent event);
+    public void onEntityDamageEvent(EntityDamageEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onCreatureSpawnEvent(CreatureSpawnEvent event);
+    public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
+
+    }
 
 
 }

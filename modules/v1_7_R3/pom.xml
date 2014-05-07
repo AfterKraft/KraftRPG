@@ -21,8 +21,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
+            <groupId>com.afterkraft</groupId>
+            <artifactId>tweakkit</artifactId>
             <version>1.7.9-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>

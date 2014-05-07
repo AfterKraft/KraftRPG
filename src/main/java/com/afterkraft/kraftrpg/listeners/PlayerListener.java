@@ -17,7 +17,6 @@ package com.afterkraft.kraftrpg.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
@@ -26,26 +25,47 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 
-public interface PlayerListener extends Listener {
+import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
+
+public class PlayerListener extends AbstractListener {
+
+    protected PlayerListener(RPGPlugin plugin) {
+        super(plugin);
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerQuitEvent(PlayerQuitEvent event);
+    public void onPlayerQuitEvent(PlayerQuitEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerKickEvent(PlayerKickEvent event);
+    public void onPlayerKickEvent(PlayerKickEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onPlayerJoinEvent(PlayerJoinEvent event);
+    public void onPlayerJoinEvent(PlayerJoinEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerExpEvent(PlayerExpChangeEvent event);
+    public void onPlayerExpEvent(PlayerExpChangeEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerFishEvent(PlayerFishEvent event);
+    public void onPlayerFishEvent(PlayerFishEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityTameEvent(EntityTameEvent event);
+    public void onEntityTameEvent(EntityTameEvent event) {
+
+    }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerShearEntity(PlayerShearEntityEvent event);
+    public void onPlayerShearEntity(PlayerShearEntityEvent event) {
+
+    }
 }

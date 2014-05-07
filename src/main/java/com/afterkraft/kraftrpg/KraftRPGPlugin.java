@@ -23,11 +23,12 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
 import com.afterkraft.kraftrpg.entity.roles.RPGRoleManager;
-import com.afterkraft.kraftrpg.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.listeners.RPGListenerManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillConfigManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillManager;
 import com.afterkraft.kraftrpg.storage.RPGStorageManager;
@@ -50,7 +51,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     private RPGRoleManager roleManager;
     private RPGPartyManager partyManager;
     private RPGEffectManager effectManager;
-    private ListenerManager listenerManager;
+    private RPGListenerManager listenerManager;
 
     public static KraftRPGPlugin getInstance() {
         return KraftRPGPlugin.instance;
@@ -70,7 +71,8 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.skillConfigManager = new RPGSkillConfigManager(this);
         this.effectManager = new RPGEffectManager(this);
         this.partyManager = new RPGPartyManager(this);
-        this.listenerManager = new ListenerManager(this);
+        this.listenerManager = new RPGListenerManager(this);
+        CraftBukkitHandler.getInterface().loadExtraListeners();
 
     }
 
@@ -121,6 +123,11 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     public RPGPluginProperties getProperties() {
         return this.properties;
+    }
+
+    @Override
+    public ListenerManager getListenerManager() {
+        return this.listenerManager;
     }
 
     @Override

@@ -55,6 +55,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
@@ -65,9 +66,11 @@ public class RPGHandler extends CraftBukkitHandler {
 
     private Field ldbpt;
     private Random random;
+    private boolean listenersLoaded = false;
 
     public RPGHandler(ServerType type) {
         super(type);
+        plugin = KraftRPGPlugin.getInstance();
         try {
             ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
             ldbpt.setAccessible(true);
@@ -77,6 +80,20 @@ public class RPGHandler extends CraftBukkitHandler {
             // do nothing
         }
         random = new Random();
+    }
+
+    @Override
+    public void loadExtraListeners() {
+        if (!listenersLoaded) {
+            switch (serverType) {
+                case TWEAKKIT:
+                    plugin.getListenerManager().addListener(new TweakkitListener(plugin));
+                case SPIGOT:
+                    plugin.getListenerManager().addListener(new SpigotListener(plugin));
+                    break;
+
+            }
+        }
     }
 
     @Override
@@ -107,6 +124,18 @@ public class RPGHandler extends CraftBukkitHandler {
         entityPlayer.exp = 0;
         entityPlayer.expTotal = 0;
         entityPlayer.expLevel = 0;
+    }
+
+    @Override
+    public void modifyArrowDamage(Arrow arrow, double damage) {
+        switch (serverType) {
+            case TWEAKKIT:
+            case SPIGOT:
+                arrow.spigot().setDamage(damage);
+                break;
+            case BUKKIT:
+                ((CraftArrow) arrow).getHandle().b(damage);
+        }
     }
 
     @Override

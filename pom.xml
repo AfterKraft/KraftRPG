@@ -9,7 +9,6 @@
     <url>http://git.afterkraft.com/AfterKraft/KraftRPG</url>
 
     <modules>
-        <module>modules/v1_7_R2</module>
         <module>modules/v1_7_R3</module>
         <module>modules/KraftRPG</module>
     </modules>

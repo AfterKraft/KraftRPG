@@ -37,6 +37,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
@@ -87,8 +88,23 @@ public class RPGDamageManager implements DamageManager {
         return roleDamage;
     }
 
+    @Override
+    public double getHighestProjectileDamage(Champion champion, ProjectileType type) {
+        return 0;
+    }
+
     public double getEntityDamage(EntityType type) {
         return this.defaultCreatureDamage.get(type);
+    }
+
+    @Override
+    public double getEnvironmentalDamage(EntityDamageEvent.DamageCause cause) {
+        return 0;
+    }
+
+    @Override
+    public double getEnchantmentDamage(Enchantment enchantment) {
+        return 0;
     }
 
     public double getModifiedEntityDamage(final Monster monster, final Location location, final double baseDamage, final CreatureSpawnEvent.SpawnReason fromSpawner) {

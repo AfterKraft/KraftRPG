@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.listeners.common;
+package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
-import org.bukkit.event.HandlerList;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.listeners.PlayerListener;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
-public abstract class AbstractPlayerListener extends AbstractListener implements PlayerListener {
+public class SpigotListener extends AbstractListener {
 
-    protected AbstractPlayerListener(KraftRPGPlugin plugin) {
+    protected SpigotListener(RPGPlugin plugin) {
         super(plugin);
     }
 
-    @Override
-    public void initialize() {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerItemDamageEvent(PlayerItemDamageEvent event) {
 
-    @Override
-    public void shutdown() {
-        HandlerList.unregisterAll(this);
     }
 }
