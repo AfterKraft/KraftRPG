@@ -254,12 +254,13 @@ public class RPGHandler extends TweakkitEnabledHandler {
     @Override
     public void modifyArrowDamage(Arrow arrow, double damage) {
         switch (serverType) {
+            case BUKKIT:
+                ((CraftArrow) arrow).getHandle().b(damage);
+                break;
             case TWEAKKIT:
             case SPIGOT:
                 arrow.spigot().setDamage(damage);
                 break;
-            case BUKKIT:
-                ((CraftArrow) arrow).getHandle().b(damage);
         }
     }
 
