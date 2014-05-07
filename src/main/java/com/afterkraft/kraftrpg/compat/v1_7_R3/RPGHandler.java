@@ -185,10 +185,10 @@ public class RPGHandler extends TweakkitEnabledHandler {
                     CustomDataCompound compound = entity.getCustomData();
                     compound.set("kraftrpg", new CustomDataCompound());
                     compound = compound.getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
                 } else {
                     CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
                 }
                 break;
         }

@@ -43,28 +43,21 @@ import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillArgument;
 import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
+import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.api.util.SkillRequirement;
 import com.afterkraft.kraftrpg.util.MathUtil;
 
 
 public class RPGChampion extends RPGEntityInsentient implements Champion {
-
-    private final Set<Role> additionalRoles = new HashSet<Role>();
-    private final Map<String, FixedPoint> experience = new HashMap<String, FixedPoint>();
-    private Map<Material, SkillBind> binds = new ConcurrentHashMap<Material, SkillBind>();
+    private PlayerData data;
     private Set<IEffect> effects = new HashSet<IEffect>();
-    private Map<String, Long> cooldowns = new LinkedHashMap<String, Long>();
-    private Role primary;
-    private Role secondary;
-
     private Stalled<? extends SkillArgument> stalled;
     private transient Party party;
 
-    protected RPGChampion(RPGPlugin plugin, Player player, Role primary, Role secondary) {
+    protected RPGChampion(RPGPlugin plugin, Player player, PlayerData data) {
         super(plugin, player, player.getName());
-        this.primary = primary;
-        this.secondary = secondary;
+        this.data = data;
     }
 
     @Override
@@ -98,7 +91,7 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     @Override
     public Long getCooldown(String key) {
         if (key != null) {
-            return this.cooldowns.get(key);
+            return data.cooldowns.get(key);
         } else {
             return 0L;
         }
@@ -106,18 +99,18 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public long getGlobalCooldown() {
-        return this.cooldowns.get("global");
+        return data.cooldowns.get("global");
     }
 
     @Override
     public void setGlobalCooldown(long duration) {
-        this.cooldowns.put("global", duration);
+        data.cooldowns.put("global", duration);
     }
 
     @Override
     public void setCooldown(String key, long duration) {
         if (key != null) {
-            this.cooldowns.put(key, duration);
+            data.cooldowns.put(key, duration);
         }
     }
 
@@ -164,9 +157,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     @Override
     public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
         return false;
-    }    @Override
+    }
+
+    @Override
     public Role getPrimaryRole() {
-        return this.primary;
+        return data.primary;
     }
 
     @Override
@@ -216,9 +211,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getInventory();
         }
         return null;
-    }    @Override
+    }
+
+    @Override
     public Role getSecondaryRole() {
-        return this.secondary;
+        return data.profession;
     }
 
     @Override
@@ -252,16 +249,12 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
 
-
-
-
-
     @Override
     public boolean setPrimaryRole(Role role) {
         if (role == null || role.getType() != RoleType.PRIMARY) {
             return false;
         }
-        this.primary = role;
+        data.primary = role;
         this.recalculateMaxHealth();
         return true;
     }
@@ -271,14 +264,14 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         if (role == null || role.getType() != RoleType.SECONDARY) {
             return false;
         }
-        this.secondary = role;
+        data.profession = role;
         this.recalculateMaxHealth();
         return true;
     }
 
     @Override
     public Set<Role> getAdditionalRoles() {
-        return Collections.unmodifiableSet(this.additionalRoles);
+        return Collections.unmodifiableSet(data.additionalRoles);
     }
 
     @Override
@@ -286,17 +279,17 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         if (role == null || role.getType() != RoleType.ADDITIONAL) {
             return false;
         }
-        if (role.equals(this.primary) || role.equals(this.secondary)) {
+        if (role.equals(data.primary) || role.equals(data.profession)) {
             return false;
         }
-        this.additionalRoles.add(role);
+        data.additionalRoles.add(role);
         return true;
     }
 
     @Override
     public boolean removeAdditionalRole(Role role) {
         // TODO employ some sort of Role interference logic
-        return (role != null) && (this.additionalRoles.contains(role)) && !this.primary.equals(role) && !this.secondary.equals(role) && this.additionalRoles.remove(role);
+        return (role != null) && (data.additionalRoles.contains(role)) && !data.primary.equals(role) && !data.profession.equals(role) && data.additionalRoles.remove(role);
     }
 
     @Override
@@ -309,7 +302,7 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         if (role == null) {
             return new FixedPoint(0D);
         }
-        final FixedPoint exp = this.experience.get(role.getName());
+        final FixedPoint exp = data.exp.get(role.getName());
         return exp == null ? new FixedPoint(0D) : exp;
     }
 
@@ -336,5 +329,13 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     }
 
+    @Override
+    public PlayerData getData() {
+        return data;
+    }
 
+    @Override
+    public PlayerData getDataClone() {
+        return data.clone();
+    }
 }

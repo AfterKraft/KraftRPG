@@ -25,6 +25,7 @@ import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
@@ -36,7 +37,6 @@ import com.afterkraft.kraftrpg.storage.RPGStorageManager;
 import com.afterkraft.kraftrpg.util.RPGConfigManager;
 import com.afterkraft.kraftrpg.util.RPGDamageManager;
 import com.afterkraft.kraftrpg.util.RPGPluginProperties;
-
 
 public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
@@ -109,8 +109,8 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
-    public RPGStorageManager getStorageManager() {
-        return this.storageManager;
+    public StorageFrontend getStorage() {
+        return this.storageManager.getStorage();
     }
 
     @Override
