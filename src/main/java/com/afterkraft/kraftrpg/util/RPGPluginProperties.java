@@ -70,7 +70,7 @@ public class RPGPluginProperties implements Properties {
 
 
     public String getStorageType() {
-        return storageType;
+        return storageType.toLowerCase();
     }
 
     @Override

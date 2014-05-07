@@ -36,6 +36,7 @@ import com.afterkraft.kraftrpg.listeners.RPGListenerManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillConfigManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillManager;
 import com.afterkraft.kraftrpg.storage.RPGStorageManager;
+import com.afterkraft.kraftrpg.storage.YMLStorageBackend;
 import com.afterkraft.kraftrpg.util.RPGConfigManager;
 import com.afterkraft.kraftrpg.util.RPGDamageManager;
 import com.afterkraft.kraftrpg.util.RPGPluginProperties;
@@ -66,8 +67,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         ConfigurationSerialization.registerClass(SkillBind.class);
 
         // Register our defaults
-        // TODO
-        ExternalProviderRegistration.registerStorageBackend(null, "yml");
+        ExternalProviderRegistration.registerStorageBackend(new YMLStorageBackend(this), "yml", "yaml");
     }
 
     @Override

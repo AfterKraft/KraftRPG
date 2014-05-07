@@ -33,11 +33,12 @@ public class RPGStorageManager implements Manager {
     public void initialize() {
         String configuredBackend = plugin.getProperties().getStorageType();
         StorageBackend backend = ExternalProviderRegistration.getStorageBackendMap().get(configuredBackend);
+
         if (backend == null) {
             plugin.getLogger().severe("ERROR - You specified the '" + configuredBackend + "' storage type, but that storage type is not available.");
             StringBuilder sb = new StringBuilder("Available storage types are:");
             for (String str : ExternalProviderRegistration.getStorageBackendMap().keySet()) {
-                sb.append(" ").append(str);
+                sb.append(" '").append(str).append("'");
             }
             plugin.getLogger().severe(sb.toString());
             plugin.cancelEnable();
