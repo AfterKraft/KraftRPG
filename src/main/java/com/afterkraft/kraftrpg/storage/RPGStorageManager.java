@@ -48,12 +48,14 @@ public class RPGStorageManager implements Manager {
             backend.initialize();
         } catch (Throwable e) {
             e.printStackTrace();
-            plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup.");
+            plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup:");
+            plugin.getLogger().severe(e.getMessage());
             plugin.cancelEnable();
             return;
         }
 
         storage = ExternalProviderRegistration.getStorageFrontendOverride().construct(plugin, backend);
+        plugin.getLogger().info("Storage initialized with provider " + storage.getName());
     }
 
     public StorageFrontend getStorage() {

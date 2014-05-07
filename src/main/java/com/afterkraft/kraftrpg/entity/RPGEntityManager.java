@@ -127,8 +127,8 @@ public class RPGEntityManager implements EntityManager {
 
     // api - StorageFrontends call this
     public Champion createChampion(Player player, PlayerData data) {
+        // do NOT add to the champions map! that's done elsewhere
         Champion champ = new RPGChampion(plugin, player, data);
-        champions.put(player.getUniqueId(), champ);
         return champ;
     }
 
@@ -150,7 +150,7 @@ public class RPGEntityManager implements EntityManager {
     }
 
     @Override
-    public Champion getChampion(UUID uuid) {
+    public Champion getChampion(UUID uuid, boolean ignoreOffline) {
         return null;
     }
 

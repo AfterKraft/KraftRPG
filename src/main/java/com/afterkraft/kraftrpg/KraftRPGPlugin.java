@@ -17,6 +17,7 @@ package com.afterkraft.kraftrpg;
 
 import java.util.logging.Level;
 
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
@@ -25,6 +26,7 @@ import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
@@ -61,6 +63,8 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     @Override
     public void onLoad() {
+        ConfigurationSerialization.registerClass(SkillBind.class);
+
         // Register our defaults
         // TODO
         ExternalProviderRegistration.registerStorageBackend(null, "yml");
