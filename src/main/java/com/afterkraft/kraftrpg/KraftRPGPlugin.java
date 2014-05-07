@@ -19,6 +19,7 @@ import java.util.logging.Level;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
@@ -40,6 +41,7 @@ import com.afterkraft.kraftrpg.util.RPGPluginProperties;
 public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     private static KraftRPGPlugin instance;
+    private static boolean cancel = false;
 
     private RPGSkillManager skillManager;
     private RPGSkillConfigManager skillConfigManager;
@@ -58,12 +60,22 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
+    public void onLoad() {
+        // Register our defaults
+        // TODO
+        ExternalProviderRegistration.registerStorageBackend(null, "yml");
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
         CraftBukkitHandler.getInterface(); // Initialize CraftBukkitHandler so nothing else has to
+        ExternalProviderRegistration.finish();
+
         this.properties = new RPGPluginProperties();
         this.configManager = new RPGConfigManager(this);
         this.storageManager = new RPGStorageManager(this);
+        if (cancel) return;
         this.damageManager = new RPGDamageManager(this);
         this.roleManager = new RPGRoleManager(this);
         this.entityManager = new RPGEntityManager(this);
@@ -73,7 +85,12 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.partyManager = new RPGPartyManager(this);
         this.listenerManager = new RPGListenerManager(this);
         CraftBukkitHandler.getInterface().loadExtraListeners();
+    }
 
+    @Override
+    public void cancelEnable() {
+        cancel = true;
+        getServer().getPluginManager().disablePlugin(this);
     }
 
     @Override
