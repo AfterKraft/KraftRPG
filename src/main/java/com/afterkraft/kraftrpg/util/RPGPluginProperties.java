@@ -15,6 +15,14 @@
  */
 package com.afterkraft.kraftrpg.util;
 
+import java.util.EnumMap;
+import java.util.Map;
+
+import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+
+import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.api.util.Properties;
 
 
@@ -28,10 +36,9 @@ public class RPGPluginProperties implements Properties {
     public static double mobHealthDistanceModified;
     public static double mobExpDistanceModified;
     public static double distanceTierModifier;
-
     public static int maxLevel;
     public static int[] levels;
-
+    public Map<EntityType, FixedPoint> creatureExperienceDrop = new EnumMap<EntityType, FixedPoint>(EntityType.class);
 
     public double getMobDamageDistanceModified() {
         return mobDamageDistanceModified;
@@ -74,5 +81,19 @@ public class RPGPluginProperties implements Properties {
     @Override
     public int getCombatTime() {
         return 0;
+    }
+
+    @Override
+    public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
+        if (isMobExpDistanceModified) {
+            FixedPoint exp = creatureExperienceDrop.get(entity.getType());
+            Double value = exp.asDouble();
+            value = Math.ceil(exp != null ? exp.asDouble() : 0.0D);
+            double percent = 1 + mobExpDistanceModified / distanceTierModifier;
+            double modifier = Math.pow(percent, MathUtil.getDistance(entity.getWorld().getSpawnLocation(), spawnPoint) / distanceTierModifier);
+            value = Math.ceil(value * modifier);
+            return new FixedPoint(value);
+        }
+        return null;
     }
 }

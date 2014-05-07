@@ -25,6 +25,7 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
 import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Monster;
+import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 
 
@@ -41,17 +42,19 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
         this(plugin, entity, entity.getCustomName(), SpawnReason.valueOf(entity.getMetadata("kraftrpg.spawnReason").get(1).asString()));
     }
 
-    protected RPGMonster(RPGPlugin plugin, LivingEntity entity, String name, SpawnReason fromSpawner) {
+    protected RPGMonster(RPGPlugin plugin, LivingEntity entity, String name, SpawnReason reason) {
         super(plugin, entity, name);
-        this.spawnReason = fromSpawner;
-
-        Location location = entity.getLocation();
-        final double configuredDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
-        this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, location, configuredDamage, fromSpawner);
+        this.spawnReason = CraftBukkitHandler.getInterface().getSpawnReason(entity);
+        this.spawnPoint = CraftBukkitHandler.getInterface().getSpawnLocation(entity);
+        this.baseDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
+        this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, spawnPoint, baseDamage, spawnReason);
+        this.damage = CraftBukkitHandler.getInterface().getEntityDamage(entity, this.damage);
+        this.experience = plugin.getProperties().getMonsterExperience(entity, this.spawnPoint);
+        this.experience = CraftBukkitHandler.getInterface().getMonsterExperience(entity, this.experience);
     }
 
-    public RPGMonster(RPGPlugin plugin, LivingEntity entity, SpawnReason fromSpawner) {
-        this(plugin, entity, entity.getCustomName(), fromSpawner);
+    public RPGMonster(RPGPlugin plugin, LivingEntity entity, SpawnReason reason) {
+        this(plugin, entity, entity.getCustomName(), reason);
     }
 
     @Override
@@ -75,8 +78,22 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     }
 
     @Override
+    public FixedPoint getExperience() {
+        return this.experience;
+    }
+
+    @Override
     public void setExperience(FixedPoint experience) {
+        if (!isEntityValid()) {
+            return;
+        }
         this.experience = experience;
+        CraftBukkitHandler.getInterface().setMonsterExperience(getEntity(), experience);
+    }
+
+    @Override
+    public SpawnReason getSpawnReason() {
+        return this.spawnReason;
     }
 
     @Override

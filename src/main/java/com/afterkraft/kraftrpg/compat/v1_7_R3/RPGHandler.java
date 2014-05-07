@@ -19,12 +19,16 @@ import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
+import net.minecraft.server.v1_7_R3.AttributeInstance;
+import net.minecraft.server.v1_7_R3.AttributeModifier;
 import net.minecraft.server.v1_7_R3.DamageSource;
 import net.minecraft.server.v1_7_R3.EntityGolem;
 import net.minecraft.server.v1_7_R3.EntityLiving;
 import net.minecraft.server.v1_7_R3.EntityMonster;
 import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.GenericAttributes;
 import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
@@ -43,25 +47,29 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Giant;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Wolf;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
+import com.afterkraft.configuration.CustomDataCompound;
+
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
+import com.afterkraft.kraftrpg.api.util.FixedPoint;
+import com.afterkraft.kraftrpg.compat.TweakkitEnabledHandler;
+import com.afterkraft.kraftrpg.compat.v1_7_R3.attributes.RPGEntityAttributeModifier;
 
 
-public class RPGHandler extends CraftBukkitHandler {
+public class RPGHandler extends TweakkitEnabledHandler {
 
 
     private Field ldbpt;
@@ -102,13 +110,130 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public double loadOrCreate(EntityAttribute attribute, LivingEntity entity, double value) {
-        return 0;
+    public Location getSpawnLocation(LivingEntity entity) {
+        double spawnx = entity.getLocation().getX();
+        double spawny = entity.getLocation().getY();
+        double spawnz = entity.getLocation().getZ();
+        switch (serverType) {
+            case BUKKIT:
+            case SPIGOT:
+                spawnx = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNX_STRING, EntityAttribute.EntityAttributeType.SPAWNX), spawnx);
+                spawny = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNY_STRING, EntityAttribute.EntityAttributeType.SPAWNY), spawny);
+                spawnz = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNZ_STRING, EntityAttribute.EntityAttributeType.SPAWNZ), spawnz);
+                break;
+            case TWEAKKIT:
+                spawnx = getEntityData(entity, SPAWNX_STRING, spawnx);
+                spawny = getEntityData(entity, SPAWNY_STRING, spawny);
+                spawnz = getEntityData(entity, SPAWNZ_STRING, spawnz);
+                break;
+
+        }
+
+        return new Location(entity.getWorld(), spawnx, spawny, spawnz);
     }
 
     @Override
-    public double loadOrCreateAttribute(com.afterkraft.kraftrpg.api.entity.Monster monster, LivingEntity entity, EntityAttribute.EntityAttributeType type, double value) {
-        return 0;
+    public CreatureSpawnEvent.SpawnReason getSpawnReason(LivingEntity entity) {
+        int ordinal = 3;
+        switch (serverType) {
+            case BUKKIT:
+            case SPIGOT:
+                ordinal = (int) loadOrCreateAttribute(entity, new EntityAttribute(SPAWNREASON_STRING, EntityAttribute.EntityAttributeType.SPAWNREASON), ordinal);
+                break;
+            case TWEAKKIT:
+                ordinal = getEntityData(entity, SPAWNREASON_STRING, ordinal);
+                break;
+        }
+        CreatureSpawnEvent.SpawnReason reason = CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
+        try {
+            reason = CreatureSpawnEvent.SpawnReason.values()[ordinal];
+        } catch (Exception e) {
+            plugin.debugLog(Level.WARNING, "There was an issue with loading a Monster's spawn reason! Please report this to the developer!");
+        }
+        return reason;
+    }
+
+    @Override
+    public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
+        double expBytes = 0D;
+        switch (serverType) {
+            case BUKKIT:
+            case SPIGOT:
+                EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
+                expBytes = loadOrCreateAttribute(entity, exp, value.asDouble());
+                break;
+            case TWEAKKIT:
+                expBytes = getEntityData(entity, EXPERIENCE_STRING, value.asDouble());
+                break;
+        }
+        return new FixedPoint(expBytes);
+    }
+
+    @Override
+    public void setMonsterExperience(LivingEntity entity, final FixedPoint experience) {
+        if (entity == null) {
+            return;
+        }
+        switch (serverType) {
+            case BUKKIT:
+            case SPIGOT:
+                EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
+                loadOrCreateAttribute(entity, exp, experience.asDouble());
+                break;
+            case TWEAKKIT:
+                if (!entity.getCustomData().hasKey("kraftrpg")) {
+                    CustomDataCompound compound = entity.getCustomData();
+                    compound.set("kraftrpg", new CustomDataCompound());
+                    compound = compound.getCompound("kraftrpg");
+                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                } else {
+                    CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
+                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                }
+                break;
+        }
+    }
+
+    @Override
+    public double getEntityDamage(LivingEntity entity, double calculated) {
+        double value = 0;
+        switch (serverType) {
+            case BUKKIT:
+            case SPIGOT:
+                value = loadOrCreateAttribute(entity, new EntityAttribute(DAMAGE_STRING, EntityAttribute.EntityAttributeType.DAMAGE), calculated);
+                break;
+            case TWEAKKIT:
+                value = getEntityData(entity, DAMAGE_STRING, calculated);
+                break;
+        }
+        return value;
+    }
+
+    @Override
+    public double loadOrCreateAttribute(LivingEntity entity, EntityAttribute attribute, double value) {
+        EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
+        AttributeInstance instance = entityLiving.getAttributeInstance(GenericAttributes.a);
+
+        // Unknown says to get the old modifiers so we don't loose them
+        AttributeModifier current = instance.a(((RPGEntityAttributeModifier) attribute.getValueModifier()).a());
+        AttributeModifier currentAmount = instance.a(((RPGEntityAttributeModifier) attribute.getBalanceModifier()).a());
+
+        if (current != null) {
+            // Use the existing value since we don't need to create the attribute
+            value = current.d();
+
+            // Remove immutable modifiers
+            instance.b(current);
+            instance.b(currentAmount);
+        }
+
+        // Set the attribute to the alternate value or the previous value
+        attribute.setValue(value);
+
+        // Re add our modifiers after we've changed them
+        instance.a(((RPGEntityAttributeModifier) attribute.getValueModifier()));
+        instance.a(((RPGEntityAttributeModifier) attribute.getBalanceModifier()));
+        return value;
     }
 
     @Override
@@ -199,7 +324,7 @@ public class RPGHandler extends CraftBukkitHandler {
             target.setNoDamageTicks(originalNoDamageTicks);
 
             final EntityLiving attackEntity = ((CraftLivingEntity) attacker).getHandle();
-            if (target instanceof Monster) {
+            if (target instanceof org.bukkit.entity.Monster) {
                 if ((target instanceof Blaze) || (target instanceof Enderman) || (target instanceof Spider) || (target instanceof Giant) || (target instanceof Silverfish)) {
                     final EntityMonster em = (EntityMonster) el;
                     final EntityTargetEvent event = CraftEventFactory.callEntityTargetEvent(em, attackEntity, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY);

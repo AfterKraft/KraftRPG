@@ -159,14 +159,14 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     @Override
     public boolean canAdditionalUseSkill(ISkill skill) {
         return false;
-    }    @Override
-    public Role getPrimaryRole() {
-        return this.primary;
     }
 
     @Override
     public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
         return false;
+    }    @Override
+    public Role getPrimaryRole() {
+        return this.primary;
     }
 
     @Override
@@ -200,9 +200,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         if (this.isEntityValid()) {
             this.getPlayer().updateInventory();
         }
-    }    @Override
-    public Role getSecondaryRole() {
-        return this.secondary;
     }
 
     @Override
@@ -219,6 +216,9 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getInventory();
         }
         return null;
+    }    @Override
+    public Role getSecondaryRole() {
+        return this.secondary;
     }
 
     @Override
