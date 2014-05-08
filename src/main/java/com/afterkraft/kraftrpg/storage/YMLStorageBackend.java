@@ -144,7 +144,7 @@ public class YMLStorageBackend implements StorageBackend {
                 ok = false;
             } else {
                 long l = section.getLong(str);
-                data.exp.put(r, new FixedPoint(l, true));
+                data.exp.put(r, FixedPoint.fromRaw(l));
             }
         }
 

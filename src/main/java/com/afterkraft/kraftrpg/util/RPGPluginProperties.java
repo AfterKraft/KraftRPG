@@ -92,7 +92,7 @@ public class RPGPluginProperties implements Properties {
             double percent = 1 + mobExpDistanceModified / distanceTierModifier;
             double modifier = Math.pow(percent, MathUtil.getDistance(entity.getWorld().getSpawnLocation(), spawnPoint) / distanceTierModifier);
             value = Math.ceil(value * modifier);
-            return new FixedPoint(value);
+            return FixedPoint.valueOf(value);
         }
         return null;
     }

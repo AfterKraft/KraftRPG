@@ -155,18 +155,18 @@ public class RPGHandler extends TweakkitEnabledHandler {
 
     @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
-        double expBytes = 0D;
+        double expValue = 0D;
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
                 EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                expBytes = loadOrCreateAttribute(entity, exp, value.doubleValue());
+                expValue = loadOrCreateAttribute(entity, exp, value.doubleValue());
                 break;
             case TWEAKKIT:
-                expBytes = getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
+                expValue = getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
                 break;
         }
-        return new FixedPoint(expBytes);
+        return FixedPoint.valueOf(expValue);
     }
 
     @Override

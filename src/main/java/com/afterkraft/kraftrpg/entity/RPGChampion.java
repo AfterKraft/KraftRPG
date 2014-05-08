@@ -300,10 +300,10 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     @Override
     public FixedPoint getExperience(Role role) {
         if (role == null) {
-            return new FixedPoint(0D);
+            return new FixedPoint();
         }
         final FixedPoint exp = data.exp.get(role.getName());
-        return exp == null ? new FixedPoint(0D) : exp;
+        return exp == null ? new FixedPoint() : exp;
     }
 
 
