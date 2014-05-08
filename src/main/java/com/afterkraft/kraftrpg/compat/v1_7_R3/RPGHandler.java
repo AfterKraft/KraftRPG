@@ -155,18 +155,18 @@ public class RPGHandler extends TweakkitEnabledHandler {
 
     @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
-        double expBytes = 0D;
+        double expValue = 0D;
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
                 EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                expBytes = loadOrCreateAttribute(entity, exp, value.asDouble());
+                expValue = loadOrCreateAttribute(entity, exp, value.doubleValue());
                 break;
             case TWEAKKIT:
-                expBytes = getEntityData(entity, EXPERIENCE_STRING, value.asDouble());
+                expValue = getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
                 break;
         }
-        return new FixedPoint(expBytes);
+        return FixedPoint.valueOf(expValue);
     }
 
     @Override
@@ -178,17 +178,17 @@ public class RPGHandler extends TweakkitEnabledHandler {
             case BUKKIT:
             case SPIGOT:
                 EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                loadOrCreateAttribute(entity, exp, experience.asDouble());
+                loadOrCreateAttribute(entity, exp, experience.doubleValue());
                 break;
             case TWEAKKIT:
                 if (!entity.getCustomData().hasKey("kraftrpg")) {
                     CustomDataCompound compound = entity.getCustomData();
                     compound.set("kraftrpg", new CustomDataCompound());
                     compound = compound.getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
                 } else {
                     CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.getByteValue());
+                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
                 }
                 break;
         }

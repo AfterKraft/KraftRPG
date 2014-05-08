@@ -32,8 +32,8 @@ import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
-import com.afterkraft.kraftrpg.api.storage.RPGStorage;
-
+import com.afterkraft.kraftrpg.api.storage.PlayerData;
+import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
 public class RPGEntityManager implements EntityManager {
 
@@ -41,14 +41,14 @@ public class RPGEntityManager implements EntityManager {
     private final Map<UUID, Champion> champions;
     private final Map<UUID, Monster> monsters;
 
-    private RPGStorage storage;
+    private StorageFrontend storage;
 
     public RPGEntityManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
         this.champions = new HashMap<UUID, Champion>();
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
         Bukkit.getScheduler().runTaskTimer(plugin, new RPGEntityTask(), 100, 1000);
-        this.storage = this.plugin.getStorageManager().getStorage();
+        this.storage = this.plugin.getStorage();
     }
 
     public final IEntity getEntity(LivingEntity entity) {
@@ -83,9 +83,10 @@ public class RPGEntityManager implements EntityManager {
                 champion.clearEffects();
                 champion.setPlayer(player);
             }
+            champions.put(player.getUniqueId(), champion);
         } else {
-            champion = createNewChampion(player);
-            plugin.getStorageManager().getStorage().saveChampion(champion, true, true);
+            champion = createChampion(player, new PlayerData());
+            storage.saveChampion(champion);
         }
         return champion;
     }
@@ -124,6 +125,13 @@ public class RPGEntityManager implements EntityManager {
         return true;
     }
 
+    // api - StorageFrontends call this
+    public Champion createChampion(Player player, PlayerData data) {
+        // do NOT add to the champions map! that's done elsewhere
+        Champion champ = new RPGChampion(plugin, player, data);
+        return champ;
+    }
+
     public boolean addMonster(Monster monster) {
         if (!monster.isEntityValid()) {
             return false;
@@ -142,12 +150,8 @@ public class RPGEntityManager implements EntityManager {
     }
 
     @Override
-    public Champion getChampion(UUID uuid) {
+    public Champion getChampion(UUID uuid, boolean ignoreOffline) {
         return null;
-    }
-
-    protected Champion createNewChampion(Player player) {
-        return new RPGChampion(this.plugin, player, this.plugin.getRoleManager().getDefaultPrimaryRole(), null);
     }
 
     public void removeMonster(Monster monster) {

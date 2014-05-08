@@ -15,57 +15,56 @@
  */
 package com.afterkraft.kraftrpg.storage;
 
-import java.io.File;
-import java.net.URLClassLoader;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.storage.RPGStorage;
-import com.afterkraft.kraftrpg.api.storage.StorageManager;
+import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
+import com.afterkraft.kraftrpg.api.Manager;
+import com.afterkraft.kraftrpg.api.storage.StorageBackend;
+import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
-
-public class RPGStorageManager extends URLClassLoader implements StorageManager {
-
-    private final Map<String, RPGStorage> possibleStorages;
+public class RPGStorageManager implements Manager {
     private final KraftRPGPlugin plugin;
-    private final Map<String, File> storageFiles;
-    private String configuredStorage;
-    private RPGStorage defaultStorage;
+    private StorageFrontend storage;
 
     public RPGStorageManager(KraftRPGPlugin plugin) {
-        super(((URLClassLoader) plugin.getClass().getClassLoader()).getURLs(), plugin.getClass().getClassLoader());
-        this.possibleStorages = new HashMap<String, RPGStorage>();
         this.plugin = plugin;
-        this.storageFiles = new HashMap<String, File>();
-        final File storageDirectory = new File(plugin.getDataFolder(), "storage");
-        this.configuredStorage = plugin.getProperties().getStorageType();
-
-        if (configuredStorage == null) {
-            this.configuredStorage = "sql";
-        }
-    }
-
-    @Override
-    public boolean setStorage(RPGStorage storage) {
-        if (storage != null) {
-            this.defaultStorage = storage;
-            return true;
-        }
-        return false;
-    }
-
-    public RPGStorage getStorage() {
-        return this.defaultStorage;
     }
 
     @Override
     public void initialize() {
+        String configuredBackend = plugin.getProperties().getStorageType();
+        StorageBackend backend = ExternalProviderRegistration.getStorageBackendMap().get(configuredBackend);
 
+        if (backend == null) {
+            plugin.getLogger().severe("ERROR - You specified the '" + configuredBackend + "' storage type, but that storage type is not available.");
+            StringBuilder sb = new StringBuilder("Available storage types are:");
+            for (String str : ExternalProviderRegistration.getStorageBackendMap().keySet()) {
+                sb.append(" '").append(str).append("'");
+            }
+            plugin.getLogger().severe(sb.toString());
+            plugin.cancelEnable();
+            return;
+        }
+
+        try {
+            backend.initialize();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup:");
+            plugin.getLogger().severe(e.getMessage());
+            plugin.cancelEnable();
+            return;
+        }
+
+        storage = ExternalProviderRegistration.getStorageFrontendOverride().construct(plugin, backend);
+        plugin.getLogger().info("Storage initialized with provider " + storage.getName());
+    }
+
+    public StorageFrontend getStorage() {
+        return storage;
     }
 
     @Override
     public void shutdown() {
-
+        storage.shutdown();
     }
 }

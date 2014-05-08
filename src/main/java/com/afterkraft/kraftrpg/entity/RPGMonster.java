@@ -31,7 +31,7 @@ import com.afterkraft.kraftrpg.api.util.FixedPoint;
 
 public class RPGMonster extends RPGEntityInsentient implements Monster {
 
-    private FixedPoint experience = new FixedPoint(0);
+    private FixedPoint experience = new FixedPoint();
     private double baseDamage = 0;
     private double damage = 0;
     private SpawnReason spawnReason = null;

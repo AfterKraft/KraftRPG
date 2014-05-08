@@ -70,7 +70,7 @@ public class RPGPluginProperties implements Properties {
 
 
     public String getStorageType() {
-        return storageType;
+        return storageType.toLowerCase();
     }
 
     @Override
@@ -87,12 +87,12 @@ public class RPGPluginProperties implements Properties {
     public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
         if (isMobExpDistanceModified) {
             FixedPoint exp = creatureExperienceDrop.get(entity.getType());
-            Double value = exp.asDouble();
-            value = Math.ceil(exp != null ? exp.asDouble() : 0.0D);
+            Double value = exp.doubleValue();
+            value = Math.ceil(exp != null ? exp.doubleValue() : 0.0D);
             double percent = 1 + mobExpDistanceModified / distanceTierModifier;
             double modifier = Math.pow(percent, MathUtil.getDistance(entity.getWorld().getSpawnLocation(), spawnPoint) / distanceTierModifier);
             value = Math.ceil(value * modifier);
-            return new FixedPoint(value);
+            return FixedPoint.valueOf(value);
         }
         return null;
     }

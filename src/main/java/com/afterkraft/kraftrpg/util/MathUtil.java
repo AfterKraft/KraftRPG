@@ -56,7 +56,7 @@ public class MathUtil {
 
     public static int getLevel(FixedPoint exp) {
         for (int i = RPGPluginProperties.maxLevel - 1; i >= 0; i--) {
-            if (exp.asDouble() >= RPGPluginProperties.levels[i]) {
+            if (exp.doubleValue() >= RPGPluginProperties.levels[i]) {
                 return i + 1;
             }
         }

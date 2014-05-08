@@ -26,7 +26,6 @@ import org.bukkit.entity.LivingEntity;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 
-
 public abstract class RPGEntity implements IEntity {
 
     protected final RPGPlugin plugin;
