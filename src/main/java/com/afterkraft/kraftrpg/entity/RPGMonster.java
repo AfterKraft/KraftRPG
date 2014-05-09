@@ -15,11 +15,14 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
@@ -27,6 +30,7 @@ import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
+import com.afterkraft.kraftrpg.listeners.EntityListener;
 
 
 public class RPGMonster extends RPGEntityInsentient implements Monster {
@@ -39,12 +43,12 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     private Location spawnPoint;
 
     public RPGMonster(RPGPlugin plugin, LivingEntity entity) {
-        this(plugin, entity, entity.getCustomName(), SpawnReason.valueOf(entity.getMetadata("kraftrpg.spawnReason").get(1).asString()));
+        this(plugin, entity, entity.getCustomName());
     }
 
-    protected RPGMonster(RPGPlugin plugin, LivingEntity entity, String name, SpawnReason reason) {
+    protected RPGMonster(RPGPlugin plugin, LivingEntity entity, String name) {
         super(plugin, entity, name);
-        this.spawnReason = CraftBukkitHandler.getInterface().getSpawnReason(entity);
+        this.spawnReason = CraftBukkitHandler.getInterface().getSpawnReason(entity, getMetaSpawnReason(entity));
         this.spawnPoint = CraftBukkitHandler.getInterface().getSpawnLocation(entity);
         this.baseDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
         this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, spawnPoint, baseDamage, spawnReason);
@@ -53,8 +57,11 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
         this.experience = CraftBukkitHandler.getInterface().getMonsterExperience(entity, this.experience);
     }
 
-    public RPGMonster(RPGPlugin plugin, LivingEntity entity, SpawnReason reason) {
-        this(plugin, entity, entity.getCustomName(), reason);
+    private static final SpawnReason getMetaSpawnReason(LivingEntity entity) {
+        List<MetadataValue> values = entity.getMetadata(EntityListener.SPAWNREASON_META_KEY);
+        if (values.isEmpty()) return null;
+
+        return (SpawnReason) values.get(0).value();
     }
 
     @Override

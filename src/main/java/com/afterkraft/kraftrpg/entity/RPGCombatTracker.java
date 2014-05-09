@@ -1,5 +1,7 @@
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.WeakHashMap;
+
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.CombatTracker;
 import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
@@ -8,6 +10,7 @@ import com.afterkraft.kraftrpg.api.entity.Sentient;
 
 public class RPGCombatTracker implements CombatTracker {
     private RPGPlugin plugin;
+    private WeakHashMap<Sentient, WeakHashMap<Sentient, EnterCombatReason>> masterCombatMap;
 
     public RPGCombatTracker(RPGPlugin plugin) {
         this.plugin = plugin;
@@ -15,14 +18,11 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public void initialize() {
-        // TODO Auto-generated method stub
-
+        masterCombatMap = new WeakHashMap<Sentient, WeakHashMap<Sentient, EnterCombatReason>>();
     }
 
     @Override
     public void shutdown() {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

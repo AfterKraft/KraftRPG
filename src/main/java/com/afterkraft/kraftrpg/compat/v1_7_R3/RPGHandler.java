@@ -33,12 +33,12 @@ import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
+
 import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
@@ -53,6 +53,7 @@ import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -132,8 +133,11 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public CreatureSpawnEvent.SpawnReason getSpawnReason(LivingEntity entity) {
+    public CreatureSpawnEvent.SpawnReason getSpawnReason(LivingEntity entity, SpawnReason provided) {
         int ordinal = 3;
+        if (provided != null) {
+            ordinal = provided.ordinal();
+        }
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:

@@ -15,17 +15,22 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
 public class EntityListener extends AbstractListener {
+    public static final String SPAWNREASON_META_KEY = "KraftRPG: Spawn Reason";
 
     protected EntityListener(RPGPlugin plugin) {
         super(plugin);
@@ -41,15 +46,28 @@ public class EntityListener extends AbstractListener {
 
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityDamageEarly(EntityDamageEvent event) {
+        Entity e = event.getEntity();
+        if (e instanceof LivingEntity) {
+            plugin.getEntityManager().getEntity((LivingEntity) e);
+        }
+
+        if (event instanceof EntityDamageByEntityEvent) {
+            Entity d = ((EntityDamageByEntityEvent) event).getDamager();
+            if (d instanceof LivingEntity) {
+                plugin.getEntityManager().getEntity((LivingEntity) d);
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDamageEvent(EntityDamageEvent event) {
 
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
-
+        event.getEntity().setMetadata(SPAWNREASON_META_KEY, new FixedMetadataValue(plugin, event.getSpawnReason()));
     }
-
-
 }
