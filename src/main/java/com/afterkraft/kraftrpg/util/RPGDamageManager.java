@@ -132,7 +132,7 @@ public class RPGDamageManager implements DamageManager {
         }
         if (plugin.getProperties().isMobDamageDistanceModified()) {
             double percent = 1 + RPGPluginProperties.mobDamageDistanceModified / 100.00D;
-            double modifier = Math.pow(percent, MathUtil.getDistance(spawn, location) / RPGPluginProperties.distanceTierModifier) + 0.00D;
+            double modifier = Math.pow(percent, MathUtil.getModulatedDistance(spawn, location) / RPGPluginProperties.distanceTierModifier) + 0.00D;
             modifiedDamage = Math.ceil(modifiedDamage * modifier);
         }
         return modifiedDamage;

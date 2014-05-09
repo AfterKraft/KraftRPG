@@ -50,7 +50,7 @@ public class MathUtil {
         }
     }
 
-    public static double getDistance(final Location from, final Location to) {
+    public static double getModulatedDistance(final Location from, final Location to) {
         return (from.toVector().distance(to.toVector())) - (from.toVector().distance(to.toVector()) % RPGPluginProperties.distanceTierModifier);
     }
 
