@@ -110,14 +110,4 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     public Inventory getInventory() {
         return null;
     }
-
-    @Override
-    public void enterCombatWith(LivingEntity target, EnterCombatReason reason) {
-
-    }
-
-    @Override
-    public void leaveCombatWith(LivingEntity target, LeaveCombatReason reason) {
-
-    }
 }

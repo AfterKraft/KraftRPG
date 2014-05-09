@@ -236,16 +236,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public void enterCombatWith(LivingEntity target, EnterCombatReason reason) {
-
-    }
-
-    @Override
-    public void leaveCombatWith(LivingEntity target, LeaveCombatReason reason) {
-
-    }
-
-    @Override
     public boolean hasParty() {
         return party != null;
     }

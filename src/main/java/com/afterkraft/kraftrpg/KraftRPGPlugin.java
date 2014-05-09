@@ -28,6 +28,7 @@ import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
 import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
+import com.afterkraft.kraftrpg.entity.RPGCombatTracker;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
@@ -48,6 +49,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     private RPGSkillManager skillManager;
     private RPGSkillConfigManager skillConfigManager;
+    private RPGCombatTracker combatTracker;
     private RPGEntityManager entityManager;
     private RPGStorageManager storageManager;
     private RPGPluginProperties properties;
@@ -83,6 +85,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         if (cancel) return;
         this.damageManager = new RPGDamageManager(this);
         this.roleManager = new RPGRoleManager(this);
+        this.combatTracker = new RPGCombatTracker(this);
         this.entityManager = new RPGEntityManager(this);
         this.skillManager = new RPGSkillManager(this);
         this.skillConfigManager = new RPGSkillConfigManager(this);
@@ -101,6 +104,11 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     @Override
     public RPGSkillConfigManager getSkillConfigManager() {
         return this.skillConfigManager;
+    }
+
+    @Override
+    public RPGCombatTracker getCombatTracker() {
+        return this.combatTracker;
     }
 
     @Override

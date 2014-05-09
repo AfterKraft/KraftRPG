@@ -21,19 +21,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.mutable.MutableInt;
-
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.effects.Combat;
 import com.afterkraft.kraftrpg.api.entity.effects.EffectType;
 import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
 import com.afterkraft.kraftrpg.api.entity.effects.Timed;
+
 
 public abstract class RPGEntityInsentient extends RPGEntity implements Insentient {
 
@@ -65,6 +64,14 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
         if (this.isEntityValid()) {
             this.getEntity().setHealth(health);
         }
+    }
+
+    @Override
+    public Location getLocation() {
+        if (this.isEntityValid()) {
+            return this.getEntity().getLocation();
+        }
+        return null;
     }
 
     @Override
@@ -180,20 +187,5 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
                 this.manualRemoveEffect(effect);
             }
         }
-    }
-
-    @Override
-    public boolean isInCombat() {
-        return false;
-    }
-
-    @Override
-    public void enterCombat(EnterCombatReason reason) {
-
-    }
-
-    @Override
-    public void leaveCombat(LeaveCombatReason reason) {
-
     }
 }
