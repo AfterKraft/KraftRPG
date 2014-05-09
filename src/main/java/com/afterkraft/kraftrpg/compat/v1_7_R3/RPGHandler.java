@@ -16,19 +16,19 @@
 package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.lang.reflect.Field;
+import java.util.EnumMap;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import net.minecraft.server.v1_7_R3.AttributeInstance;
-import net.minecraft.server.v1_7_R3.AttributeModifier;
+import net.minecraft.server.v1_7_R3.AttributeRanged;
 import net.minecraft.server.v1_7_R3.DamageSource;
 import net.minecraft.server.v1_7_R3.EntityGolem;
 import net.minecraft.server.v1_7_R3.EntityLiving;
 import net.minecraft.server.v1_7_R3.EntityMonster;
 import net.minecraft.server.v1_7_R3.EntityPlayer;
-import net.minecraft.server.v1_7_R3.GenericAttributes;
+import net.minecraft.server.v1_7_R3.IAttribute;
 import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
@@ -62,19 +62,16 @@ import org.bukkit.util.Vector;
 import com.afterkraft.configuration.CustomDataCompound;
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
-import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
-import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
+import com.afterkraft.kraftrpg.api.handler.EntityAttributeType;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.compat.v1_7_R3.attributes.RPGEntityAttributeModifier;
 import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
 
 public class RPGHandler extends CraftBukkitHandler {
-
-
     private Field ldbpt;
     private Random random;
     private boolean listenersLoaded = false;
+    private EnumMap<EntityAttributeType, IAttribute> iattrMap;
 
     public RPGHandler(ServerType type) {
         super(type);
@@ -87,7 +84,14 @@ public class RPGHandler extends CraftBukkitHandler {
         } catch (final NoSuchFieldException e) {
             // do nothing
         }
+
         random = new Random();
+
+        iattrMap = new EnumMap<EntityAttributeType, IAttribute>(EntityAttributeType.class);
+
+        for (EntityAttributeType eat : EntityAttributeType.values()) {
+            iattrMap.put(eat, new AttributeRanged(eat.getIdentifier(), UNSET_VALUE, eat.getMin(), eat.getMax()));
+        }
     }
 
     @Override
@@ -106,11 +110,6 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public EntityAttributeModifier getEntityAttribute(UUID uuid, String name) {
-        return null;
-    }
-
-    @Override
     public Location getSpawnLocation(LivingEntity entity) {
         double spawnx = entity.getLocation().getX();
         double spawny = entity.getLocation().getY();
@@ -118,9 +117,9 @@ public class RPGHandler extends CraftBukkitHandler {
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
-                spawnx = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNX_STRING, EntityAttribute.EntityAttributeType.SPAWNX), spawnx);
-                spawny = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNY_STRING, EntityAttribute.EntityAttributeType.SPAWNY), spawny);
-                spawnz = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNZ_STRING, EntityAttribute.EntityAttributeType.SPAWNZ), spawnz);
+                spawnx = getOrSetAttribute(entity, EntityAttributeType.SPAWNX, spawnx);
+                spawny = getOrSetAttribute(entity, EntityAttributeType.SPAWNY, spawny);
+                spawnz = getOrSetAttribute(entity, EntityAttributeType.SPAWNZ, spawnz);
                 break;
             case TWEAKKIT:
                 spawnx = TweakkitHelper.getEntityData(entity, SPAWNX_STRING, spawnx);
@@ -139,7 +138,7 @@ public class RPGHandler extends CraftBukkitHandler {
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
-                ordinal = (int) loadOrCreateAttribute(entity, new EntityAttribute(SPAWNREASON_STRING, EntityAttribute.EntityAttributeType.SPAWNREASON), ordinal);
+                ordinal = (int) getOrSetAttribute(entity, EntityAttributeType.SPAWNREASON, ordinal);
                 break;
             case TWEAKKIT:
                 ordinal = TweakkitHelper.getEntityData(entity, SPAWNREASON_STRING, ordinal);
@@ -149,6 +148,7 @@ public class RPGHandler extends CraftBukkitHandler {
         try {
             reason = CreatureSpawnEvent.SpawnReason.values()[ordinal];
         } catch (Exception e) {
+            // TODO: surface this better?
             plugin.debugLog(Level.WARNING, "There was an issue with loading a Monster's spawn reason! Please report this to the developer!");
         }
         return reason;
@@ -156,18 +156,14 @@ public class RPGHandler extends CraftBukkitHandler {
 
     @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
-        double expValue = 0D;
         switch (serverType) {
+            case TWEAKKIT:
+                return FixedPoint.valueOf(TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, value.doubleValue()));
+            default:
             case BUKKIT:
             case SPIGOT:
-                EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                expValue = loadOrCreateAttribute(entity, exp, value.doubleValue());
-                break;
-            case TWEAKKIT:
-                expValue = TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
-                break;
+                return FixedPoint.valueOf(getOrSetAttribute(entity, EntityAttributeType.EXPERIENCE, value.doubleValue()));
         }
-        return FixedPoint.valueOf(expValue);
     }
 
     @Override
@@ -178,8 +174,7 @@ public class RPGHandler extends CraftBukkitHandler {
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
-                EntityAttribute exp = new EntityAttribute(EXPERIENCE_STRING, EntityAttribute.EntityAttributeType.EXPERIENCE);
-                loadOrCreateAttribute(entity, exp, experience.doubleValue());
+                setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
                 break;
             case TWEAKKIT:
                 if (!entity.getCustomData().hasKey("kraftrpg")) {
@@ -201,7 +196,7 @@ public class RPGHandler extends CraftBukkitHandler {
         switch (serverType) {
             case BUKKIT:
             case SPIGOT:
-                value = loadOrCreateAttribute(entity, new EntityAttribute(DAMAGE_STRING, EntityAttribute.EntityAttributeType.DAMAGE), calculated);
+                value = getOrSetAttribute(entity, EntityAttributeType.DAMAGE, calculated);
                 break;
             case TWEAKKIT:
                 value = TweakkitHelper.getEntityData(entity, DAMAGE_STRING, calculated);
@@ -211,30 +206,56 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public double loadOrCreateAttribute(LivingEntity entity, EntityAttribute attribute, double value) {
+    public boolean isAttributeSet(LivingEntity entity, EntityAttributeType type) {
         EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
-        AttributeInstance instance = entityLiving.getAttributeInstance(GenericAttributes.a);
+        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
 
-        // Unknown says to get the old modifiers so we don't loose them
-        AttributeModifier current = instance.a(((RPGEntityAttributeModifier) attribute.getValueModifier()).a());
-        AttributeModifier currentAmount = instance.a(((RPGEntityAttributeModifier) attribute.getBalanceModifier()).a());
+        return instance != null && instance.getValue() != UNSET_VALUE;
+    }
 
-        if (current != null) {
-            // Use the existing value since we don't need to create the attribute
-            value = current.d();
+    @Override
+    public double getAttribute(LivingEntity entity, EntityAttributeType type, double defaultValue) {
+        EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
+        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
 
-            // Remove immutable modifiers
-            instance.b(current);
-            instance.b(currentAmount);
+        if (instance == null || instance.getValue() == UNSET_VALUE) {
+            return defaultValue;
         }
 
-        // Set the attribute to the alternate value or the previous value
-        attribute.setValue(value);
+        return instance.getValue();
+    }
 
-        // Re add our modifiers after we've changed them
-        instance.a(((RPGEntityAttributeModifier) attribute.getValueModifier()));
-        instance.a(((RPGEntityAttributeModifier) attribute.getBalanceModifier()));
-        return value;
+    @Override
+    public double setAttribute(LivingEntity entity, EntityAttributeType type, double newValue) {
+        EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
+        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+
+        if (instance == null) {
+            instance = entityLiving.bb().b(iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance.setValue(newValue);
+            return UNSET_VALUE;
+        } else {
+            double old = instance.getValue();
+            instance.setValue(newValue);
+            return old;
+        }
+    }
+
+    @Override
+    public double getOrSetAttribute(LivingEntity entity, EntityAttributeType type, double valueIfEmpty) {
+        EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
+        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+
+        if (instance == null) {
+            instance = entityLiving.bb().b(iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance.setValue(valueIfEmpty);
+            return valueIfEmpty;
+        } else if (instance.getValue() == UNSET_VALUE) {
+            instance.setValue(valueIfEmpty);
+            return valueIfEmpty;
+        } else {
+            return instance.getValue();
+        }
     }
 
     @Override
