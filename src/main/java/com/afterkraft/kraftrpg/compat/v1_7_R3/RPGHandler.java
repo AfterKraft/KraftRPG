@@ -177,15 +177,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
                 break;
             case TWEAKKIT:
-                if (!entity.getCustomData().hasKey("kraftrpg")) {
-                    CustomDataCompound compound = entity.getCustomData();
-                    compound.set("kraftrpg", new CustomDataCompound());
-                    compound = compound.getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
-                } else {
-                    CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-                    compound.setLong(EXPERIENCE_STRING, experience.rawValue());
-                }
+                TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, experience.doubleValue());
                 break;
         }
     }
