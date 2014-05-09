@@ -16,15 +16,9 @@
 package com.afterkraft.kraftrpg.entity;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -40,8 +34,6 @@ import com.afterkraft.kraftrpg.api.entity.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
-import com.afterkraft.kraftrpg.api.skills.SkillArgument;
-import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
@@ -52,7 +44,7 @@ import com.afterkraft.kraftrpg.util.MathUtil;
 public class RPGChampion extends RPGEntityInsentient implements Champion {
     private PlayerData data;
     private Set<IEffect> effects = new HashSet<IEffect>();
-    private Stalled<? extends SkillArgument> stalled;
+    private Stalled stalled;
     private transient Party party;
 
     protected RPGChampion(RPGPlugin plugin, Player player, PlayerData data) {
@@ -80,6 +72,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public final Player getPlayer() {
+        return (Player) this.getEntity();
+    }
+
+    @Override
+    public final Player getEntity() {
         return (Player) this.getEntity();
     }
 
@@ -170,12 +167,12 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public Stalled<? extends SkillArgument> getStalledSkill() {
+    public Stalled getStalledSkill() {
         return null;
     }
 
     @Override
-    public <T extends SkillArgument> boolean setStalledSkill(Stalled<T> stalledSkill) {
+    public boolean setStalledSkill(Stalled stalledSkill) {
         return false;
     }
 

@@ -65,7 +65,7 @@ public abstract class RPGEntity implements IEntity {
      * LivingEntity no longer exists
      */
     @Override
-    public final LivingEntity getEntity() {
+    public LivingEntity getEntity() {
         if (!isEntityValid()) {
             return null;
         }

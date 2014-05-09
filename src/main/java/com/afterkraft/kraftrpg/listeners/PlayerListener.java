@@ -15,6 +15,7 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityTameEvent;
@@ -26,6 +27,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
 public class PlayerListener extends AbstractListener {
@@ -36,7 +38,10 @@ public class PlayerListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
+        Player p = event.getPlayer();
+        Champion c = plugin.getEntityManager().getChampion(p);
 
+        plugin.getStorage().saveChampion(c);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

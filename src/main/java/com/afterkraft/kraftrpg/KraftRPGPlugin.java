@@ -67,6 +67,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         ConfigurationSerialization.registerClass(SkillBind.class);
 
         // Register our defaults
+        ExternalProviderRegistration.pluginLoaded(this);
         ExternalProviderRegistration.registerStorageBackend(new YMLStorageBackend(this), "yml", "yaml");
     }
 
