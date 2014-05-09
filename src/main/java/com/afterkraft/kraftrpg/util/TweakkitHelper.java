@@ -32,7 +32,6 @@ public final class TweakkitHelper {
             CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
             return compound.getDouble(key) != 0.0D ? compound.getDouble(key) : def;
         }
-    
     }
 
     public static int getEntityData(Entity entity, String key, int def) {

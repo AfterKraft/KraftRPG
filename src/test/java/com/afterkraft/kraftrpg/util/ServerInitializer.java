@@ -2,10 +2,12 @@ package com.afterkraft.kraftrpg.util;
 
 import java.util.logging.Logger;
 
+import org.easymock.EasyMock;
+
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
-import org.easymock.EasyMock;
 
 public class ServerInitializer {
     public static boolean ran;

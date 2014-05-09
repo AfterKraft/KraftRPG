@@ -59,12 +59,12 @@ public class RPGStorageManager implements Manager {
         plugin.getLogger().info("Storage initialized with provider " + storage.getName());
     }
 
-    public StorageFrontend getStorage() {
-        return storage;
-    }
-
     @Override
     public void shutdown() {
         storage.shutdown();
+    }
+
+    public StorageFrontend getStorage() {
+        return storage;
     }
 }

@@ -109,22 +109,6 @@ public class RPGEntityManager implements EntityManager {
         return this.monsters.containsKey(entity.getUniqueId());
     }
 
-    /**
-     * Attempts to add the given RPGChampion to this player mapping. This should
-     * only be used to add an RPGChampion for custom RPGPlayers that aren't
-     * covered by KraftRPG.
-     *
-     * @param player - The RPGChampion to add to the player mapping
-     * @return true if the RPGChampion addition was successful
-     */
-    public boolean addChampion(Champion player) {
-        if (!player.isEntityValid() || this.champions.containsKey(player.getPlayer().getUniqueId())) {
-            return false;
-        }
-        this.champions.put(player.getPlayer().getUniqueId(), player);
-        return true;
-    }
-
     // api - StorageFrontends call this
     public Champion createChampion(Player player, PlayerData data) {
         // do NOT add to the champions map! that's done elsewhere
@@ -154,6 +138,22 @@ public class RPGEntityManager implements EntityManager {
         return null;
     }
 
+    /**
+     * Attempts to add the given RPGChampion to this player mapping. This
+     * should only be used to add an RPGChampion for custom RPGPlayers that
+     * aren't covered by KraftRPG.
+     *
+     * @param player - The RPGChampion to add to the player mapping
+     * @return true if the RPGChampion addition was successful
+     */
+    public boolean addChampion(Champion player) {
+        if (!player.isEntityValid() || this.champions.containsKey(player.getPlayer().getUniqueId())) {
+            return false;
+        }
+        this.champions.put(player.getPlayer().getUniqueId(), player);
+        return true;
+    }
+
     public void removeMonster(Monster monster) {
         monsters.remove(((RPGEntity) monster).uuid);
     }
@@ -163,11 +163,12 @@ public class RPGEntityManager implements EntityManager {
 
     }
 
-    public void shutdown() {}
+    public void shutdown() {
+    }
 
     /**
-     * A Timer task to remove the potentially GC'ed LivingEntities either due to
-     * death, chunk unload, or reload.
+     * A Timer task to remove the potentially GC'ed LivingEntities either due
+     * to death, chunk unload, or reload.
      */
     private class RPGEntityTask implements Runnable {
 

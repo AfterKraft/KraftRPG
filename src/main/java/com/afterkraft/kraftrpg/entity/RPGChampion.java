@@ -18,6 +18,7 @@ package com.afterkraft.kraftrpg.entity;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -68,21 +69,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getLocation();
         }
         return null;
-    }
-
-    @Override
-    public final Player getPlayer() {
-        return (Player) this.getEntity();
-    }
-
-    @Override
-    public final Player getEntity() {
-        return (Player) this.getEntity();
-    }
-
-    @Override
-    public final void setPlayer(final Player player) {
-        this.setEntity(player);
     }
 
     @Override
@@ -157,11 +143,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public Role getPrimaryRole() {
-        return data.primary;
-    }
-
-    @Override
     public boolean doesAdditionalRestrictSkill(ISkill skill) {
         return false;
     }
@@ -182,8 +163,47 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public Role getPrimaryRole() {
+        return data.primary;
+    }
+
+    @Override
     public boolean cancelStalledSkill(boolean forced) {
         return false;
+    }
+
+    @Override
+    public final Player getPlayer() {
+        return (Player) this.getEntity();
+    }
+
+    @Override
+    public final void setPlayer(final Player player) {
+        this.setEntity(player);
+    }
+
+    @Override
+    public PlayerData getData() {
+        return data;
+    }
+
+    @Override
+    public PlayerData getDataClone() {
+        return data.clone();
+    }
+
+    @Override
+    public final Player getEntity() {
+        return (Player) this.getEntity();
+    }
+
+    public double recalculateMaxHealth() {
+        return 0D;
+    }
+
+    @Override
+    public void heal(double amount) {
+
     }
 
     @Override
@@ -192,6 +212,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         if (this.isEntityValid()) {
             this.getPlayer().updateInventory();
         }
+    }
+
+    @Override
+    public Role getSecondaryRole() {
+        return data.profession;
     }
 
     @Override
@@ -208,11 +233,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getInventory();
         }
         return null;
-    }
-
-    @Override
-    public Role getSecondaryRole() {
-        return data.profession;
     }
 
     @Override
@@ -241,12 +261,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public void leaveParty() {
-        this.party = null;
-    }
-
-
-    @Override
     public boolean setPrimaryRole(Role role) {
         if (role == null || role.getType() != RoleType.PRIMARY) {
             return false;
@@ -254,6 +268,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         data.primary = role;
         this.recalculateMaxHealth();
         return true;
+    }
+
+    @Override
+    public void leaveParty() {
+        this.party = null;
     }
 
     @Override
@@ -316,23 +335,12 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
 
-    public double recalculateMaxHealth() {
-        return 0D;
-    }
 
 
-    @Override
-    public void heal(double amount) {
 
-    }
 
-    @Override
-    public PlayerData getData() {
-        return data;
-    }
 
-    @Override
-    public PlayerData getDataClone() {
-        return data.clone();
-    }
+
+
+
 }

@@ -1,11 +1,14 @@
 package com.afterkraft.kraftrpg.util;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.collect.ImmutableList;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -13,11 +16,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.afterkraft.kraftrpg.api.util.SerializationUtil;
-import com.google.common.collect.ImmutableList;
 
 public class SerializationTest {
 

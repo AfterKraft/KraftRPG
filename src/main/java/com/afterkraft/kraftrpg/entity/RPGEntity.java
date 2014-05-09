@@ -60,9 +60,9 @@ public abstract class RPGEntity implements IEntity {
      * Returns the entity associated with this character if the entity has not
      * been garbage collected already (in which case, this RPGEntity will need
      * to be removed from the system.
-     *
+     * 
      * @return the associated LivingEntity for this RPGEntity or null if the
-     * LivingEntity no longer exists
+     *         LivingEntity no longer exists
      */
     @Override
     public LivingEntity getEntity() {
@@ -82,11 +82,11 @@ public abstract class RPGEntity implements IEntity {
     }
 
     /**
-     * Adds to the character's maximum health.  Maps the amount of health to add
-     * to a key. This operation will fail if the character already has a health
-     * value with the specific key. This operation will add health to the
-     * character's current health.
-     *
+     * Adds to the character's maximum health. Maps the amount of health to
+     * add to a key. This operation will fail if the character already has a
+     * health value with the specific key. This operation will add health to
+     * the character's current health.
+     * 
      * @param key to give
      * @param value amount
      * @return true if the operation was successful
@@ -110,9 +110,10 @@ public abstract class RPGEntity implements IEntity {
     }
 
     /**
-     * Thread-Safe Removes a maximum health addition on the character. This will
-     * also remove current health from the character, down to a minimum of 1.
-     *
+     * Thread-Safe Removes a maximum health addition on the character. This
+     * will also remove current health from the character, down to a minimum
+     * of 1.
+     * 
      * @param key to remove
      * @return true if health was removed.
      */
