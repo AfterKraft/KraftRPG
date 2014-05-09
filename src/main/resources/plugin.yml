@@ -1,0 +1,5 @@
+name: KraftRPG
+main: com.afterkraft.kraftrpg.KraftRPGPlugin
+version: 0.1
+
+authors: [gabizou, riking]

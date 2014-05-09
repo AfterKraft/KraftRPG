@@ -33,12 +33,12 @@ import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
+
 import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
@@ -60,13 +60,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import com.afterkraft.configuration.CustomDataCompound;
-
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.compat.TweakkitEnabledHandler;
 import com.afterkraft.kraftrpg.compat.v1_7_R3.attributes.RPGEntityAttributeModifier;
+import com.afterkraft.kraftrpg.compatbase.TweakkitEnabledHandler;
 
 
 public class RPGHandler extends TweakkitEnabledHandler {
