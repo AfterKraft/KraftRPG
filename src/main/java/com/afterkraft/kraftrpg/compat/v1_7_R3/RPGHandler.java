@@ -61,14 +61,15 @@ import org.bukkit.util.Vector;
 
 import com.afterkraft.configuration.CustomDataCompound;
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttribute;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeModifier;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.compat.v1_7_R3.attributes.RPGEntityAttributeModifier;
-import com.afterkraft.kraftrpg.compatbase.TweakkitEnabledHandler;
+import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
 
-public class RPGHandler extends TweakkitEnabledHandler {
+public class RPGHandler extends CraftBukkitHandler {
 
 
     private Field ldbpt;
@@ -98,7 +99,8 @@ public class RPGHandler extends TweakkitEnabledHandler {
                 case SPIGOT:
                     plugin.getListenerManager().addListener(new SpigotListener(plugin));
                     break;
-
+                case BUKKIT:
+                    break;
             }
         }
     }
@@ -121,9 +123,9 @@ public class RPGHandler extends TweakkitEnabledHandler {
                 spawnz = loadOrCreateAttribute(entity, new EntityAttribute(SPAWNZ_STRING, EntityAttribute.EntityAttributeType.SPAWNZ), spawnz);
                 break;
             case TWEAKKIT:
-                spawnx = getEntityData(entity, SPAWNX_STRING, spawnx);
-                spawny = getEntityData(entity, SPAWNY_STRING, spawny);
-                spawnz = getEntityData(entity, SPAWNZ_STRING, spawnz);
+                spawnx = TweakkitHelper.getEntityData(entity, SPAWNX_STRING, spawnx);
+                spawny = TweakkitHelper.getEntityData(entity, SPAWNY_STRING, spawny);
+                spawnz = TweakkitHelper.getEntityData(entity, SPAWNZ_STRING, spawnz);
                 break;
 
         }
@@ -140,7 +142,7 @@ public class RPGHandler extends TweakkitEnabledHandler {
                 ordinal = (int) loadOrCreateAttribute(entity, new EntityAttribute(SPAWNREASON_STRING, EntityAttribute.EntityAttributeType.SPAWNREASON), ordinal);
                 break;
             case TWEAKKIT:
-                ordinal = getEntityData(entity, SPAWNREASON_STRING, ordinal);
+                ordinal = TweakkitHelper.getEntityData(entity, SPAWNREASON_STRING, ordinal);
                 break;
         }
         CreatureSpawnEvent.SpawnReason reason = CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
@@ -162,7 +164,7 @@ public class RPGHandler extends TweakkitEnabledHandler {
                 expValue = loadOrCreateAttribute(entity, exp, value.doubleValue());
                 break;
             case TWEAKKIT:
-                expValue = getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
+                expValue = TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, value.doubleValue());
                 break;
         }
         return FixedPoint.valueOf(expValue);
@@ -202,7 +204,7 @@ public class RPGHandler extends TweakkitEnabledHandler {
                 value = loadOrCreateAttribute(entity, new EntityAttribute(DAMAGE_STRING, EntityAttribute.EntityAttributeType.DAMAGE), calculated);
                 break;
             case TWEAKKIT:
-                value = getEntityData(entity, DAMAGE_STRING, calculated);
+                value = TweakkitHelper.getEntityData(entity, DAMAGE_STRING, calculated);
                 break;
         }
         return value;

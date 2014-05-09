@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.compatbase;
+package com.afterkraft.kraftrpg.util;
 
 import org.bukkit.entity.Entity;
 
 import com.afterkraft.configuration.CustomDataCompound;
 
-import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+public final class TweakkitHelper {
 
-public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
-
-    protected TweakkitEnabledHandler(ServerType type) {
-        super(type);
-    }
-
-    protected double getEntityData(Entity entity, String key, double def) {
+    public static double getEntityData(Entity entity, String key, double def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -38,10 +32,10 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
             CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
             return compound.getDouble(key) != 0.0D ? compound.getDouble(key) : def;
         }
-
+    
     }
 
-    protected int getEntityData(Entity entity, String key, int def) {
+    public static int getEntityData(Entity entity, String key, int def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -54,7 +48,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected String getEntityData(Entity entity, String key, String def) {
+    public static String getEntityData(Entity entity, String key, String def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -67,7 +61,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected long getEntityData(Entity entity, String key, long def) {
+    public static long getEntityData(Entity entity, String key, long def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -80,7 +74,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected byte getEntityData(Entity entity, String key, byte def) {
+    public static byte getEntityData(Entity entity, String key, byte def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -93,7 +87,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected byte[] getEntityData(Entity entity, String key, byte[] def) {
+    public static byte[] getEntityData(Entity entity, String key, byte[] def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -106,7 +100,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected float getEntityData(Entity entity, String key, float def) {
+    public static float getEntityData(Entity entity, String key, float def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -119,7 +113,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected int[] getEntityData(Entity entity, String key, int[] def) {
+    public static int[] getEntityData(Entity entity, String key, int[] def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
@@ -132,7 +126,7 @@ public abstract class TweakkitEnabledHandler extends CraftBukkitHandler {
         }
     }
 
-    protected short getEntityData(Entity entity, String key, short def) {
+    public static short getEntityData(Entity entity, String key, short def) {
         if (!entity.getCustomData().hasKey("kraftrpg")) {
             CustomDataCompound compound = entity.getCustomData();
             compound.set("kraftrpg", new CustomDataCompound());
