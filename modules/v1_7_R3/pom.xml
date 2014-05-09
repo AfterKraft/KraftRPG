@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.afterkraft.kraftrpg</groupId>
+    <groupId>com.afterkraft.kraftrpg</groupId>
     <artifactId>KraftRPG-v1_7_R3</artifactId>
     <packaging>jar</packaging>
     <name>KraftRPG-v1_7_R3</name>
@@ -65,7 +65,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>org/afterkraft/kraftrpg/compat/v1_7_R3/**</include>
+                        <include>com/afterkraft/kraftrpg/compat/v1_7_R3/**</include>
                     </includes>
                 </configuration>
             </plugin>

@@ -24,10 +24,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.afterkraft.kraftrpg</groupId>
+            <groupId>com.afterkraft.kraftrpg</groupId>
             <artifactId>KraftRPG-v1_7_R3</artifactId>
             <version>v1_7_R3</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -35,7 +35,7 @@
             <artifactId>KraftRPG-API</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <type>jar</type>
-            <scope>provided</scope>
+            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -111,7 +111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.5</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -121,7 +121,8 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>com.afterkraft.kraftrpg:KraftRPG*</include>
+                                    <include>com.afterkraft.kraftrpg:KraftRPG-API</include>
+                                    <include>com.afterkraft.kraftrpg:KraftRPG-v*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
