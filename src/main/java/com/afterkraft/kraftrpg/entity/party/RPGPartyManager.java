@@ -16,7 +16,7 @@
 package com.afterkraft.kraftrpg.entity.party;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.Champion;
+import com.afterkraft.kraftrpg.api.entity.PartyMember;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 
@@ -29,11 +29,6 @@ public class RPGPartyManager implements PartyManager {
     }
 
     @Override
-    public Party createParty(Champion partyLeader, Champion... members) {
-        return null;
-    }
-
-    @Override
     public void initialize() {
 
     }
@@ -41,5 +36,10 @@ public class RPGPartyManager implements PartyManager {
     @Override
     public void shutdown() {
 
+    }
+
+    @Override
+    public Party createParty(PartyMember partyLeader, PartyMember... members) {
+        return null;
     }
 }
