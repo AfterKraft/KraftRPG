@@ -15,25 +15,24 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
-import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
-import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
 import com.afterkraft.kraftrpg.api.entity.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import com.afterkraft.kraftrpg.api.skills.Active;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
@@ -99,11 +98,26 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public int getHighestSkillLevel(ISkill skill) {
-        return 0;
+        int level = 0;
+
+        for (Role r : data.allRoles()) {
+            int roleLevel = getLevel(r);
+            if (r.hasSkillAtLevel(skill, roleLevel)) {
+                if (roleLevel > level) {
+                    level = roleLevel;
+                }
+            }
+        }
+        return level;
     }
 
     @Override
     public boolean canUseSkill(ISkill skill) {
+        for (Role r : data.allRoles()) {
+            if (r.hasSkillAtLevel(skill, getLevel(r))) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -114,7 +128,7 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public boolean canPrimaryUseSkill(ISkill skill) {
-        return false;
+        return data.primary.hasSkillAtLevel(skill, getLevel(data.primary));
     }
 
     @Override
@@ -124,7 +138,7 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public boolean canSecondaryUseSkill(ISkill skill) {
-        return false;
+        return data.profession.hasSkillAtLevel(skill, getLevel(data.profession));
     }
 
     @Override
@@ -134,12 +148,17 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public boolean canAdditionalUseSkill(ISkill skill) {
+        for (Role r : data.additionalRoles) {
+            if (r.hasSkillAtLevel(skill, getLevel(r))) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
-        return false;
+        return role.hasSkillAtLevel(skill, getLevel(role));
     }
 
     @Override
@@ -324,13 +343,37 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         return null;
     }
 
+    @Override
+    public Collection<ISkill> getAvailableSkills() {
+        Set<ISkill> skills = new HashSet<ISkill>();
+        for (Role r : data.allRoles()) {
+            skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
+        }
+        return skills;
+    }
 
+    @Override
+    public Collection<String> getActiveSkillNames() {
+        // TODO cache results?
+        // this is basically /only/ for tab-completion
 
+        Set<String> skillNames = new HashSet<String>();
+        for (Role r : data.allRoles()) {
+            for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
+                if (skill instanceof Active) {
+                    skillNames.add(skill.getName());
+                }
+            }
+        }
+        return skillNames;
+    }
 
-
-
-
-
-
-
+    @Override
+    public Collection<ISkill> getPossibleSkillsInRoles() {
+        Set<ISkill> skills = new HashSet<ISkill>();
+        for (Role r : data.allRoles()) {
+            skills.addAll(r.getAllSkills());
+        }
+        return skills;
+    }
 }
