@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -65,7 +66,7 @@ public class SkillCommand implements TabExecutor {
             try {
                 return skill.tabComplete(champ, args, 1);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(sk, "tab completing", t, new Object[] {sender, label, args});
+                plugin.logSkillThrowing(sk, "tab completing", t, new Object[] { sender, label, args });
                 return null;
             }
         }
@@ -122,75 +123,75 @@ public class SkillCommand implements TabExecutor {
         SkillCastResult result = new ActiveSkillRunner(plugin).castSkillInitial(champ, (Active) sk, cutArgs);
 
         switch (result) {
-        case CUSTOM_NO_MESSAGE:
-            // no message
-            break;
-        case DEAD:
-            sender.sendMessage(ChatColor.RED + "Cannot use skills while dead!.");
-            break;
-        case EVENT_CANCELLED:
-            sender.sendMessage(ChatColor.RED + "A plugin cancelled the skill.");
-            break;
-        case FAIL:
-            sender.sendMessage(ChatColor.RED + "The skill failed.");
-            break;
-        case INVALID_TARGET:
-            sender.sendMessage(ChatColor.RED + "Invalid target.");
-            break;
-        case LOW_HEALTH:
-            sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.HEALTH_COST, -1, false) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
-            break;
-        case LOW_MANA:
-            sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.MANA_COST, -1, false) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
-            break;
-        case LOW_STAMINA:
-            sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.STAMINA_COST, -1, false) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
-            break;
-        case MISSING_REAGENT:
-            ItemStack item = plugin.getSkillConfigManager().getUseSettingItem(champ, sk, SkillSetting.REAGENT, null);
-            int invAmount = 0;
-            for (Integer i : champ.getInventory().all(item.getType()).keySet()) {
-                invAmount += i;
-            }
-            sender.sendMessage(ChatColor.RED + "Not enough " + StringUtils.capitalize(item.getType().toString()) + "! You need at least " + ChatColor.YELLOW + item.getAmount() + ChatColor.RED + " items (you have " + invAmount + ").");
-            break;
-        case NORMAL:
-            // no message
-            break;
-        case NOT_AVAILABLE:
-            sender.sendMessage(ChatColor.RED + "You can't use this skill."); // Shouldn't happen unless skill returns it
-            break;
-        case NO_COMBAT:
-            sender.sendMessage(ChatColor.RED + "Cannot use this skill in combat.");
-            break;
-        case ON_COOLDOWN:
-            sender.sendMessage(ChatColor.RED + "The skill " + skillName + " is on cooldown. " + ((champ.getCooldown(skillName) - System.currentTimeMillis()) / 1000) + " seconds left.");
-            break;
-        case ON_GLOBAL_COOLDOWN:
-            sender.sendMessage(ChatColor.RED + "You must wait " + ((champ.getGlobalCooldown() - System.currentTimeMillis()) / 1000) + " seconds before using another skill.");
-            break;
-        case ON_WARMUP:
-            // no message (?)
-            break;
-        case REMOVED_EFFECT:
-            // XXX what is this?
-            break;
-        case SKIP_POST_USAGE:
-            // XXX what is this?
-            break;
-        case STALLING_FAILURE:
-            sender.sendMessage(ChatColor.RED + "Could not use skill due to your currently pending skill.");
-            break;
-        case START_DELAY:
-            break;
-        case SYNTAX_ERROR:
-            sender.sendMessage(ChatColor.RED + "You have a syntax error in your command. Try " + ChatColor.LIGHT_PURPLE + "/skill " + skillName + " ?" + ChatColor.RED + " .");
-            break;
-        case UNTARGETTABLE_TARGET:
-            sender.sendMessage(ChatColor.RED + "You may not target that.");
-            break;
-        default:
-            break;
+            case CUSTOM_NO_MESSAGE:
+                // no message
+                break;
+            case DEAD:
+                sender.sendMessage(ChatColor.RED + "Cannot use skills while dead!.");
+                break;
+            case EVENT_CANCELLED:
+                sender.sendMessage(ChatColor.RED + "A plugin cancelled the skill.");
+                break;
+            case FAIL:
+                sender.sendMessage(ChatColor.RED + "The skill failed.");
+                break;
+            case INVALID_TARGET:
+                sender.sendMessage(ChatColor.RED + "Invalid target.");
+                break;
+            case LOW_HEALTH:
+                sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.HEALTH_COST, -1, false) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
+                break;
+            case LOW_MANA:
+                sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.MANA_COST, -1, false) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
+                break;
+            case LOW_STAMINA:
+                sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.STAMINA_COST, -1, false) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
+                break;
+            case MISSING_REAGENT:
+                ItemStack item = plugin.getSkillConfigManager().getUseSettingItem(champ, sk, SkillSetting.REAGENT, null);
+                int invAmount = 0;
+                for (Integer i : champ.getInventory().all(item.getType()).keySet()) {
+                    invAmount += i;
+                }
+                sender.sendMessage(ChatColor.RED + "Not enough " + StringUtils.capitalize(item.getType().toString()) + "! You need at least " + ChatColor.YELLOW + item.getAmount() + ChatColor.RED + " items (you have " + invAmount + ").");
+                break;
+            case NORMAL:
+                // no message
+                break;
+            case NOT_AVAILABLE:
+                sender.sendMessage(ChatColor.RED + "You can't use this skill."); // Shouldn't happen unless skill returns it
+                break;
+            case NO_COMBAT:
+                sender.sendMessage(ChatColor.RED + "Cannot use this skill in combat.");
+                break;
+            case ON_COOLDOWN:
+                sender.sendMessage(ChatColor.RED + "The skill " + skillName + " is on cooldown. " + ((champ.getCooldown(skillName) - System.currentTimeMillis()) / 1000) + " seconds left.");
+                break;
+            case ON_GLOBAL_COOLDOWN:
+                sender.sendMessage(ChatColor.RED + "You must wait " + ((champ.getGlobalCooldown() - System.currentTimeMillis()) / 1000) + " seconds before using another skill.");
+                break;
+            case ON_WARMUP:
+                // no message (?)
+                break;
+            case REMOVED_EFFECT:
+                // XXX what is this?
+                break;
+            case SKIP_POST_USAGE:
+                // XXX what is this?
+                break;
+            case STALLING_FAILURE:
+                sender.sendMessage(ChatColor.RED + "Could not use skill due to your currently pending skill.");
+                break;
+            case START_DELAY:
+                break;
+            case SYNTAX_ERROR:
+                sender.sendMessage(ChatColor.RED + "You have a syntax error in your command. Try " + ChatColor.LIGHT_PURPLE + "/skill " + skillName + " ?" + ChatColor.RED + " .");
+                break;
+            case UNTARGETTABLE_TARGET:
+                sender.sendMessage(ChatColor.RED + "You may not target that.");
+                break;
+            default:
+                break;
 
         }
 

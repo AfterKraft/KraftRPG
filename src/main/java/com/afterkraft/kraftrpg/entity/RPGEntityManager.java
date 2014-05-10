@@ -142,7 +142,7 @@ public class RPGEntityManager implements EntityManager {
      * Attempts to add the given RPGChampion to this player mapping. This
      * should only be used to add an RPGChampion for custom RPGPlayers that
      * aren't covered by KraftRPG.
-     *
+     * 
      * @param player - The RPGChampion to add to the player mapping
      * @return true if the RPGChampion addition was successful
      */

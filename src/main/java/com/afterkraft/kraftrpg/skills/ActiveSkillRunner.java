@@ -31,6 +31,7 @@ import com.afterkraft.kraftrpg.api.skills.StalledSkill;
 
 public final class ActiveSkillRunner {
     private RPGPlugin plugin;
+
     public ActiveSkillRunner(RPGPlugin plugin) {
         this.plugin = plugin;
     }
@@ -155,14 +156,14 @@ public final class ActiveSkillRunner {
                     return SkillCastResult.SYNTAX_ERROR;
                 }
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[] {caster, args});
+                plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[] { caster, args });
                 return SkillCastResult.FAIL;
             }
 
             try {
                 result = skill.checkCustomRestrictions(caster, false);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[] {caster, args});
+                plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[] { caster, args });
                 return SkillCastResult.FAIL;
             }
 
@@ -177,13 +178,13 @@ public final class ActiveSkillRunner {
             try {
                 result = skill.useSkill(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "using skill", t, new Object[] {caster, args});
+                plugin.logSkillThrowing(skill, "using skill", t, new Object[] { caster, args });
             }
         } finally {
             try {
                 skill.cleanState(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[] {caster, args});
+                plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[] { caster, args });
             }
         }
 

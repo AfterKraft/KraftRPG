@@ -55,7 +55,7 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
         this.experience = CraftBukkitHandler.getInterface().getMonsterExperience(entity, this.experience);
     }
 
-    private static final SpawnReason getMetaSpawnReason(LivingEntity entity) {
+    private static SpawnReason getMetaSpawnReason(LivingEntity entity) {
         List<MetadataValue> values = entity.getMetadata(EntityListener.SPAWNREASON_META_KEY);
         if (values.isEmpty()) return null;
 
@@ -102,8 +102,18 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     }
 
     @Override
-    public void updateInventory() {
+    public float getStamina() {
+        return 20 * 4;
+    }
 
+    @Override
+    public void modifyStamina(float staminaDiff) {
+        // Nope! stamina doesn't exist for the Monster
+    }
+
+    @Override
+    public void updateInventory() {
+        // Nope! no updating inventories
     }
 
     @Override
@@ -114,15 +124,5 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     @Override
     public Inventory getInventory() {
         return null;
-    }
-
-    @Override
-    public float getStamina() {
-        return 20 * 4;
-    }
-
-    @Override
-    public void modifyStamina(float staminaDiff) {
-        // noop
     }
 }

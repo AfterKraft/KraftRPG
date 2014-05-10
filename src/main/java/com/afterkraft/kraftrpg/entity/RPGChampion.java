@@ -63,14 +63,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public Location getLocation() {
-        if (this.isEntityValid()) {
-            return this.getPlayer().getLocation();
-        }
-        return null;
-    }
-
-    @Override
     public Long getCooldown(String key) {
         if (key != null) {
             return data.cooldowns.get(key);
@@ -97,21 +89,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public float getStamina() {
-        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
-    }
-
-    @Override
-    public void modifyStamina(float staminaDiff) {
-        if (staminaDiff < 0) {
-            // adding to exhaustion when negative
-            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
-        } else {
-            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
-        }
-    }
-
-    @Override
     public int getHighestSkillLevel(ISkill skill) {
         int level = 0;
 
@@ -134,6 +111,40 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             }
         }
         return false;
+    }
+
+    @Override
+    public Collection<ISkill> getAvailableSkills() {
+        Set<ISkill> skills = new HashSet<ISkill>();
+        for (Role r : data.allRoles()) {
+            skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
+        }
+        return skills;
+    }
+
+    @Override
+    public Collection<String> getActiveSkillNames() {
+        // TODO cache results?
+        // this is basically /only/ for tab-completion
+
+        Set<String> skillNames = new HashSet<String>();
+        for (Role r : data.allRoles()) {
+            for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
+                if (skill instanceof Active) {
+                    skillNames.add(skill.getName());
+                }
+            }
+        }
+        return skillNames;
+    }
+
+    @Override
+    public Collection<ISkill> getPossibleSkillsInRoles() {
+        Set<ISkill> skills = new HashSet<ISkill>();
+        for (Role r : data.allRoles()) {
+            skills.addAll(r.getAllSkills());
+        }
+        return skills;
     }
 
     @Override
@@ -197,91 +208,37 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public Role getPrimaryRole() {
-        return data.primary;
-    }
-
-    @Override
     public boolean cancelStalledSkill(boolean forced) {
         return false;
     }
 
     @Override
-    public final Player getPlayer() {
-        return (Player) this.getEntity();
-    }
-
-    @Override
-    public final void setPlayer(final Player player) {
-        this.setEntity(player);
-    }
-
-    @Override
-    public PlayerData getData() {
-        return data;
-    }
-
-    @Override
-    public PlayerData getDataClone() {
-        return data.clone();
-    }
-
-    @Override
-    public final Player getEntity() {
-        return (Player) this.getEntity();
-    }
-
-    public double recalculateMaxHealth() {
-        return 0D;
-    }
-
-    @Override
-    public void heal(double amount) {
-
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void updateInventory() {
-        if (this.isEntityValid()) {
-            this.getPlayer().updateInventory();
+    public FixedPoint getExperience(Role role) {
+        if (role == null) {
+            return new FixedPoint();
         }
+        final FixedPoint exp = data.exp.get(role.getName());
+        return exp == null ? new FixedPoint() : exp;
+    }
+
+    @Override
+    public boolean canGainExperience(ExperienceType type) {
+        return false;
+    }
+
+    @Override
+    public FixedPoint gainExperience(FixedPoint exp, ExperienceType type, Location location) {
+        return null;
+    }
+
+    @Override
+    public Role getPrimaryRole() {
+        return data.primary;
     }
 
     @Override
     public Role getSecondaryRole() {
         return data.profession;
-    }
-
-    @Override
-    public ItemStack getItemInHand() {
-        if (this.isEntityValid()) {
-            return this.getPlayer().getItemInHand();
-        }
-        return null;
-    }
-
-    @Override
-    public Inventory getInventory() {
-        if (this.isEntityValid()) {
-            return this.getPlayer().getInventory();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasParty() {
-        return party != null;
-    }
-
-    @Override
-    public Party getParty() {
-        return party;
-    }
-
-    @Override
-    public void setParty(Party party) {
-        this.party = party;
     }
 
     @Override
@@ -292,11 +249,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         data.primary = role;
         this.recalculateMaxHealth();
         return true;
-    }
-
-    @Override
-    public void leaveParty() {
-        this.party = null;
     }
 
     @Override
@@ -333,67 +285,116 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public Collection<Role> getAllRoles() {
+        return data.allRoles();
+    }
+
+    @Override
     public int getLevel(Role role) {
         return MathUtil.getLevel(this.getExperience(role));
     }
 
     @Override
-    public FixedPoint getExperience(Role role) {
-        if (role == null) {
-            return new FixedPoint();
+    public Location getLocation() {
+        return this.isEntityValid() ? this.getPlayer().getLocation() : null;
+    }
+
+    @Override
+    public float getStamina() {
+        if (!this.isEntityValid()) {
+            return 0F;
         }
-        final FixedPoint exp = data.exp.get(role.getName());
-        return exp == null ? new FixedPoint() : exp;
+        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
     }
 
-
     @Override
-    public boolean canGainExperience(ExperienceType type) {
-        return false;
+    public void modifyStamina(float staminaDiff) {
+        if (!this.isEntityValid()) {
+            return;
+        }
+        if (staminaDiff < 0) {
+            // adding to exhaustion when negative
+            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
+        } else {
+            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
+        }
     }
 
+    @Override
+    @SuppressWarnings("deprecation")
+    public void updateInventory() {
+        if (this.isEntityValid()) {
+            this.getPlayer().updateInventory();
+        }
+    }
 
     @Override
-    public FixedPoint gainExperience(FixedPoint exp, ExperienceType type, Location location) {
+    public ItemStack getItemInHand() {
+        if (this.isEntityValid()) {
+            return this.getPlayer().getItemInHand();
+        }
         return null;
     }
 
     @Override
-    public Collection<ISkill> getAvailableSkills() {
-        Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : data.allRoles()) {
-            skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
+    public Inventory getInventory() {
+        if (this.isEntityValid()) {
+            return this.getPlayer().getInventory();
         }
-        return skills;
+        return null;
     }
 
     @Override
-    public Collection<String> getActiveSkillNames() {
-        // TODO cache results?
-        // this is basically /only/ for tab-completion
-
-        Set<String> skillNames = new HashSet<String>();
-        for (Role r : data.allRoles()) {
-            for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
-                if (skill instanceof Active) {
-                    skillNames.add(skill.getName());
-                }
-            }
-        }
-        return skillNames;
+    public final Player getPlayer() {
+        return this.getEntity();
     }
 
     @Override
-    public Collection<ISkill> getPossibleSkillsInRoles() {
-        Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : data.allRoles()) {
-            skills.addAll(r.getAllSkills());
-        }
-        return skills;
+    public final void setPlayer(final Player player) {
+        this.setEntity(player);
     }
 
     @Override
-    public Collection<Role> getAllRoles() {
-        return data.allRoles();
+    public PlayerData getData() {
+        return data;
+    }
+
+    @Override
+    public PlayerData getDataClone() {
+        return data.clone();
+    }
+
+    @Override
+    public final Player getEntity() {
+        return (Player) super.getEntity();
+    }
+
+    public double recalculateMaxHealth() {
+        return 0D;
+    }
+
+    @Override
+    public void heal(double amount) {
+
+    }
+
+    @Override
+    public boolean hasParty() {
+        return party != null;
+    }
+
+    @Override
+    public Party getParty() {
+        return party;
+    }
+
+    @Override
+    public void setParty(Party party) {
+        this.party = party;
+    }
+
+    @Override
+    public void leaveParty() {
+        this.party = null;
     }
 }
