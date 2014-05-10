@@ -9,16 +9,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <version>3.0.3-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <repositories>
         <repository>
-            <id>kitteh-repo</id>
-            <url>http://repo.kitteh.org/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
+            <id>afterkraft</id>
+            <url>http://nexus.afterkraft.com/content/groups/public</url>
         </repository>
     </repositories>
 
@@ -50,14 +46,14 @@
 
     <distributionManagement>
         <repository>
-            <id>kittehReleases</id>
-            <name>Kitteh Releases</name>
-            <url>http://repo.kitteh.org/content/repositories/releases</url>
+            <id>afterkraft</id>
+            <name>AfterKraft Releases</name>
+            <url>http://nexus.afterkraft.com/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
-            <id>kittehSnapshots</id>
-            <name>Kitteh Snapshots</name>
-            <url>http://repo.kitteh.org/content/repositories/snapshots</url>
+            <id>afterkraft-snapshots</id>
+            <name>AfterKraft Snapshots</name>
+            <url>http://nexus.afterkraft.com/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
