@@ -97,6 +97,21 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public float getStamina() {
+        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
+    }
+
+    @Override
+    public void modifyStamina(float staminaDiff) {
+        if (staminaDiff < 0) {
+            // adding to exhaustion when negative
+            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
+        } else {
+            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
+        }
+    }
+
+    @Override
     public int getHighestSkillLevel(ISkill skill) {
         int level = 0;
 
@@ -168,17 +183,17 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     @Override
     public Stalled getStalledSkill() {
-        return null;
+        return stalled;
     }
 
     @Override
     public boolean setStalledSkill(Stalled stalledSkill) {
-        return false;
-    }
-
-    @Override
-    public boolean setStalledSkill(ISkill skill) {
-        return false;
+        if (stalled != null && stalledSkill != null) {
+            return false;
+        }
+        // TODO
+        stalled = stalledSkill;
+        return true;
     }
 
     @Override
@@ -375,5 +390,10 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             skills.addAll(r.getAllSkills());
         }
         return skills;
+    }
+
+    @Override
+    public Collection<Role> getAllRoles() {
+        return data.allRoles();
     }
 }

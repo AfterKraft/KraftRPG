@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
@@ -273,6 +275,23 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
+    public ItemStack getSettingItem(Role role, ISkill skill, String setting, ItemStack def) {
+        final Object val = getSetting(role, skill, setting);
+        if (val == null) {
+            return def;
+        } else if (val instanceof ItemStack) {
+            return (ItemStack) val;
+        } else if (val instanceof ConfigurationSection) {
+            ConfigurationSection section = (ConfigurationSection) val;
+            Material mat = Material.matchMaterial(section.getString("material"));
+            int count = section.getInt("count", 1);
+            return new ItemStack(mat, count);
+        } else {
+            return def;
+        }
+    }
+
+    @Override
     public Set<String> getSettingKeys(Role role, ISkill skill, String setting) {
         String path = skill.getName();
         if (setting != null) {
@@ -361,6 +380,15 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     public int getUseSetting(SkillCaster caster, ISkill skill, SkillSetting setting, int def, boolean lower) {
         if (setting == SkillSetting.LEVEL) {
             return getLevel(caster, skill, def);
+        } else if (setting.isLevelScaled()) {
+            int base = getUseSetting(caster, skill, setting.node(), def, lower);
+            double scale = getUseSetting(caster, skill, setting.scalingNode(), -1.0, lower);
+            if (scale != -1) {
+                int level = caster.getHighestSkillLevel(skill);
+                return (int) (base + scale * level);
+            } else {
+                return base;
+            }
         } else {
             return getUseSetting(caster, skill, setting.node(), def, lower);
         }
@@ -373,12 +401,30 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public double getUseSetting(SkillCaster caster, ISkill skill, SkillSetting setting, double def, boolean lower) {
-        return getUseSetting(caster, skill, setting.node(), def, lower);
+        if (setting.isLevelScaled()) {
+            double base = getUseSetting(caster, skill, setting.node(), def, lower);
+            double scale = getUseSetting(caster, skill, setting.scalingNode(), -1.0, lower);
+            if (scale != -1) {
+                int level = caster.getHighestSkillLevel(skill);
+                return base + scale * level;
+            } else {
+                return base;
+            }
+        } else {
+            return getUseSetting(caster, skill, setting.node(), def, lower);
+        }
     }
 
     @Override
     public boolean getUseSetting(SkillCaster caster, ISkill skill, SkillSetting setting, boolean def) {
         return getUseSetting(caster, skill, setting.node(), def);
+    }
+
+    @Override
+    public ItemStack getUseSettingItem(SkillCaster caster, ISkill skill, SkillSetting setting, ItemStack def) {
+        assert setting == SkillSetting.REAGENT;
+
+        return getUseSettingItem(caster, skill, setting.node(), def);
     }
 
     @Override
@@ -559,6 +605,26 @@ public class RPGSkillConfigManager implements SkillConfigManager {
             final List<String> list = outsourcedSkillConfig.getStringList(skill.getName() + "." + setting);
             return (list != null) && !list.isEmpty() ? list : def;
         }
+    }
+
+    @Override
+    public ItemStack getUseSettingItem(SkillCaster caster, ISkill skill, String setting, ItemStack def) {
+        if (caster == null) {
+            final ItemStack item = outsourcedSkillConfig.getItemStack(skill.getName() + "." + setting);
+            return item != null ? item : def;
+        }
+        ItemStack val;
+
+        for (Role role : caster.getAllRoles()) {
+            if (role.hasSkillAtLevel(skill, caster.getLevel(role))) {
+                val = getSettingItem(role, skill, setting, def);
+                if (val != null) {
+                    return val;
+                }
+            }
+        }
+
+        return def;
     }
 
     private int getLevel(Sentient being, ISkill skill, RoleType state, int def) {

@@ -25,8 +25,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
-import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
@@ -116,5 +114,15 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     @Override
     public Inventory getInventory() {
         return null;
+    }
+
+    @Override
+    public float getStamina() {
+        return 20 * 4;
+    }
+
+    @Override
+    public void modifyStamina(float staminaDiff) {
+        // noop
     }
 }

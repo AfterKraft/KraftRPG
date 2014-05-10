@@ -17,6 +17,9 @@ package com.afterkraft.kraftrpg;
 
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -26,6 +29,7 @@ import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 import com.afterkraft.kraftrpg.entity.RPGCombatTracker;
@@ -163,6 +167,15 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     @Override
     public void log(Level level, String msg) {
 
+    }
+
+    @Override
+    public void logSkillThrowing(ISkill skill, String action, Throwable thrown, Object context) {
+        Bukkit.broadcast(String.format("%sThe skill %s%s%s encountered an error while %s%s%s - %s%s.",
+                ChatColor.RED, ChatColor.YELLOW, skill.getName(), ChatColor.RED,
+                ChatColor.YELLOW, action, ChatColor.RED, ChatColor.BLUE, thrown.getClass()), Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
+        thrown.printStackTrace();
+        System.err.println(context);
     }
 
     @Override

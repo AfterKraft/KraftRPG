@@ -28,7 +28,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.api.entity.effects.Combat;
 import com.afterkraft.kraftrpg.api.entity.effects.EffectType;
 import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
 import com.afterkraft.kraftrpg.api.entity.effects.Timed;
@@ -38,7 +37,6 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
 
     protected final Map<String, IEffect> effects = new HashMap<String, IEffect>();
     protected MutableInt mana = new MutableInt(0);
-    protected Combat combatEffect;
 
     protected RPGEntityInsentient(RPGPlugin plugin, LivingEntity lEntity, String name) {
         super(plugin, lEntity, name);
@@ -169,9 +167,6 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     public void clearEffects() {
         if (this.isEntityValid()) {
             for (final IEffect effect : this.getEffects()) {
-                if (effect instanceof Combat) {
-                    continue;
-                }
                 this.removeEffect(effect);
             }
         }
@@ -181,9 +176,6 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     public void manualClearEffects() {
         if (this.isEntityValid()) {
             for (final IEffect effect : this.getEffects()) {
-                if (effect instanceof Combat) {
-                    continue;
-                }
                 this.manualRemoveEffect(effect);
             }
         }
