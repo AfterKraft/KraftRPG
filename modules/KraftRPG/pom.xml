@@ -44,19 +44,6 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>afterkraft</id>
-            <name>AfterKraft Releases</name>
-            <url>http://nexus.afterkraft.com/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>afterkraft-snapshots</id>
-            <name>AfterKraft Snapshots</name>
-            <url>http://nexus.afterkraft.com/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <finalName>KraftRPG</finalName>
         <directory>../../target</directory>
