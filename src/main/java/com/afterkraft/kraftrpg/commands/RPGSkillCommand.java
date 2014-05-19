@@ -38,10 +38,10 @@ import com.afterkraft.kraftrpg.api.skills.SkillCastResult;
 import com.afterkraft.kraftrpg.api.skills.SkillSetting;
 import com.afterkraft.kraftrpg.skills.ActiveSkillRunner;
 
-public class SkillCommand implements TabExecutor {
+public class RPGSkillCommand implements TabExecutor {
     private RPGPlugin plugin;
 
-    public SkillCommand(RPGPlugin plugin) {
+    public RPGSkillCommand(RPGPlugin plugin) {
         this.plugin = plugin;
     }
 

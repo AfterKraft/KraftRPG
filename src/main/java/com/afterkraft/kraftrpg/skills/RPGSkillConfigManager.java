@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import com.afterkraft.kraftrpg.api.util.Utilities;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -277,18 +278,9 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     public ItemStack getSettingItem(Role role, ISkill skill, String setting, ItemStack def) {
         final Object val = getSetting(role, skill, setting);
-        if (val == null) {
-            return def;
-        } else if (val instanceof ItemStack) {
-            return (ItemStack) val;
-        } else if (val instanceof ConfigurationSection) {
-            ConfigurationSection section = (ConfigurationSection) val;
-            Material mat = Material.matchMaterial(section.getString("material"));
-            int count = section.getInt("count", 1);
-            return new ItemStack(mat, count);
-        } else {
-            return def;
-        }
+        ItemStack item = Utilities.loadItem(val);
+
+        return (item == null) ? def : item;
     }
 
     @Override

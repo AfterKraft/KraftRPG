@@ -15,12 +15,10 @@
  */
 package com.afterkraft.kraftrpg;
 
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
+import com.afterkraft.kraftrpg.commands.RPGParentCommand;
+import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -107,6 +105,9 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.partyManager = new RPGPartyManager(this);
         this.listenerManager = new RPGListenerManager(this);
         CraftBukkitHandler.getInterface().loadExtraListeners();
+
+        getCommand("skill").setExecutor(new RPGSkillCommand(this));
+        getCommand("rpg").setExecutor(new RPGParentCommand(this));
     }
 
     @Override

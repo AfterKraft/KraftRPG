@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.api.conversations.KraftRPGConversation;
 import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import net.minecraft.server.v1_7_R3.AttributeInstance;
 import net.minecraft.server.v1_7_R3.AttributeRanged;
@@ -462,6 +461,16 @@ public class RPGHandler extends CraftBukkitHandler {
             ConversationTracker tracker = (ConversationTracker) conversationTracker.get(player);
             LinkedList<?> list = (LinkedList) conversationQueue.get(tracker);
             return (Conversation) list.getFirst();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public Prompt getCurrentPrompt(Conversation conversation) {
+        try {
+            return (Prompt) currentPrompt.get(conversation);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

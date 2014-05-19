@@ -6,9 +6,9 @@ fail() {
 }
 
 cd ../kraftrpg-api
-#mvn clean install || fail
+mvn clean install || fail
 cd ../kraftrpg-skills
-#mvn clean install || fail
+mvn clean install || fail
 cd ../kraftrpg
 mvn clean install || fail
 

@@ -15,7 +15,6 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
-import com.afterkraft.kraftrpg.api.conversations.KraftRPGConversation;
 import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import org.bukkit.conversations.Conversation;
@@ -30,8 +29,6 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
-import java.util.List;
-
 public class PlayerListener extends AbstractListener {
 
     protected PlayerListener(RPGPlugin plugin) {
@@ -44,13 +41,10 @@ public class PlayerListener extends AbstractListener {
         if (player.isConversing()) {
             Conversation conversation = CraftBukkitHandler.getInterface().getCurrentConversation(player);
             if (conversation == null) return;
+            Prompt prompt = CraftBukkitHandler.getInterface().getCurrentPrompt(conversation);
 
-            if (conversation instanceof KraftRPGConversation) {
-                List<String> completions = ((KraftRPGConversation) conversation).tabComplete(event.getChatMessage(), event.getLastToken());
-                if (completions == null) return;
-
-                event.getTabCompletions().clear();
-                event.getTabCompletions().addAll(completions);
+            if (prompt instanceof TabCompletablePrompt) {
+                ((TabCompletablePrompt) prompt).onTabComplete(conversation.getContext(), event.getChatMessage(), event.getLastToken());
             }
         }
     }
