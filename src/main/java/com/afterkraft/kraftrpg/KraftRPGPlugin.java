@@ -15,12 +15,17 @@
  */
 package com.afterkraft.kraftrpg;
 
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
+import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
@@ -71,6 +76,20 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     @Override
     public void onLoad() {
         ConfigurationSerialization.registerClass(SkillBind.class);
+
+        // Add our NBT key
+        try {
+            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
+            f.setAccessible(true);
+            Set<?> set = (Set<?>) f.get(null);
+            HashSet<Object> newset = new HashSet<Object>(set);
+            newset.add(ItemAttributeType.GRANT_SKILL.getAttributeName());
+            newset.add(ItemAttributeType.BOOST_SKILL.getAttributeName());
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         // Register our defaults
         ExternalProviderRegistration.pluginLoaded(this);
