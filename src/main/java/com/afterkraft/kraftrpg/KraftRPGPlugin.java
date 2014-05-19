@@ -25,7 +25,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
@@ -77,20 +76,6 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     public void onLoad() {
         ConfigurationSerialization.registerClass(SkillBind.class);
 
-        // Add our NBT key
-        try {
-            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
-            f.setAccessible(true);
-            Set<?> set = (Set<?>) f.get(null);
-            HashSet<Object> newset = new HashSet<Object>(set);
-            newset.add(ItemAttributeType.GRANT_SKILL.getAttributeName());
-            newset.add(ItemAttributeType.BOOST_SKILL.getAttributeName());
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
         // Register our defaults
         ExternalProviderRegistration.pluginLoaded(this);
         ExternalProviderRegistration.registerStorageBackend(new YMLStorageBackend(this), "yml", "yaml");
@@ -99,8 +84,14 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        CraftBukkitHandler.getInterface(); // Initialize CraftBukkitHandler so nothing else has to
+        if (CraftBukkitHandler.getInterface() == null) {
+            getLogger().severe("Could not initialize internal handlers - please check for updates!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         ExternalProviderRegistration.finish();
+
+        CraftBukkitHandler.getInterface().addNBTAttributes();
 
         this.properties = new RPGPluginProperties();
         this.configManager = new RPGConfigManager(this);

@@ -16,11 +16,11 @@
 package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.lang.reflect.Field;
-import java.util.EnumMap;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
+import com.afterkraft.kraftrpg.api.conversations.KraftRPGConversation;
+import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import net.minecraft.server.v1_7_R3.AttributeInstance;
 import net.minecraft.server.v1_7_R3.AttributeRanged;
 import net.minecraft.server.v1_7_R3.DamageSource;
@@ -33,7 +33,10 @@ import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R3.conversations.ConversationTracker;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
@@ -41,6 +44,7 @@ import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Enderman;
@@ -69,6 +73,7 @@ import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
 public class RPGHandler extends CraftBukkitHandler {
     private Field ldbpt;
+    private Field conversationTracker, conversationQueue, currentPrompt;
     private Random random;
     private boolean listenersLoaded = false;
     private EnumMap<EntityAttributeType, IAttribute> iattrMap;
@@ -77,11 +82,27 @@ public class RPGHandler extends CraftBukkitHandler {
         super(type);
         plugin = KraftRPGPlugin.getInstance();
         try {
-            ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
-            ldbpt.setAccessible(true);
-        } catch (final SecurityException e) {
-            // do nothing
-        } catch (final NoSuchFieldException e) {
+            try {
+                ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
+                ldbpt.setAccessible(true);
+            } catch (NoSuchFieldException ignored) {
+            }
+            try {
+                conversationTracker = CraftPlayer.class.getDeclaredField("conversationTracker");
+                conversationTracker.setAccessible(true);
+            } catch (NoSuchFieldException ignored) {
+            }
+            try {
+                conversationQueue = ConversationTracker.class.getDeclaredField("conversationQueue");
+                conversationQueue.setAccessible(true);
+            } catch (NoSuchFieldException ignored) {
+            }
+            try {
+                currentPrompt = Conversation.class.getDeclaredField("currentPrompt");
+                currentPrompt.setAccessible(true);
+            } catch (NoSuchFieldException ignored) {
+            }
+        } catch (SecurityException ignored) {
             // do nothing
         }
 
@@ -429,6 +450,40 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public void setArrowDamage(Arrow arrow, double damage) {
         ((CraftArrow) arrow).getHandle().b(damage);
+    }
+
+    @Override
+    public Conversation getCurrentConversation(Player player) {
+        if (!CraftPlayer.class.isInstance(player)) {
+            return null;
+        }
+
+        try {
+            ConversationTracker tracker = (ConversationTracker) conversationTracker.get(player);
+            LinkedList<?> list = (LinkedList) conversationQueue.get(tracker);
+            return (Conversation) list.getFirst();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void addNBTAttributes() {
+        try {
+            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
+            f.setAccessible(true);
+            Set<?> oldset = (Set<?>) f.get(null);
+            HashSet<Object> newset = new HashSet<Object>(oldset);
+            for (ItemAttributeType type : ItemAttributeType.values()) {
+                newset.add(type.getAttributeName());
+            }
+            f.set(null, newset);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

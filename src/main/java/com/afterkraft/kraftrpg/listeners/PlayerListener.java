@@ -15,25 +15,44 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
+import com.afterkraft.kraftrpg.api.conversations.KraftRPGConversation;
+import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
+import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.player.*;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
+import java.util.List;
+
 public class PlayerListener extends AbstractListener {
 
     protected PlayerListener(RPGPlugin plugin) {
         super(plugin);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onChatTabComplete(PlayerChatTabCompleteEvent event) {
+        Player player = event.getPlayer();
+        if (player.isConversing()) {
+            Conversation conversation = CraftBukkitHandler.getInterface().getCurrentConversation(player);
+            if (conversation == null) return;
+
+            if (conversation instanceof KraftRPGConversation) {
+                List<String> completions = ((KraftRPGConversation) conversation).tabComplete(event.getChatMessage(), event.getLastToken());
+                if (completions == null) return;
+
+                event.getTabCompletions().clear();
+                event.getTabCompletions().addAll(completions);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
