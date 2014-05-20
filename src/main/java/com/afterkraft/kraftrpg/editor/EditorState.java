@@ -57,6 +57,9 @@ public final class EditorState {
     }
 
     public static boolean shouldPrintBanner(ConversationContext context) {
+        if (hasQueuedCommands(context)) {
+            return false;
+        }
         return (Boolean) context.getSessionData("banner");
     }
 

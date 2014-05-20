@@ -94,6 +94,7 @@ public class EditorClassMenu extends EditorPrompt {
         }
 
         if (command.equals("0") || command.equals("new")) {
+            context.setSessionData("class.new.stage", EditorClassNew.Stage.CHOOSE_NAME);
             return callPrompt(context, new EditorClassNew());
         }
         if (command.equals("1") || command.equals("none")) {
