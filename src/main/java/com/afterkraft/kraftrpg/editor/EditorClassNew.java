@@ -22,6 +22,9 @@ public class EditorClassNew extends EditorPrompt {
 
     @Override
     public EditorPrompt performCommand(ConversationContext context, String command) {
+        EditorPrompt common = commonActions(context, command);
+        if (common != null) return common;
+
         return null;
     }
 
