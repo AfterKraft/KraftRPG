@@ -36,18 +36,18 @@ import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
 public abstract class EditorPrompt implements TabCompletablePrompt {
     protected static final RPGPlugin plugin = KraftRPGPlugin.getInstance();
     protected static final EditorPrompt END_CONVERSATION = new EditorPrompt() {
-        public void printBanner(ConversationContext context) {
-        }
-
-        public String getPrompt(ConversationContext context) {
-            return null;
-        }
-
         public String getName(ConversationContext context) {
             return null;
         }
 
         public EditorPrompt performCommand(ConversationContext context, String command) {
+            return null;
+        }
+
+        public void printBanner(ConversationContext context) {
+        }
+
+        public String getPrompt(ConversationContext context) {
             return null;
         }
 
@@ -60,7 +60,7 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
 
     /**
      * Perform the actions for this Prompt.
-     *
+     * 
      * @param context context
      * @param command command, after splitting on semicolon
      * @return Next prompt to advance, or null on syntax error

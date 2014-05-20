@@ -23,6 +23,7 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import com.afterkraft.kraftrpg.api.util.DirectedGraph;
 
 
 public class RPGRoleManager implements RoleManager {
@@ -31,6 +32,7 @@ public class RPGRoleManager implements RoleManager {
     private final Map<String, Role> roleMap;
     private Role defaultPrimaryRole;
     private Role defaultSecondaryRole;
+    private DirectedGraph<Role> roleGraph = new DirectedGraph<Role>();
 
     public RPGRoleManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
@@ -76,6 +78,7 @@ public class RPGRoleManager implements RoleManager {
         if (role == null || !this.roleMap.containsKey(role.getName())) {
             return false;
         }
+        roleGraph.addVertex(role);
         this.roleMap.put(role.getName(), role);
         return true;
     }
@@ -85,6 +88,7 @@ public class RPGRoleManager implements RoleManager {
         if (role == null || !this.roleMap.containsKey(role.getName())) {
             return true;
         }
+        roleGraph.removeVertex(role);
         this.roleMap.remove(role.getName());
         return false;
     }
@@ -110,6 +114,29 @@ public class RPGRoleManager implements RoleManager {
     @Override
     public void queueRoleRefresh(Role role, RoleRefreshReason reason) {
 
+    }
+
+    @Override
+    public boolean addRoleDependency(Role parent, Role child) {
+        if (parent == null || child == null) {
+            return false;
+        }
+        if (roleGraph.addEdge(parent, child)) {
+            parent.addChild(child);
+            child.addParent(parent);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void removeRoleDependency(Role parent, Role child) {
+        if (parent == null || child == null) {
+            return;
+        }
+        roleGraph.removeEdge(parent, child);
+        parent.removeChild(child);
+        child.removeParent(parent);
     }
 
     @Override

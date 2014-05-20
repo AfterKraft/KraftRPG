@@ -31,50 +31,6 @@ import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
 public class EditorClassMenu extends EditorPrompt {
 
     @Override
-    public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
-        StringBuilder sb;
-        sb = new StringBuilder(ChatColor.GREEN.toString());
-        sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
-        sb.append(" Classes:");
-        sendMessage(context, sb.toString());
-        sb = new StringBuilder(ChatColor.AQUA.toString());
-        for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {
-            sb.append(roleName).append(" ");
-        }
-        sendMessage(context, sb.toString());
-        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new class");
-        sendMessage(context, ChatColor.AQUA + "[1,2,3,4]" + ChatColor.DARK_GREEN + " Filter (None, Primary, Secondary, Additional)");
-        if (EditorState.isDirty(context)) {
-            sendMessage(context, ChatColor.GOLD + "* You have unsaved changes.");
-        }
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        StringBuilder sb = new StringBuilder(getPathString(context));
-        sb.append("[class] new exit ");
-        RoleType filter = getFilter(context);
-        if (filter != null) {
-            sb.append("none ");
-        }
-        if (filter != RoleType.PRIMARY) {
-            sb.append("primary ");
-        }
-        if (filter != RoleType.SECONDARY) {
-            sb.append("secondary ");
-        }
-        if (filter != RoleType.ADDITIONAL) {
-            sb.append("extra ");
-        }
-        return sb.toString();
-    }
-
-    private RoleType getFilter(ConversationContext context) {
-        return (RoleType) context.getSessionData("class.rolefilter");
-    }
-
-    @Override
     public String getName(ConversationContext context) {
         return "class";
     }
@@ -116,12 +72,56 @@ public class EditorClassMenu extends EditorPrompt {
         return null;
     }
 
-    private void setFilter(ConversationContext context, RoleType type) {
-        context.setSessionData("class.rolefilter", type);
+    @Override
+    public void printBanner(ConversationContext context) {
+        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
+        StringBuilder sb;
+        sb = new StringBuilder(ChatColor.GREEN.toString());
+        sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
+        sb.append(" Classes:");
+        sendMessage(context, sb.toString());
+        sb = new StringBuilder(ChatColor.AQUA.toString());
+        for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {
+            sb.append(roleName).append(" ");
+        }
+        sendMessage(context, sb.toString());
+        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new class");
+        sendMessage(context, ChatColor.AQUA + "[1,2,3,4]" + ChatColor.DARK_GREEN + " Filter (None, Primary, Secondary, Additional)");
+        if (EditorState.isDirty(context)) {
+            sendMessage(context, ChatColor.GOLD + "* You have unsaved changes.");
+        }
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        StringBuilder sb = new StringBuilder(getPathString(context));
+        sb.append("[class] new exit ");
+        RoleType filter = getFilter(context);
+        if (filter != null) {
+            sb.append("none ");
+        }
+        if (filter != RoleType.PRIMARY) {
+            sb.append("primary ");
+        }
+        if (filter != RoleType.SECONDARY) {
+            sb.append("secondary ");
+        }
+        if (filter != RoleType.ADDITIONAL) {
+            sb.append("extra ");
+        }
+        return sb.toString();
     }
 
     @Override
     public List<String> getCompletions(ConversationContext context) {
         return new ArrayList<String>(KraftRPGPlugin.getInstance().getRoleManager().getRoles().keySet());
+    }
+
+    private RoleType getFilter(ConversationContext context) {
+        return (RoleType) context.getSessionData("class.rolefilter");
+    }
+
+    private void setFilter(ConversationContext context, RoleType type) {
+        context.setSessionData("class.rolefilter", type);
     }
 }

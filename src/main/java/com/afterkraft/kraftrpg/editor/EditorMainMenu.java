@@ -24,22 +24,6 @@ import org.bukkit.conversations.ConversationContext;
 
 public class EditorMainMenu extends EditorPrompt {
 
-    @Override
-    public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: " + ChatColor.BLUE + "Main Menu");
-        sendMessage(context, ChatColor.AQUA + "[1]" + ChatColor.DARK_GREEN + " Classes, Professions, and Roles");
-        sendMessage(context, ChatColor.AQUA + "[2]" + ChatColor.DARK_GREEN + " Skills");
-        sendMessage(context, ChatColor.AQUA + "[3]" + ChatColor.DARK_GREEN + " Global Settings");
-        if (EditorState.isDirty(context)) {
-            sendMessage(context, ChatColor.GOLD + "* You have un" + ChatColor.AQUA + "save" + ChatColor.GOLD + "d changes.");
-        }
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        return getPathString(context) + "classes skills settings save exit";
-    }
-
     public String getName(ConversationContext context) {
         return "main";
     }
@@ -67,6 +51,22 @@ public class EditorMainMenu extends EditorPrompt {
             sendMessage(context, ChatColor.RED + "Unrecognized editor command. Say 'exit' to exit.");
             return null;
         }
+    }
+
+    @Override
+    public void printBanner(ConversationContext context) {
+        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: " + ChatColor.BLUE + "Main Menu");
+        sendMessage(context, ChatColor.AQUA + "[1]" + ChatColor.DARK_GREEN + " Classes, Professions, and Roles");
+        sendMessage(context, ChatColor.AQUA + "[2]" + ChatColor.DARK_GREEN + " Skills");
+        sendMessage(context, ChatColor.AQUA + "[3]" + ChatColor.DARK_GREEN + " Global Settings");
+        if (EditorState.isDirty(context)) {
+            sendMessage(context, ChatColor.GOLD + "* You have un" + ChatColor.AQUA + "save" + ChatColor.GOLD + "d changes.");
+        }
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        return getPathString(context) + "classes skills settings save exit";
     }
 
     @Override
