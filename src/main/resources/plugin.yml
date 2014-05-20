@@ -1,6 +1,7 @@
-name: KraftRPG
+name: ${project.name}
 main: com.afterkraft.kraftrpg.KraftRPGPlugin
-version: 0.1
+version: ${project.version}-b${BUILD_NUMBER}
+website: ${project.url}
 
 authors: [gabizou, riking]
 
