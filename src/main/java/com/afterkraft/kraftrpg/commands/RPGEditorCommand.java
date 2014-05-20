@@ -36,7 +36,7 @@ public class RPGEditorCommand extends BasicSubcommand {
         setLongDescription("" +
                 "Edit your KraftRPG configuration interactively.\n" +
                 // passive-aggressive note to FIXME BUKKIT-5611
-                "§cWarning: On some old servers, this may not work unless used from the console.");
+                ChatColor.RED + "Warning: On some old servers, this may not work unless used from the console.");
 
         setPermission("kraftrpg.admin.edit");
 

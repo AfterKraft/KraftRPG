@@ -16,15 +16,23 @@
 package com.afterkraft.kraftrpg.commands;
 
 
-import com.afterkraft.kraftrpg.api.RPGPlugin;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.util.StringUtil;
 
-import java.util.*;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 
 public abstract class RootCommand implements TabExecutor {
+    protected static final int COMMANDS_PER_PAGE = 7;
     protected RPGPlugin plugin;
     private Map<String, String> aliasMap;
     private Map<String, Subcommand> subcommandMap;
@@ -54,30 +62,53 @@ public abstract class RootCommand implements TabExecutor {
         }
     }
 
-    protected static final int COMMANDS_PER_PAGE = 7;
-
-    private void buildSortedList() {
-        helpList = new ArrayList<String>(subcommandMap.size() - aliasMap.size());
-
-        for (String s : subcommandMap.keySet()) {
-            if (!aliasMap.containsKey(s)) {
-                helpList.add(s);
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            doHelp(sender, label, 1);
+            return true;
+        }
+        String sub = args[0].toLowerCase();
+        if (sub.equals("?") || sub.equals("help")) {
+            if (args.length == 1) {
+                doHelp(sender, label, 1);
+            } else {
+                sub = args[1];
+                if (subcommandMap.containsKey(sub)) {
+                    doHelp(sender, label, sub);
+                } else {
+                    try {
+                        int page = Integer.parseInt(sub);
+                        doHelp(sender, label, page);
+                    } catch (NumberFormatException ignored) {
+                        sender.sendMessage("" + ChatColor.RED + "Please enter a page number or valid subcommand.");
+                    }
+                }
             }
+            return true;
         }
 
-        Collections.sort(helpList);
+        Subcommand subcommand = subcommandMap.get(sub);
+        if (subcommand == null) {
+            sender.sendMessage("" + ChatColor.RED + "No such command: " + ChatColor.GREEN + "/rpg " + sub);
+            return true;
+        }
+        if (!sender.hasPermission(subcommand.getPermission())) {
+            sender.sendMessage("" + ChatColor.RED + "Permission denied");
+            return true;
+        }
+
+        subcommand.onCommand(sender, args, 1);
+        return true;
     }
 
-
     /*
-    -------- [ Help for /rpg (page: 1/7) ] --------
-     /rpg choices - View your choices for advancement
-     /rpg about <class> - Show information about a class
-     /rpg choose <class> - Pick your next class
-     /rpg status - Check your status, including HP, Mana, and effects
-     /rpg skills - Check on the skills you currently have
-     /rpg skill <skill> - Cast a skill
-    More: /rpg help 2, /rpg help choices
+     * -------- [ Help for /rpg (page: 1/7) ] -------- /rpg choices - View
+     * your choices for advancement /rpg about <class> - Show information
+     * about a class /rpg choose <class> - Pick your next class /rpg status -
+     * Check your status, including HP, Mana, and effects /rpg skills - Check
+     * on the skills you currently have /rpg skill <skill> - Cast a skill
+     * More: /rpg help 2, /rpg help choices
      */
     public void doHelp(CommandSender sender, String label, int page) {
         if (helpList == null) buildSortedList();
@@ -106,88 +137,58 @@ public abstract class RootCommand implements TabExecutor {
         }
 
         sender.sendMessage(String.format(
-                "§e-------- [ §1Help for §f/%s§1 (page: §d%d§1/§d%d§1)§e ] --------",
+                ChatColor.YELLOW + "-------- [ " + ChatColor.DARK_BLUE + "Help for " + ChatColor.WHITE + "/%s" + ChatColor.DARK_BLUE + " (page: " + ChatColor.LIGHT_PURPLE + "%d" + ChatColor.DARK_BLUE + "/" + ChatColor.LIGHT_PURPLE + "%d" + ChatColor.DARK_BLUE + ")" + ChatColor.YELLOW + " ] --------",
                 label, page, pageCount));
 
         for (int i = startIndex; i < helpList.size() && i < startIndex + COMMANDS_PER_PAGE; i++) {
             String key = helpList.get(i);
             Subcommand cmd = subcommandMap.get(key);
             sender.sendMessage(String.format(
-                    " §a/%s %s§r - §2%s",
+                    " " + ChatColor.GREEN + "/%s %s" + ChatColor.RESET + " - " + ChatColor.DARK_GREEN + "%s",
                     label, key, cmd.getShortDescription()));
         }
 
         sender.sendMessage(String.format(
-                "§7More: §a/%s help <page>§7, §a/rpg help status§7", label));
+                "" + ChatColor.GRAY + "More: " + ChatColor.GREEN + "/%s help <page>" + ChatColor.GRAY + ", " + ChatColor.GREEN + "/rpg help status" + ChatColor.GRAY + "", label));
     }
 
     /*
-    ##### Help for /rpg adminedit (Alias for /rpg edit)
-      Interactive config editor
-      Usage: /rpg edit
-    Edit your KraftRPG configuration interactively.
+     * ##### Help for /rpg adminedit (Alias for /rpg edit) Interactive config
+     * editor Usage: /rpg edit Edit your KraftRPG configuration interactively.
      */
     public void doHelp(CommandSender sender, String label, String subLabel) {
         Subcommand subcommand = subcommandMap.get(subLabel);
 
         if (aliasMap.containsKey(subLabel)) {
             sender.sendMessage(String.format(
-                    "§e##### §1Help for §b/%s %s §7§i(Alias for /%s %s)",
+                    "" + ChatColor.YELLOW + "##### " + ChatColor.DARK_BLUE + "Help for " + ChatColor.AQUA + "/%s %s " + ChatColor.GRAY + "" + ChatColor.ITALIC.toString() + "(Alias for /%s %s)",
                     label, subLabel, label, aliasMap.get(subLabel)));
         } else {
             sender.sendMessage(String.format(
-                    "§e##### §1Help for §b/%s %s",
+                    "" + ChatColor.YELLOW + "##### " + ChatColor.DARK_BLUE + "Help for " + ChatColor.AQUA + "/%s %s",
                     label, subLabel));
         }
 
         if (!sender.hasPermission(subcommand.getPermission())) {
-            sender.sendMessage("§cThis command is restricted.");
+            sender.sendMessage("" + ChatColor.RED + "This command is restricted.");
             return;
         }
 
-        sender.sendMessage(String.format("§9  %s", subcommand.getShortDescription()));
-        sender.sendMessage(String.format("§6  Usage: §b%s", subcommand.getUsage()));
+        sender.sendMessage(String.format("" + ChatColor.BLUE + "  %s", subcommand.getShortDescription()));
+        sender.sendMessage(String.format("" + ChatColor.GOLD + "  Usage: " + ChatColor.AQUA + "%s", subcommand.getUsage()));
         sender.sendMessage(subcommand.getLongDescription().split("\n"));
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            doHelp(sender, label, 1);
-            return true;
-        }
-        String sub = args[0].toLowerCase();
-        if (sub.equals("?") || sub.equals("help")) {
-            if (args.length == 1) {
-                doHelp(sender, label, 1);
-            } else {
-                sub = args[1];
-                if (subcommandMap.containsKey(sub)) {
-                    doHelp(sender, label, sub);
-                } else {
-                    try {
-                        int page = Integer.parseInt(sub);
-                        doHelp(sender, label, page);
-                    } catch (NumberFormatException ignored) {
-                        sender.sendMessage("§cPlease enter a page number or valid subcommand.");
-                    }
-                }
+    private void buildSortedList() {
+        helpList = new ArrayList<String>(subcommandMap.size() - aliasMap.size());
+
+        for (String s : subcommandMap.keySet()) {
+            if (!aliasMap.containsKey(s)) {
+                helpList.add(s);
             }
-            return true;
         }
 
-        Subcommand subcommand = subcommandMap.get(sub);
-        if (subcommand == null) {
-            sender.sendMessage("§cNo such command: §a/rpg " + sub);
-            return true;
-        }
-        if (!sender.hasPermission(subcommand.getPermission())) {
-            sender.sendMessage("§cPermission denied");
-            return true;
-        }
-
-        subcommand.onCommand(sender, args, 1);
-        return true;
+        Collections.sort(helpList);
     }
 
     @Override

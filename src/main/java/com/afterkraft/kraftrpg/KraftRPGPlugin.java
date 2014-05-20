@@ -17,6 +17,7 @@ package com.afterkraft.kraftrpg;
 
 import java.util.logging.Level;
 
+import com.afterkraft.kraftrpg.commands.RPGCommandManager;
 import com.afterkraft.kraftrpg.commands.RPGParentCommand;
 import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
 import org.bukkit.Bukkit;
@@ -65,6 +66,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     private RPGPartyManager partyManager;
     private RPGEffectManager effectManager;
     private RPGListenerManager listenerManager;
+    private RPGCommandManager commandManager;
 
     public static KraftRPGPlugin getInstance() {
         return KraftRPGPlugin.instance;
@@ -105,9 +107,13 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.partyManager = new RPGPartyManager(this);
         this.listenerManager = new RPGListenerManager(this);
         CraftBukkitHandler.getInterface().loadExtraListeners();
+        this.commandManager = new RPGCommandManager(this);
+        registerCommandExecutors();
+    }
 
-        getCommand("skill").setExecutor(new RPGSkillCommand(this));
-        getCommand("rpg").setExecutor(new RPGParentCommand(this));
+    private void registerCommandExecutors() {
+        commandManager.registerCommand("skill", new RPGSkillCommand(this));
+        commandManager.registerCommand("rpg", new RPGParentCommand(this));
     }
 
     @Override
