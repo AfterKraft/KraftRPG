@@ -16,7 +16,6 @@
 package com.afterkraft.kraftrpg.editor;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
 import org.apache.commons.lang.StringUtils;
@@ -26,7 +25,6 @@ import org.bukkit.conversations.ConversationContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class EditorClassMenu extends EditorPrompt {
 
