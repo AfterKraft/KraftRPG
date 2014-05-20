@@ -16,11 +16,19 @@
 package com.afterkraft.kraftrpg.commands;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.editor.EditorMainMenu;
+import com.afterkraft.kraftrpg.editor.EditorState;
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.conversations.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class RPGEditorCommand extends BasicSubcommand {
+    private ConversationFactory factory;
 
     public RPGEditorCommand(RPGPlugin plugin) {
         super(plugin);
@@ -31,16 +39,31 @@ public class RPGEditorCommand extends BasicSubcommand {
                 "§cWarning: On some old servers, this may not work unless used from the console.");
 
         setPermission("kraftrpg.admin.edit");
+
+        factory = new ConversationFactory(plugin)
+                .withFirstPrompt(new EditorMainMenu())
+                .withModality(false)
+                .withLocalEcho(false)
+                .withInitialSessionData(EditorState.getStableDefaultState());
     }
 
     @Override
     public void onCommand(CommandSender sender, String[] args, int depth) {
-
-
+        if (sender instanceof Conversable) {
+            Conversation conv = factory.buildConversation((Conversable) sender);
+            EditorState.applyUnstableDefaultState(conv.getContext());
+            if (args.length > depth) {
+                String input = StringUtils.join(Arrays.copyOfRange(args, depth, args.length), " ");
+                EditorState.queueCommands(conv.getContext(), input);
+            }
+            conv.begin();
+        } else {
+            sender.sendMessage("");
+        }
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args, int depth) {
-        return null;
+        return ImmutableList.of();
     }
 }

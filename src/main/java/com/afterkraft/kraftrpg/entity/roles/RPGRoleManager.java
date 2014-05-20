@@ -96,6 +96,8 @@ public class RPGRoleManager implements RoleManager {
 
     @Override
     public Map<String, Role> getRolesByType(RoleType type) {
+        if (type == null) return getRoles();
+
         Map<String, Role> roleTypeMap = new HashMap<String, Role>(this.roleMap.size());
         for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             if (entry.getValue().getType().equals(type)) {
