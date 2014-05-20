@@ -121,6 +121,7 @@ public class RPGRoleManager implements RoleManager {
         if (parent == null || child == null) {
             return false;
         }
+        reconstructRoleGraph();
         if (roleGraph.addEdge(parent, child)) {
             parent.addChild(child);
             child.addParent(parent);
@@ -129,14 +130,57 @@ public class RPGRoleManager implements RoleManager {
         return false;
     }
 
+    private void reconstructRoleGraph() {
+        roleGraph = new DirectedGraph<Role>();
+        for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
+            Role role = entry.getValue();
+            for (Role parent : role.getParents()) {
+                if (!roleGraph.addEdge(parent, role)) {
+                    parent.removeChild(role);
+                    role.removeParent(parent);
+                }
+            }
+            for (Role child : role.getChildren()) {
+                if (!roleGraph.addEdge(role, child)) {
+                    role.removeChild(child);
+                    child.removeParent(role);
+                }
+            }
+        }
+    }
+
     @Override
     public void removeRoleDependency(Role parent, Role child) {
         if (parent == null || child == null) {
             return;
         }
+        reconstructRoleGraph();
         roleGraph.removeEdge(parent, child);
         parent.removeChild(child);
         child.removeParent(parent);
+    }
+
+    @Override
+    public boolean areRoleDependenciesCyclic() {
+        DirectedGraph<Role> tempGraph = new DirectedGraph<Role>();
+        for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
+            Role role = entry.getValue();
+            for (Role parent : role.getParents()) {
+                if (!tempGraph.addEdge(parent, role)) {
+                    parent.removeChild(role);
+                    role.removeParent(parent);
+                    return false;
+                }
+            }
+            for (Role child : role.getChildren()) {
+                if (!tempGraph.addEdge(role, child)) {
+                    role.removeChild(child);
+                    child.removeParent(role);
+                    return false;
+                }
+            }
+        }
+        return tempGraph.doesCycleExist();
     }
 
     @Override
