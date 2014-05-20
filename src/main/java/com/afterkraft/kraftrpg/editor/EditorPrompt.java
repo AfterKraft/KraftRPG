@@ -15,32 +15,46 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.Prompt;
+import org.bukkit.util.StringUtil;
+
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
+
 public abstract class EditorPrompt implements TabCompletablePrompt {
     protected static final RPGPlugin plugin = KraftRPGPlugin.getInstance();
+    protected static final EditorPrompt END_CONVERSATION = new EditorPrompt() {
+        public void printBanner(ConversationContext context) {
+        }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Required abstract methods
-    public abstract void printBanner(ConversationContext context);
-    public abstract String getPrompt(ConversationContext context);
+        public String getPrompt(ConversationContext context) {
+            return null;
+        }
+
+        public String getName(ConversationContext context) {
+            return null;
+        }
+
+        public EditorPrompt performCommand(ConversationContext context, String command) {
+            return null;
+        }
+
+        public List<String> getCompletions(ConversationContext context) {
+            return null;
+        }
+    };
 
     public abstract String getName(ConversationContext context);
 
@@ -52,22 +66,6 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
      * @return Next prompt to advance, or null on syntax error
      */
     public abstract EditorPrompt performCommand(ConversationContext context, String command);
-
-    public abstract List<String> getCompletions(ConversationContext context);
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Helper methods for subclasses
-
-    public void sendMessage(ConversationContext context, String string) {
-        Conversable who = context.getForWhom();
-        if (who instanceof ConsoleCommandSender) {
-            // This is required for colors in the console
-            ((ConsoleCommandSender) who).sendMessage(string);
-        } else {
-            // Players are fine, because we're never modal
-            who.sendRawMessage(string);
-        }
-    }
 
     public String getPathString(ConversationContext context) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
@@ -81,8 +79,8 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     }
 
     /**
-     * Push this prompt on the stack and return the given prompt.
-     * Use this to "call" another prompt.
+     * Push this prompt on the stack and return the given prompt. Use this to
+     * "call" another prompt.
      */
     public EditorPrompt callPrompt(ConversationContext context, EditorPrompt next) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
@@ -90,14 +88,8 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         return next;
     }
 
-    /**
-     * Pop the previous prompt off the stack.
-     * Use this to "return to" another prompt.
-     */
-    public EditorPrompt returnPrompt(ConversationContext context) {
-        List<EditorPrompt> stack = EditorState.getPromptStack(context);
-        return stack.remove(stack.size() - 1);
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Helper methods for subclasses
 
     public EditorPrompt commonActions(ConversationContext context, String command) {
         if (command.equals("?")) {
@@ -111,8 +103,14 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         return null;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Bukkit API methods
+    /**
+     * Pop the previous prompt off the stack. Use this to "return to" another
+     * prompt.
+     */
+    public EditorPrompt returnPrompt(ConversationContext context) {
+        List<EditorPrompt> stack = EditorState.getPromptStack(context);
+        return stack.remove(stack.size() - 1);
+    }
 
     @Override
     public final String getPromptText(ConversationContext context) {
@@ -123,6 +121,26 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         }
         return getPrompt(context); // returned strings are color-stripped
     }
+
+    public void sendMessage(ConversationContext context, String string) {
+        Conversable who = context.getForWhom();
+        if (who instanceof ConsoleCommandSender) {
+            // This is required for colors in the console
+            ((ConsoleCommandSender) who).sendMessage(string);
+        } else {
+            // Players are fine, because we're never modal
+            who.sendRawMessage(string);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Required abstract methods
+    public abstract void printBanner(ConversationContext context);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Bukkit API methods
+
+    public abstract String getPrompt(ConversationContext context);
 
     @Override
     public final boolean blocksForInput(ConversationContext context) {
@@ -184,11 +202,5 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         return matches;
     }
 
-    protected static final EditorPrompt END_CONVERSATION = new EditorPrompt() {
-        public String getName(ConversationContext context) { return null; }
-        public void printBanner(ConversationContext context) { }
-        public String getPrompt(ConversationContext context) { return null; }
-        public EditorPrompt performCommand(ConversationContext context, String command) { return null; }
-        public List<String> getCompletions(ConversationContext context) { return null; }
-    };
+    public abstract List<String> getCompletions(ConversationContext context);
 }

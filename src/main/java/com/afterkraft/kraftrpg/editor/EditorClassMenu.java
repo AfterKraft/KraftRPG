@@ -15,25 +15,39 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
+import org.bukkit.ChatColor;
+import org.bukkit.conversations.ConversationContext;
+
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.roles.Role;
+import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+
 public class EditorClassMenu extends EditorPrompt {
 
-    private RoleType getFilter(ConversationContext context) {
-        return (RoleType) context.getSessionData("class.rolefilter");
-    }
-
-    private void setFilter(ConversationContext context, RoleType type) {
-        context.setSessionData("class.rolefilter", type);
+    @Override
+    public void printBanner(ConversationContext context) {
+        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
+        StringBuilder sb;
+        sb = new StringBuilder(ChatColor.GREEN.toString());
+        sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
+        sb.append(" Classes:");
+        sendMessage(context, sb.toString());
+        sb = new StringBuilder(ChatColor.AQUA.toString());
+        for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {
+            sb.append(roleName).append(" ");
+        }
+        sendMessage(context, sb.toString());
+        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new class");
+        sendMessage(context, ChatColor.AQUA + "[1,2,3,4]" + ChatColor.DARK_GREEN + " Filter (None, Primary, Secondary, Additional)");
+        if (EditorState.isDirty(context)) {
+            sendMessage(context, ChatColor.GOLD + "* You have unsaved changes.");
+        }
     }
 
     @Override
@@ -56,29 +70,13 @@ public class EditorClassMenu extends EditorPrompt {
         return sb.toString();
     }
 
-    @Override
-    public String getName(ConversationContext context) {
-        return "class";
+    private RoleType getFilter(ConversationContext context) {
+        return (RoleType) context.getSessionData("class.rolefilter");
     }
 
     @Override
-    public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
-        StringBuilder sb;
-        sb = new StringBuilder(ChatColor.GREEN.toString());
-        sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
-        sb.append(" Classes:");
-        sendMessage(context, sb.toString());
-        sb = new StringBuilder(ChatColor.AQUA.toString());
-        for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {
-            sb.append(roleName).append(" ");
-        }
-        sendMessage(context, sb.toString());
-        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new class");
-        sendMessage(context, ChatColor.AQUA + "[1,2,3,4]" + ChatColor.DARK_GREEN + " Filter (None, Primary, Secondary, Additional)");
-        if (EditorState.isDirty(context)) {
-            sendMessage(context, ChatColor.GOLD + "* You have unsaved changes.");
-        }
+    public String getName(ConversationContext context) {
+        return "class";
     }
 
     @Override
@@ -116,6 +114,10 @@ public class EditorClassMenu extends EditorPrompt {
 
         sendMessage(context, ChatColor.RED + "Not a class or command. Please pick a class.");
         return null;
+    }
+
+    private void setFilter(ConversationContext context, RoleType type) {
+        context.setSessionData("class.rolefilter", type);
     }
 
     @Override

@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.api.util.Utilities;
-import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -42,6 +40,7 @@ import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.PermissionSkill;
 import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
 import com.afterkraft.kraftrpg.api.skills.SkillSetting;
+import com.afterkraft.kraftrpg.api.util.Utilities;
 import com.afterkraft.kraftrpg.util.MathUtil;
 
 

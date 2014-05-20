@@ -15,17 +15,21 @@
  */
 package com.afterkraft.kraftrpg.commands;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.StringUtils;
+
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationFactory;
+
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.editor.EditorMainMenu;
 import com.afterkraft.kraftrpg.editor.EditorState;
-import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.conversations.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class RPGEditorCommand extends BasicSubcommand {
     private ConversationFactory factory;

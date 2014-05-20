@@ -81,7 +81,7 @@ public abstract class RootCommand implements TabExecutor {
                         int page = Integer.parseInt(sub);
                         doHelp(sender, label, page);
                     } catch (NumberFormatException ignored) {
-                        sender.sendMessage("" + ChatColor.RED + "Please enter a page number or valid subcommand.");
+                        sender.sendMessage(ChatColor.RED + "Please enter a page number or valid subcommand.");
                     }
                 }
             }
@@ -90,11 +90,11 @@ public abstract class RootCommand implements TabExecutor {
 
         Subcommand subcommand = subcommandMap.get(sub);
         if (subcommand == null) {
-            sender.sendMessage("" + ChatColor.RED + "No such command: " + ChatColor.GREEN + "/rpg " + sub);
+            sender.sendMessage(ChatColor.RED + "No such command: " + ChatColor.GREEN + "/rpg " + sub);
             return true;
         }
         if (!sender.hasPermission(subcommand.getPermission())) {
-            sender.sendMessage("" + ChatColor.RED + "Permission denied");
+            sender.sendMessage(ChatColor.RED + "Permission denied");
             return true;
         }
 
@@ -149,7 +149,7 @@ public abstract class RootCommand implements TabExecutor {
         }
 
         sender.sendMessage(String.format(
-                "" + ChatColor.GRAY + "More: " + ChatColor.GREEN + "/%s help <page>" + ChatColor.GRAY + ", " + ChatColor.GREEN + "/rpg help status" + ChatColor.GRAY + "", label));
+                ChatColor.GRAY + "More: " + ChatColor.GREEN + "/%s help <page>" + ChatColor.GRAY + ", " + ChatColor.GREEN + "/rpg help status" + ChatColor.GRAY + "", label));
     }
 
     /*

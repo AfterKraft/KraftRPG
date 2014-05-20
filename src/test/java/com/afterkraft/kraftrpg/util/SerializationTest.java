@@ -8,7 +8,8 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.bukkit.Color;
 import org.bukkit.Material;

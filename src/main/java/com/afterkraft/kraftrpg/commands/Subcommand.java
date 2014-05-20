@@ -15,9 +15,9 @@
  */
 package com.afterkraft.kraftrpg.commands;
 
-import org.bukkit.command.CommandSender;
-
 import java.util.List;
+
+import org.bukkit.command.CommandSender;
 
 public interface Subcommand {
 
@@ -39,7 +39,7 @@ public interface Subcommand {
 
     /**
      * Run this subcommand.
-     *
+     * 
      * @param sender Sender of the command
      * @param args Argument array
      * @param depth Number of arguments consumed by parent commands
@@ -48,7 +48,7 @@ public interface Subcommand {
 
     /**
      * Perform tabcompletion.
-     *
+     * 
      * @param sender Sender of the command
      * @param args Argument array, tabcomplete last member
      * @param depth Number of arguments consumed by parent commands

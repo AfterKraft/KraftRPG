@@ -15,19 +15,14 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.google.common.collect.ImmutableList;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.List;
 
-public class EditorMainMenu extends EditorPrompt {
+import com.google.common.collect.ImmutableList;
 
-    public String getName(ConversationContext context) {
-        return "main";
-    }
+import org.bukkit.ChatColor;
+import org.bukkit.conversations.ConversationContext;
+
+public class EditorMainMenu extends EditorPrompt {
 
     @Override
     public void printBanner(ConversationContext context) {
@@ -43,6 +38,10 @@ public class EditorMainMenu extends EditorPrompt {
     @Override
     public String getPrompt(ConversationContext context) {
         return getPathString(context) + "classes skills settings save exit";
+    }
+
+    public String getName(ConversationContext context) {
+        return "main";
     }
 
     @Override

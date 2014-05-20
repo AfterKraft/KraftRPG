@@ -300,6 +300,40 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public final Player getPlayer() {
+        return this.getEntity();
+    }
+
+    @Override
+    public final void setPlayer(final Player player) {
+        this.setEntity(player);
+    }
+
+    @Override
+    public PlayerData getData() {
+        return data;
+    }
+
+    @Override
+    public PlayerData getDataClone() {
+        return data.clone();
+    }
+
+    @Override
+    public final Player getEntity() {
+        return (Player) super.getEntity();
+    }
+
+    public double recalculateMaxHealth() {
+        return 0D;
+    }
+
+    @Override
+    public void heal(double amount) {
+
+    }
+
+    @Override
     public float getStamina() {
         if (!this.isEntityValid()) {
             return 0F;
@@ -342,40 +376,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getInventory();
         }
         return null;
-    }
-
-    @Override
-    public final Player getPlayer() {
-        return this.getEntity();
-    }
-
-    @Override
-    public final void setPlayer(final Player player) {
-        this.setEntity(player);
-    }
-
-    @Override
-    public PlayerData getData() {
-        return data;
-    }
-
-    @Override
-    public PlayerData getDataClone() {
-        return data.clone();
-    }
-
-    @Override
-    public final Player getEntity() {
-        return (Player) super.getEntity();
-    }
-
-    public double recalculateMaxHealth() {
-        return 0D;
-    }
-
-    @Override
-    public void heal(double amount) {
-
     }
 
     @Override

@@ -1,25 +1,19 @@
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
-import com.google.common.collect.ImmutableList;
-import org.bukkit.ChatColor;
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.List;
 import java.util.Map;
 
-public class EditorClassNew extends EditorPrompt {
-    enum Stage {
-        CHOOSE_NAME,
-        CHOOSE_TYPE,
-        MAKE_DEFAULT,
-        PICK_PARENT,
-    }
+import com.google.common.collect.ImmutableList;
 
-    private Stage getStage(ConversationContext context) {
-        return (Stage) context.getSessionData("class.new.stage");
-    }
+import org.bukkit.ChatColor;
+import org.bukkit.conversations.ConversationContext;
+
+import com.afterkraft.kraftrpg.api.entity.roles.Role;
+import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+
+public class EditorClassNew extends EditorPrompt {
+    private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
+    private static final List<String> falseValues = ImmutableList.of("n", "no", "0", "f", "false");
 
     @Override
     public void printBanner(ConversationContext context) {
@@ -47,13 +41,14 @@ public class EditorClassNew extends EditorPrompt {
         return null;
     }
 
+    private Stage getStage(ConversationContext context) {
+        return (Stage) context.getSessionData("class.new.stage");
+    }
+
     @Override
     public String getName(ConversationContext context) {
         return "new";
     }
-
-    private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
-    private static final List<String> falseValues = ImmutableList.of("n", "no", "0", "f", "false");
 
     @Override
     public EditorPrompt performCommand(ConversationContext context, String command) {
@@ -162,5 +157,12 @@ public class EditorClassNew extends EditorPrompt {
     @Override
     public List<String> getCompletions(ConversationContext context) {
         return null;
+    }
+
+    enum Stage {
+        CHOOSE_NAME,
+        CHOOSE_TYPE,
+        MAKE_DEFAULT,
+        PICK_PARENT,
     }
 }

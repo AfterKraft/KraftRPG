@@ -17,10 +17,13 @@ package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import net.minecraft.server.v1_7_R3.AttributeInstance;
 import net.minecraft.server.v1_7_R3.AttributeRanged;
 import net.minecraft.server.v1_7_R3.DamageSource;
@@ -33,18 +36,18 @@ import net.minecraft.server.v1_7_R3.MobEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
 import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.Prompt;
 import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R3.conversations.ConversationTracker;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Enderman;
@@ -67,6 +70,7 @@ import org.bukkit.util.Vector;
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeType;
+import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
@@ -134,27 +138,6 @@ public class RPGHandler extends CraftBukkitHandler {
                 case BUKKIT:
                     break;
             }
-        }
-    }
-
-    @Override
-    public void addNBTAttributes() {
-        try {
-            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
-            f.setAccessible(true);
-            modifiersField.setInt(f, f.getModifiers() &~Modifier.FINAL);
-
-            Set<?> oldset = (Set<?>) f.get(null);
-            HashSet<Object> newset = new HashSet<Object>(oldset);
-            for (ItemAttributeType type : ItemAttributeType.values()) {
-                newset.add(type.getAttributeName());
-            }
-
-            f.set(null, newset);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
     }
 
@@ -481,6 +464,31 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
+    protected float getSoundStrength(LivingEntity entity) {
+        EntityLiving el = ((CraftLivingEntity) entity).getHandle();
+        return el.isBaby() ? ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.5F : ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.0F;
+    }
+
+    @Override
+    public void playClientEffect(Player player, Location startLocation, String particle, Vector offset, float speed, int count, boolean sendToAll) {
+        if (!(player instanceof CraftPlayer)) {
+            throw new IllegalArgumentException("The provided player is NOT a CraftPlayer!");
+        }
+        try {
+            PacketPlayOutWorldParticles clientEffectPacket = new PacketPlayOutWorldParticles(particle, (float) startLocation.getX(), (float) (startLocation.getY() + 0.5), (float) startLocation.getZ(), (float) (offset.getX() + 0.5), (float) (offset.getY() + 0.3), (float) (offset.getZ() + 0.5), speed, count);
+
+            if (sendToAll) {
+                ((CraftWorld) startLocation.getWorld()).getHandle().getTracker().sendPacketToEntity(((CraftPlayer) player).getHandle(), clientEffectPacket);
+            } else {
+                ((CraftPlayer) player).getHandle().playerConnection.sendPacket(clientEffectPacket);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
     public Conversation getCurrentConversation(Player player) {
         if (!CraftPlayer.class.isInstance(player)) {
             return null;
@@ -507,28 +515,24 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    protected float getSoundStrength(LivingEntity entity) {
-        EntityLiving el = ((CraftLivingEntity) entity).getHandle();
-        return el.isBaby() ? ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.5F : ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.0F;
-    }
-
-    @Override
-    public void playClientEffect(Player player, Location startLocation, String particle, Vector offset, float speed, int count, boolean sendToAll) {
-        if (!(player instanceof CraftPlayer)) {
-            throw new IllegalArgumentException("The provided player is NOT a CraftPlayer!");
-        }
+    public void addNBTAttributes() {
         try {
-            PacketPlayOutWorldParticles clientEffectPacket = new PacketPlayOutWorldParticles(particle, (float) startLocation.getX(), (float) (startLocation.getY() + 0.5), (float) startLocation.getZ(), (float) (offset.getX() + 0.5), (float) (offset.getY() + 0.3), (float) (offset.getZ() + 0.5), speed, count);
+            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
+            f.setAccessible(true);
+            modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
 
-            if (sendToAll) {
-                ((CraftWorld) startLocation.getWorld()).getHandle().getTracker().sendPacketToEntity(((CraftPlayer) player).getHandle(), clientEffectPacket);
-            } else {
-                ((CraftPlayer) player).getHandle().playerConnection.sendPacket(clientEffectPacket);
+            Set<?> oldset = (Set<?>) f.get(null);
+            HashSet<Object> newset = new HashSet<Object>(oldset);
+            for (ItemAttributeType type : ItemAttributeType.values()) {
+                newset.add(type.getAttributeName());
             }
-        } catch (Exception e) {
+
+            f.set(null, newset);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
     }
 
 }

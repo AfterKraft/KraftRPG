@@ -1,8 +1,8 @@
 package com.afterkraft.kraftrpg.editor;
 
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.List;
+
+import org.bukkit.conversations.ConversationContext;
 
 public class EditorClassFocus extends EditorPrompt {
     @Override

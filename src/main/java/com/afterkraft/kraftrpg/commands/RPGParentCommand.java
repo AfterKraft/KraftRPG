@@ -15,12 +15,9 @@
  */
 package com.afterkraft.kraftrpg.commands;
 
-import com.afterkraft.kraftrpg.api.RPGPlugin;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
-import java.util.List;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 
 public class RPGParentCommand extends RootCommand implements TabExecutor {
     public RPGParentCommand(RPGPlugin plugin) {

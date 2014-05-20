@@ -17,9 +17,6 @@ package com.afterkraft.kraftrpg;
 
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.commands.RPGCommandManager;
-import com.afterkraft.kraftrpg.commands.RPGParentCommand;
-import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -35,6 +32,9 @@ import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
+import com.afterkraft.kraftrpg.commands.RPGCommandManager;
+import com.afterkraft.kraftrpg.commands.RPGParentCommand;
+import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
 import com.afterkraft.kraftrpg.entity.RPGCombatTracker;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;

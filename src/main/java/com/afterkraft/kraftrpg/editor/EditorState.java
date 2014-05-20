@@ -15,25 +15,31 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
 import org.apache.commons.lang.text.StrMatcher;
 import org.apache.commons.lang.text.StrTokenizer;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.Prompt;
 
-import java.util.*;
+import org.bukkit.conversations.ConversationContext;
+
+import com.afterkraft.kraftrpg.api.entity.roles.Role;
 
 /**
  * This class provides a nicer interface into the key-value store of a
  * ConversationContext.
- *
+ * 
  * Does not actually contain state.
- *
+ * 
  * Instead, all of the methods take a ConversationContext.
  */
 @SuppressWarnings("unchecked")
 public final class EditorState {
+
+    private static final StrTokenizer tokenizer = new StrTokenizer("", StrMatcher.charMatcher(';'));
 
     public static Map<Object, Object> getStableDefaultState() {
         Map<Object, Object> map = new HashMap<Object, Object>();
@@ -63,6 +69,13 @@ public final class EditorState {
         return (Boolean) context.getSessionData("banner");
     }
 
+    public static boolean hasQueuedCommands(ConversationContext context) {
+        List<String> queue = (List<String>) context.getSessionData("queue");
+        return !queue.isEmpty();
+    }
+
+    // Command queue
+
     public static void setBanner(ConversationContext context, boolean printBanner) {
         context.setSessionData("banner", printBanner);
     }
@@ -70,10 +83,6 @@ public final class EditorState {
     public static List<EditorPrompt> getPromptStack(ConversationContext context) {
         return (List<EditorPrompt>) context.getSessionData("stack");
     }
-
-    // Command queue
-
-    private static final StrTokenizer tokenizer = new StrTokenizer("", StrMatcher.charMatcher(';'));
 
     public static void queueCommands(ConversationContext context, String unsplitCommand) {
         tokenizer.reset(unsplitCommand);
@@ -83,11 +92,6 @@ public final class EditorState {
         while (iter.hasPrevious()) {
             queue.add(iter.previous());
         }
-    }
-
-    public static boolean hasQueuedCommands(ConversationContext context) {
-        List<String> queue = (List<String>) context.getSessionData("queue");
-        return !queue.isEmpty();
     }
 
     public static String popCommand(ConversationContext context) {
