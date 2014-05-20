@@ -89,12 +89,12 @@ public class EditorClassMenu extends EditorPrompt {
         for (Map.Entry<String, Role> entry : plugin.getRoleManager().getRolesByType(getFilter(context)).entrySet()) {
             if (command.equalsIgnoreCase(entry.getKey())) {
                 EditorState.setSelectedRole(context, entry.getValue());
-                return null; // callPrompt(new EditorClassFocus());
+                return callPrompt(context, new EditorClassFocus());
             }
         }
 
         if (command.equals("0") || command.equals("new")) {
-            return null; // callPrompt(new EditorNewClass());
+            return callPrompt(context, new EditorClassNew());
         }
         if (command.equals("1") || command.equals("none")) {
             setFilter(context, null);

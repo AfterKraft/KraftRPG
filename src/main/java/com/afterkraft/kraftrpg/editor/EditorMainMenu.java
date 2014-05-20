@@ -28,18 +28,10 @@ public class EditorMainMenu extends EditorPrompt {
     public String getName(ConversationContext context) {
         return "main";
     }
-    /*
-    KraftRPG Configuration Editor
-    Main Menu
-    [1] Classes, Professions, and Roles
-    [2*] Skills
-    [3] Settings
-    *You have unsaved changes.
-    <main>
-     */
+
     @Override
     public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Main Menu");
+        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: " + ChatColor.BLUE + "Main Menu");
         sendMessage(context, ChatColor.AQUA + "[1]" + ChatColor.DARK_GREEN + " Classes, Professions, and Roles");
         sendMessage(context, ChatColor.AQUA + "[2]" + ChatColor.DARK_GREEN + " Skills");
         sendMessage(context, ChatColor.AQUA + "[3]" + ChatColor.DARK_GREEN + " Global Settings");
@@ -58,8 +50,11 @@ public class EditorMainMenu extends EditorPrompt {
         if (command.equals("?")) {
             EditorState.setBanner(context, true);
             return this;
+        } else if (command.equals("save")) {
+            sendMessage(context, "<unimplemented>");
+            return this;
         } else if (command.equals("exit") || command.equals("quit") || command.equals("stop")) {
-            sendMessage(context, ChatColor.GREEN + "Exiting KraftRPG configuration editor.");
+            sendMessage(context, ChatColor.DARK_PURPLE + "Exiting KraftRPG configuration editor.");
             return END_CONVERSATION;
         } else if (command.equals("1") || command.equals("class") || command.equals("classes")) {
             return callPrompt(context, new EditorClassMenu());
