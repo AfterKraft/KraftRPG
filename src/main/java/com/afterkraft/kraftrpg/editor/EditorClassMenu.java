@@ -19,6 +19,7 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
@@ -64,10 +65,13 @@ public class EditorClassMenu extends EditorPrompt {
 
     @Override
     public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.YELLOW + "--------------------------------------------------");
         sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
-        sendMessage(context, ChatColor.GREEN + "Classes:");
-        StringBuilder sb = new StringBuilder(ChatColor.AQUA.toString());
+        StringBuilder sb;
+        sb = new StringBuilder(ChatColor.GREEN.toString());
+        sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
+        sb.append(" Classes:");
+        sendMessage(context, sb.toString());
+        sb = new StringBuilder(ChatColor.AQUA.toString());
         for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {
             sb.append(roleName).append(" ");
         }

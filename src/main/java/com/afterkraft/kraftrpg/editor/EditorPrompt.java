@@ -117,10 +117,11 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     @Override
     public final String getPromptText(ConversationContext context) {
         if (EditorState.shouldPrintBanner(context)) {
+            sendMessage(context, ChatColor.YELLOW + "--------------------------------------------------");
             printBanner(context);
+            EditorState.setBanner(context, false);
         }
-        sendMessage(context, getPrompt(context));
-        return null; // returned strings are color-stripped
+        return getPrompt(context); // returned strings are color-stripped
     }
 
     @Override
