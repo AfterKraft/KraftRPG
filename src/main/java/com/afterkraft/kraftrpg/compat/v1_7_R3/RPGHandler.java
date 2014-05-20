@@ -16,6 +16,7 @@
 package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -73,6 +74,7 @@ import com.afterkraft.kraftrpg.util.TweakkitHelper;
 public class RPGHandler extends CraftBukkitHandler {
     private Field ldbpt;
     private Field conversationTracker, conversationQueue, currentPrompt;
+    private Field modifiersField;
     private Random random;
     private boolean listenersLoaded = false;
     private EnumMap<EntityAttributeType, IAttribute> iattrMap;
@@ -101,6 +103,12 @@ public class RPGHandler extends CraftBukkitHandler {
                 currentPrompt.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
             }
+            try {
+                modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         } catch (SecurityException ignored) {
             // do nothing
         }
@@ -126,6 +134,27 @@ public class RPGHandler extends CraftBukkitHandler {
                 case BUKKIT:
                     break;
             }
+        }
+    }
+
+    @Override
+    public void addNBTAttributes() {
+        try {
+            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
+            f.setAccessible(true);
+            modifiersField.setInt(f, f.getModifiers() &~Modifier.FINAL);
+
+            Set<?> oldset = (Set<?>) f.get(null);
+            HashSet<Object> newset = new HashSet<Object>(oldset);
+            for (ItemAttributeType type : ItemAttributeType.values()) {
+                newset.add(type.getAttributeName());
+            }
+
+            f.set(null, newset);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
     }
 
@@ -475,24 +504,6 @@ public class RPGHandler extends CraftBukkitHandler {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public void addNBTAttributes() {
-        try {
-            Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
-            f.setAccessible(true);
-            Set<?> oldset = (Set<?>) f.get(null);
-            HashSet<Object> newset = new HashSet<Object>(oldset);
-            for (ItemAttributeType type : ItemAttributeType.values()) {
-                newset.add(type.getAttributeName());
-            }
-            f.set(null, newset);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

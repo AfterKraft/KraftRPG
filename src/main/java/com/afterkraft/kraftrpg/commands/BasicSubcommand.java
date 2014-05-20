@@ -22,7 +22,7 @@ public abstract class BasicSubcommand implements Subcommand {
     protected String permission;
     protected String shortDescription;
     protected String longDescription;
-    protected String usage;
+    protected String usage = null;
 
     public BasicSubcommand(RPGPlugin plugin) {
         this.plugin = plugin;
