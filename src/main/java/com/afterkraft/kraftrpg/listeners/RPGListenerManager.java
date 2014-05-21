@@ -36,9 +36,6 @@ public class RPGListenerManager implements ListenerManager {
     public void initialize() {
         if (listeners.isEmpty()) {
             loadListeners();
-            for (AbstractListener listener : listeners) {
-                listener.initialize();
-            }
         }
     }
 
@@ -48,6 +45,7 @@ public class RPGListenerManager implements ListenerManager {
             for (AbstractListener listener : listeners) {
                 listener.shutdown();
             }
+            listeners.clear();
         }
     }
 
@@ -60,6 +58,9 @@ public class RPGListenerManager implements ListenerManager {
 
     @Override
     public void addListener(AbstractListener listener) {
-
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
+            listener.initialize();
+        }
     }
 }

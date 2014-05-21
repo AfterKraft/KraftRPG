@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.CircularDependencyException;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
@@ -122,12 +123,14 @@ public class RPGRoleManager implements RoleManager {
             return false;
         }
         reconstructRoleGraph();
-        if (roleGraph.addEdge(parent, child)) {
+        try {
+            roleGraph.addEdge(parent, child);
             parent.addChild(child);
             child.addParent(parent);
             return true;
+        } catch (CircularDependencyException e) {
+            return false;
         }
-        return false;
     }
 
     private void reconstructRoleGraph() {
@@ -135,15 +138,21 @@ public class RPGRoleManager implements RoleManager {
         for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
-                if (!roleGraph.addEdge(parent, role)) {
+                try {
+                    roleGraph.addEdge(parent, role);
+                } catch (CircularDependencyException e) {
                     parent.removeChild(role);
                     role.removeParent(parent);
+                    e.printStackTrace();
                 }
             }
             for (Role child : role.getChildren()) {
-                if (!roleGraph.addEdge(role, child)) {
+                try {
+                    roleGraph.addEdge(role, child);
+                } catch (CircularDependencyException e) {
                     role.removeChild(child);
                     child.removeParent(role);
+                    e.printStackTrace();
                 }
             }
         }
@@ -166,21 +175,27 @@ public class RPGRoleManager implements RoleManager {
         for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
-                if (!tempGraph.addEdge(parent, role)) {
+                try {
+                    tempGraph.addEdge(parent, role);
+                } catch (CircularDependencyException e) {
                     parent.removeChild(role);
                     role.removeParent(parent);
+                    e.printStackTrace();
                     return false;
                 }
             }
             for (Role child : role.getChildren()) {
-                if (!tempGraph.addEdge(role, child)) {
+                try {
+                    tempGraph.addEdge(role, child);
+                } catch (CircularDependencyException e) {
                     role.removeChild(child);
                     child.removeParent(role);
+                    e.printStackTrace();
                     return false;
                 }
             }
         }
-        return tempGraph.doesCycleExist();
+        return true;
     }
 
     @Override
