@@ -131,13 +131,13 @@ public class EditorClassNew extends EditorPrompt {
         return null;
     }
 
-    private Stage getStage(ConversationContext context) {
-        return (Stage) context.getSessionData("class.new.stage");
-    }
-
     @Override
     public List<String> getCompletions(ConversationContext context) {
         return null;
+    }
+
+    private Stage getStage(ConversationContext context) {
+        return (Stage) context.getSessionData("class.new.stage");
     }
 
     private EditorPrompt finish(ConversationContext context) {

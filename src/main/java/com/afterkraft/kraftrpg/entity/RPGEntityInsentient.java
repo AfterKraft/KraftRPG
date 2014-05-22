@@ -15,6 +15,7 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,6 +38,7 @@ import com.afterkraft.kraftrpg.api.entity.effects.Timed;
 public abstract class RPGEntityInsentient extends RPGEntity implements Insentient {
 
     protected final Map<String, IEffect> effects = new HashMap<String, IEffect>();
+    protected final ArrayDeque<RPGPotionEffect> potionEffectQueue = new ArrayDeque<RPGPotionEffect>();
     protected MutableInt mana = new MutableInt(0);
 
     protected RPGEntityInsentient(RPGPlugin plugin, LivingEntity lEntity, String name) {
@@ -109,7 +111,7 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
             return;
         }
         if (this.isEntityValid()) {
-            this.getEntity().addPotionEffect(potion);
+            potionEffectQueue.add(new RPGPotionEffect(potion, true));
         }
     }
 
@@ -149,7 +151,7 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
             return;
         }
         if (this.isEntityValid()) {
-            this.getEntity().removePotionEffect(type);
+            potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
         }
     }
 

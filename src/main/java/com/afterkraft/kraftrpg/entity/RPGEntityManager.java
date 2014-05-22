@@ -40,6 +40,8 @@ public class RPGEntityManager implements EntityManager {
     private final KraftRPGPlugin plugin;
     private final Map<UUID, Champion> champions;
     private final Map<UUID, Monster> monsters;
+    private int entityTaskID;
+    private int potionTaskID;
 
     private StorageFrontend storage;
 
@@ -47,7 +49,6 @@ public class RPGEntityManager implements EntityManager {
         this.plugin = plugin;
         this.champions = new HashMap<UUID, Champion>();
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
-        Bukkit.getScheduler().runTaskTimer(plugin, new RPGEntityTask(), 100, 1000);
         this.storage = this.plugin.getStorage();
     }
 
@@ -160,10 +161,35 @@ public class RPGEntityManager implements EntityManager {
 
     @Override
     public void initialize() {
+        entityTaskID = Bukkit.getScheduler().runTaskTimer(plugin, new RPGEntityTask(), 100, 1000).getTaskId();
+        potionTaskID = Bukkit.getScheduler().runTaskTimer(plugin, new RPGInsentientPotionEffectTask(), 1, 100).getTaskId();
 
     }
 
     public void shutdown() {
+        Bukkit.getScheduler().cancelTask(entityTaskID);
+        Bukkit.getScheduler().cancelTask(potionTaskID);
+        clearPotionEffects();
+    }
+
+    /**
+     * This is to specifically clear the potion effect queue for each managed
+     * Insentient Entity.
+     */
+    private void clearPotionEffects() {
+        Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
+        Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
+
+        Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();
+        while (playerIterator.hasNext()) {
+            RPGChampion tempPlayer = (RPGChampion) playerIterator.next().getValue();
+            tempPlayer.potionEffectQueue.clear();
+        }
+        while (monsterIterator.hasNext()) {
+            RPGEntityInsentient tempEntity = (RPGEntityInsentient) monsterIterator.next().getValue();
+            tempEntity.potionEffectQueue.clear();
+        }
     }
 
     /**
@@ -194,6 +220,41 @@ public class RPGEntityManager implements EntityManager {
                 }
             }
 
+        }
+    }
+
+    private class RPGInsentientPotionEffectTask implements Runnable {
+        @Override
+        public void run() {
+            Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
+            Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
+
+            Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
+            Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();
+            while (playerIterator.hasNext()) {
+                RPGChampion tempPlayer = (RPGChampion) playerIterator.next().getValue();
+                if (tempPlayer.potionEffectQueue.poll() != null && tempPlayer.isEntityValid()) {
+                    Player player = tempPlayer.getEntity();
+                    RPGPotionEffect effect = tempPlayer.potionEffectQueue.remove();
+                    if (effect.adding) {
+                        player.addPotionEffect(effect.potion);
+                    } else {
+                        player.removePotionEffect(effect.potion.getType());
+                    }
+                }
+            }
+            while (monsterIterator.hasNext()) {
+                RPGEntityInsentient tempEntity = (RPGEntityInsentient) monsterIterator.next().getValue();
+                if (tempEntity.potionEffectQueue.poll() != null && tempEntity.isEntityValid()) {
+                    LivingEntity entity = tempEntity.getEntity();
+                    RPGPotionEffect effect = tempEntity.potionEffectQueue.remove();
+                    if (effect.adding) {
+                        entity.addPotionEffect(effect.potion);
+                    } else {
+                        entity.removePotionEffect(effect.potion.getType());
+                    }
+                }
+            }
         }
     }
 

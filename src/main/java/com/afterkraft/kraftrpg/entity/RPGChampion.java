@@ -27,7 +27,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
-import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
 import com.afterkraft.kraftrpg.api.entity.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
@@ -43,7 +42,6 @@ import com.afterkraft.kraftrpg.util.MathUtil;
 
 public class RPGChampion extends RPGEntityInsentient implements Champion {
     private PlayerData data;
-    private Set<IEffect> effects = new HashSet<IEffect>();
     private Stalled stalled;
     private transient Party party;
 
