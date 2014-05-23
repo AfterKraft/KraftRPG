@@ -68,6 +68,11 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     }
 
     @Override
+    public boolean isDead() {
+        return this.getEntity() == null || this.getEntity().isDead();
+    }
+
+    @Override
     public Location getLocation() {
         if (this.isEntityValid()) {
             return this.getEntity().getLocation();
@@ -116,6 +121,21 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     }
 
     @Override
+    public void removePotionEffect(PotionEffectType type) {
+        if (type == null) {
+            return;
+        }
+        if (this.isEntityValid()) {
+            potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
+        }
+    }
+
+    @Override
+    public boolean hasPotionEffect(PotionEffectType type) {
+        return this.getEntity() != null && this.getEntity().hasPotionEffect(type);
+    }
+
+    @Override
     public boolean hasEffect(String name) {
         return name != null && this.effects.containsKey(name.toLowerCase());
     }
@@ -142,16 +162,6 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
             if (effect instanceof Timed) {
                 plugin.getEffectManager().queueRemoval(this, (Timed) effect);
             }
-        }
-    }
-
-    @Override
-    public void removePotionEffect(PotionEffectType type) {
-        if (type == null) {
-            return;
-        }
-        if (this.isEntityValid()) {
-            potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
         }
     }
 

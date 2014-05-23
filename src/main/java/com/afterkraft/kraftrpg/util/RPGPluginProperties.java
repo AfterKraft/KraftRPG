@@ -28,7 +28,7 @@ import com.afterkraft.kraftrpg.api.util.Properties;
 
 public class RPGPluginProperties implements Properties {
 
-    public static String storageType;
+    public static String storageType = "yml";
     public static boolean isMobDamageDistanceModified;
     public static boolean isMobHealthDistanceModified;
     public static boolean isMobExpDistanceModified;

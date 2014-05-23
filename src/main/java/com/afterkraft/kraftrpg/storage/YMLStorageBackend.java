@@ -75,6 +75,7 @@ public class YMLStorageBackend implements StorageBackend {
         // ignored on loading - solely for admin convenience when they want to edit files
         config.set("uuid", uuid.toString());
         config.set("name", data.lastKnownName);
+        config.set("uniqueID", data.playerID);
         config.set("primary", data.primary.getName());
         config.set("profession", data.profession.getName());
 
@@ -182,6 +183,7 @@ public class YMLStorageBackend implements StorageBackend {
 
             if (createBackupFile(uuid)) {
                 data.lastKnownName = config.getString("name");
+                data.playerID = UUID.fromString(config.getString("uniqueID"));
                 // createBackupFile does a rename, so save the player now
                 savePlayer(uuid, data);
             }
