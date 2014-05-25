@@ -18,11 +18,15 @@ package com.afterkraft.kraftrpg.compat.v1_7_R3;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
+
+import com.google.common.collect.ImmutableMap;
 
 import net.minecraft.server.v1_7_R3.AttributeInstance;
 import net.minecraft.server.v1_7_R3.AttributeRanged;
@@ -65,6 +69,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
@@ -82,6 +87,20 @@ public class RPGHandler extends CraftBukkitHandler {
     private Random random;
     private boolean listenersLoaded = false;
     private EnumMap<EntityAttributeType, IAttribute> iattrMap;
+    private static final Map<String, PotionEffectType> otherPotionEffectNames = new HashMap<String, PotionEffectType>();
+
+    static {
+        otherPotionEffectNames.put("nausea", PotionEffectType.CONFUSION);
+        otherPotionEffectNames.put("resistance", PotionEffectType.DAMAGE_RESISTANCE);
+        otherPotionEffectNames.put("haste", PotionEffectType.FAST_DIGGING);
+        otherPotionEffectNames.put("instant_damage", PotionEffectType.HARM);
+        otherPotionEffectNames.put("instant_health", PotionEffectType.HEAL);
+        otherPotionEffectNames.put("strength", PotionEffectType.INCREASE_DAMAGE);
+        otherPotionEffectNames.put("jump_boost", PotionEffectType.JUMP);
+        otherPotionEffectNames.put("slowness", PotionEffectType.SLOW);
+        otherPotionEffectNames.put("fatigue", PotionEffectType.SLOW_DIGGING);
+        otherPotionEffectNames.put("mining_fatigue", PotionEffectType.SLOW_DIGGING);
+    }
 
     public RPGHandler(ServerType type) {
         super(type);
@@ -533,6 +552,31 @@ public class RPGHandler extends CraftBukkitHandler {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int getArmorIndexHelmet() {
+        return 3;
+    }
+
+    @Override
+    public int getArmorIndexChestPlate() {
+        return 2;
+    }
+
+    @Override
+    public int getArmorIndexLeggings() {
+        return 1;
+    }
+
+    @Override
+    public int getArmorIndexBoots() {
+        return 0;
+    }
+
+    @Override
+    public Map<String, PotionEffectType> getAlternatePotionEffectNames() {
+        return ImmutableMap.copyOf(otherPotionEffectNames);
     }
 
 }

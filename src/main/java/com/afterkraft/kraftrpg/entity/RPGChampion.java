@@ -15,6 +15,7 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -374,6 +375,11 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
             return this.getPlayer().getInventory();
         }
         return null;
+    }
+
+    @Override
+    public ItemStack[] getArmor() {
+        return this.isEntityValid() ? this.getPlayer().getInventory().getArmorContents() : new ItemStack[4];
     }
 
     @Override

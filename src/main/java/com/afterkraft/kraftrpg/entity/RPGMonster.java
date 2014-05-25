@@ -125,4 +125,9 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     public Inventory getInventory() {
         return null;
     }
+
+    @Override
+    public ItemStack[] getArmor() {
+        return this.isEntityValid() ? this.getEntity().getEquipment().getArmorContents() : null;
+    }
 }
