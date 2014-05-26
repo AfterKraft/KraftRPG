@@ -145,7 +145,7 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
                     return EditorPrompt.this.acceptInput(_context, _input);
                 }
             });
-            new RuntimeException("Prompt called from non-main thread!").printStackTrace();
+            Bukkit.getLogger().severe("(KraftRPG) Conversations API is not running on main thread!");
             boolean interrupted = Thread.interrupted();
             Prompt ret = null;
             try {
@@ -161,7 +161,7 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
             }
             if (interrupted) Thread.currentThread().interrupt();
 
-            // Don't want to NPE the conversations API
+            // Retry, don't abandon
             if (ret == null) return this;
             return ret;
         }
