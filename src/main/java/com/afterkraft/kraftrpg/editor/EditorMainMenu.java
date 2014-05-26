@@ -39,8 +39,8 @@ public class EditorMainMenu extends EditorPrompt {
         } else if (command.equals("exit") || command.equals("quit") || command.equals("stop")) {
             sendMessage(context, ChatColor.DARK_PURPLE + "Exiting KraftRPG configuration editor.");
             return END_CONVERSATION;
-        } else if (command.equals("1") || command.equals("class") || command.equals("classes")) {
-            return callPrompt(context, new EditorClassMenu());
+        } else if (command.equals("1") || command.equals("class") || command.equals("roles")) {
+            return callPrompt(context, new EditorRoleMenu());
         } else if (command.equals("2") || command.equals("skills")) {
             // return callPrompt(context, new EditorSkillsMenu());
             return null;
@@ -66,11 +66,11 @@ public class EditorMainMenu extends EditorPrompt {
 
     @Override
     public String getPrompt(ConversationContext context) {
-        return getPathString(context) + "classes skills settings save exit";
+        return getPathString(context) + "roles skills settings save exit";
     }
 
     @Override
     public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of("class", "skills", "settings", "save", "exit", "quit");
+        return ImmutableList.of("roles", "class", "skills", "settings", "save", "exit", "quit");
     }
 }

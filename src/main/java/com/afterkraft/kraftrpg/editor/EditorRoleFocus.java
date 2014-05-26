@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.bukkit.conversations.ConversationContext;
 
-public class EditorClassFocus extends EditorPrompt {
+public class EditorRoleFocus extends EditorPrompt {
     @Override
     public String getName(ConversationContext context) {
         return EditorState.getSelectedRole(context).getName();

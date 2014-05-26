@@ -26,7 +26,7 @@ import org.bukkit.conversations.ConversationContext;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
 
-public class EditorClassNew extends EditorPrompt {
+public class EditorRoleNew extends EditorPrompt {
     private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
     private static final List<String> falseValues = ImmutableList.of("n", "no", "0", "f", "false");
 
@@ -42,8 +42,8 @@ public class EditorClassNew extends EditorPrompt {
 
         switch (getStage(context)) {
             case CHOOSE_NAME:
-                context.setSessionData("class.new.name", command);
-                context.setSessionData("class.new.stage", Stage.CHOOSE_TYPE);
+                context.setSessionData("role.new.name", command);
+                context.setSessionData("role.new.stage", Stage.CHOOSE_TYPE);
                 return this;
             case CHOOSE_TYPE:
                 RoleType rt = null;
@@ -64,40 +64,40 @@ public class EditorClassNew extends EditorPrompt {
                     return null;
                 }
 
-                context.setSessionData("class.new.type", rt);
+                context.setSessionData("role.new.type", rt);
 
-                context.setSessionData("class.new.default", false);
+                context.setSessionData("role.new.default", false);
                 if (rt == RoleType.PRIMARY && plugin.getRoleManager().getDefaultPrimaryRole() == null) {
-                    context.setSessionData("class.new.stage", Stage.MAKE_DEFAULT);
+                    context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else if (rt == RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
-                    context.setSessionData("class.new.stage", Stage.MAKE_DEFAULT);
+                    context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else if (rt == RoleType.ADDITIONAL) {
-                    context.setSessionData("class.new.stage", Stage.MAKE_DEFAULT);
+                    context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else {
-                    context.setSessionData("class.new.stage", Stage.PICK_PARENT);
+                    context.setSessionData("role.new.stage", Stage.PICK_PARENT);
                 }
                 return this;
             case MAKE_DEFAULT:
                 if (trueValues.contains(command.toLowerCase())) {
-                    context.setSessionData("class.new.default", true);
+                    context.setSessionData("role.new.default", true);
                 } else if (falseValues.contains(command.toLowerCase())) {
-                    context.setSessionData("class.new.default", false);
+                    context.setSessionData("role.new.default", false);
                 } else {
                     sendMessage(context, ChatColor.RED + "Please choose 'true' or 'false'.");
                     return null;
                 }
-                context.setSessionData("class.new.stage", Stage.PICK_PARENT);
+                context.setSessionData("role.new.stage", Stage.PICK_PARENT);
                 return this;
             case PICK_PARENT:
                 if (trueValues.contains(command.toLowerCase())) {
-                    context.setSessionData("class.new.parent", null);
+                    context.setSessionData("role.new.parent", null);
                 } else {
                     Role r = plugin.getRoleManager().getRole(command);
                     if (r == null) {
                         sendMessage(context, ChatColor.RED + "Please choose an existing role.");
                         return null;
                     }
-                    context.setSessionData("class.new.parent", r);
+                    context.setSessionData("role.new.parent", r);
                 }
 
                 return finish(context);
@@ -113,11 +113,11 @@ public class EditorClassNew extends EditorPrompt {
     public String getPrompt(ConversationContext context) {
         switch (getStage(context)) {
             case CHOOSE_NAME:
-                return "What do you want to call the new class?";
+                return "What do you want to call the new role?";
             case CHOOSE_TYPE:
                 return "Is this a class, profession, or extra role?";
             case MAKE_DEFAULT:
-                RoleType rt = (RoleType) context.getSessionData("class.new.type");
+                RoleType rt = (RoleType) context.getSessionData("role.new.type");
                 if (rt == RoleType.PRIMARY) {
                     return "You don't have a default primary class. Should this become the default class for new users?";
                 } else if (rt == RoleType.SECONDARY) {
@@ -126,7 +126,7 @@ public class EditorClassNew extends EditorPrompt {
                     return "Should this additional role be included for new users?";
                 }
             case PICK_PARENT:
-                return "Should this class be immediately available, or require mastery of another?\nAnswer with \"yes\" or the class they need to master.";
+                return "Should this role be immediately available, or require mastery of another?\nAnswer with \"yes\" or the role they need to master.";
         }
         return null;
     }
@@ -137,21 +137,21 @@ public class EditorClassNew extends EditorPrompt {
     }
 
     private Stage getStage(ConversationContext context) {
-        return (Stage) context.getSessionData("class.new.stage");
+        return (Stage) context.getSessionData("role.new.stage");
     }
 
     private EditorPrompt finish(ConversationContext context) {
-        String name = (String) context.getSessionData("class.new.name");
-        RoleType type = (RoleType) context.getSessionData("class.new.type");
-        boolean makeDefault = (Boolean) context.getSessionData("class.new.default");
-        Role parent = (Role) context.getSessionData("class.new.parent");
+        String name = (String) context.getSessionData("role.new.name");
+        RoleType type = (RoleType) context.getSessionData("role.new.type");
+        boolean makeDefault = (Boolean) context.getSessionData("role.new.default");
+        Role parent = (Role) context.getSessionData("role.new.parent");
 
         Map<Object, Object> map = context.getAllSessionData();
-        map.remove("class.new.stage");
-        map.remove("class.new.name");
-        map.remove("class.new.type");
-        map.remove("class.new.default");
-        map.remove("class.new.parent");
+        map.remove("role.new.stage");
+        map.remove("role.new.name");
+        map.remove("role.new.type");
+        map.remove("role.new.default");
+        map.remove("role.new.parent");
 
         Role r = new Role(plugin, name, type);
         plugin.getRoleManager().addRole(r);
@@ -171,7 +171,7 @@ public class EditorClassNew extends EditorPrompt {
         // TODO apply parent
 
         EditorState.setSelectedRole(context, r);
-        return new EditorClassFocus();
+        return new EditorRoleFocus();
     }
 
     enum Stage {

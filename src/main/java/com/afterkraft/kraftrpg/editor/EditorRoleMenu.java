@@ -28,11 +28,11 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.roles.Role;
 import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
 
-public class EditorClassMenu extends EditorPrompt {
+public class EditorRoleMenu extends EditorPrompt {
 
     @Override
     public String getName(ConversationContext context) {
-        return "class";
+        return "roles";
     }
 
     @Override
@@ -43,13 +43,13 @@ public class EditorClassMenu extends EditorPrompt {
         for (Map.Entry<String, Role> entry : plugin.getRoleManager().getRolesByType(getFilter(context)).entrySet()) {
             if (command.equalsIgnoreCase(entry.getKey())) {
                 EditorState.setSelectedRole(context, entry.getValue());
-                return callPrompt(context, new EditorClassFocus());
+                return callPrompt(context, new EditorRoleFocus());
             }
         }
 
         if (command.equals("0") || command.equals("new")) {
-            context.setSessionData("class.new.stage", EditorClassNew.Stage.CHOOSE_NAME);
-            return callPrompt(context, new EditorClassNew());
+            context.setSessionData("role.new.stage", EditorRoleNew.Stage.CHOOSE_NAME);
+            return callPrompt(context, new EditorRoleNew());
         }
         if (command.equals("1") || command.equals("none")) {
             setFilter(context, null);
@@ -68,13 +68,13 @@ public class EditorClassMenu extends EditorPrompt {
             return this;
         }
 
-        sendMessage(context, ChatColor.RED + "Not a class or command. Please pick a class.");
+        sendMessage(context, ChatColor.RED + "Not a role or command. Please pick a role.");
         return null;
     }
 
     @Override
     public void printBanner(ConversationContext context) {
-        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Class");
+        sendMessage(context, ChatColor.DARK_GREEN + "KraftRPG Configuration Editor: Select Role");
         StringBuilder sb;
         sb = new StringBuilder(ChatColor.GREEN.toString());
         sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
@@ -85,7 +85,7 @@ public class EditorClassMenu extends EditorPrompt {
             sb.append(roleName).append(" ");
         }
         sendMessage(context, sb.toString());
-        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new class");
+        sendMessage(context, ChatColor.AQUA + "[0]" + ChatColor.DARK_GREEN + " Create new role");
         sendMessage(context, ChatColor.AQUA + "[1,2,3,4]" + ChatColor.DARK_GREEN + " Filter (None, Primary, Secondary, Additional)");
         if (EditorState.isDirty(context)) {
             sendMessage(context, ChatColor.GOLD + "* You have unsaved changes.");
@@ -95,7 +95,7 @@ public class EditorClassMenu extends EditorPrompt {
     @Override
     public String getPrompt(ConversationContext context) {
         StringBuilder sb = new StringBuilder(getPathString(context));
-        sb.append("[class] new exit ");
+        sb.append("[role] new exit ");
         RoleType filter = getFilter(context);
         if (filter != null) {
             sb.append("none ");
@@ -118,10 +118,10 @@ public class EditorClassMenu extends EditorPrompt {
     }
 
     private RoleType getFilter(ConversationContext context) {
-        return (RoleType) context.getSessionData("class.rolefilter");
+        return (RoleType) context.getSessionData("role.rolefilter");
     }
 
     private void setFilter(ConversationContext context, RoleType type) {
-        context.setSessionData("class.rolefilter", type);
+        context.setSessionData("role.rolefilter", type);
     }
 }
