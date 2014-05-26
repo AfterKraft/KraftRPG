@@ -17,9 +17,7 @@ package com.afterkraft.kraftrpg.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -151,13 +149,20 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
             boolean interrupted = Thread.interrupted();
             Prompt ret = null;
             try {
-                ret = future.get();
+                ret = future.get(500, TimeUnit.MILLISECONDS); // 10 ticks
             } catch (InterruptedException e) {
                 interrupted = true;
             } catch (ExecutionException e) {
                 e.getCause().printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                // Can't tell the player about it - this isn't the main thread!!!
+                ret = this;
             }
             if (interrupted) Thread.currentThread().interrupt();
+
+            // Don't want to NPE the conversations API
+            if (ret == null) return this;
             return ret;
         }
 
