@@ -78,7 +78,7 @@ public class EditorRoleMenu extends EditorPrompt {
         StringBuilder sb;
         sb = new StringBuilder(ChatColor.GREEN.toString());
         sb.append(getFilter(context) == null ? "All" : StringUtils.capitalize(getFilter(context).toString().toLowerCase()));
-        sb.append(" Classes:");
+        sb.append(" Roles:");
         sendMessage(context, sb.toString());
         sb = new StringBuilder(ChatColor.AQUA.toString());
         for (String roleName : plugin.getRoleManager().getRolesByType(getFilter(context)).keySet()) {

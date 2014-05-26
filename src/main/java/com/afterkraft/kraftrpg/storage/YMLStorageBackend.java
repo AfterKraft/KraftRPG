@@ -85,6 +85,12 @@ public class YMLStorageBackend implements StorageBackend {
         }
         config.set("additional", list);
 
+        list = new ArrayList<String>();
+        for (Role r : data.pastRoles) {
+            list.add(r.getName());
+        }
+        config.set("past", list);
+
         map = new HashMap<String, Object>();
         for (Map.Entry<Role, FixedPoint> entry : data.exp.entrySet()) {
             map.put(entry.getKey().getName(), entry.getValue().rawValue());
@@ -146,6 +152,18 @@ public class YMLStorageBackend implements StorageBackend {
                 ok = false;
             } else {
                 data.additionalRoles.add(r);
+            }
+        }
+
+        list = config.getStringList("past");
+
+        for (String str : list) {
+            Role r = plugin.getRoleManager().getRole(str);
+            if (r == null) {
+                plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
+                ok = false;
+            } else {
+                data.pastRoles.add(r);
             }
         }
 

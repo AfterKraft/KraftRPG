@@ -156,7 +156,7 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
                 e.getCause().printStackTrace();
             } catch (TimeoutException e) {
                 e.printStackTrace();
-                // Can't tell the player about it - this isn't the main thread!!!
+                // Can't tell the player about it - this isn't the main thread!!
                 ret = this;
             }
             if (interrupted) Thread.currentThread().interrupt();
