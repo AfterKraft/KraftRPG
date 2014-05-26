@@ -123,7 +123,7 @@ public class RPGSkillCommand implements TabExecutor {
         SkillCastResult result = new ActiveSkillRunner(plugin).castSkillInitial(champ, (Active) sk, cutArgs);
 
         switch (result) {
-            case CUSTOM_NO_MESSAGE:
+            case CUSTOM_NO_MESSAGE_FAILURE:
                 // no message
                 break;
             case DEAD:
@@ -185,7 +185,7 @@ public class RPGSkillCommand implements TabExecutor {
             case START_DELAY:
                 break;
             case SYNTAX_ERROR:
-                sender.sendMessage(ChatColor.RED + "You have a syntax error in your command. Try " + ChatColor.LIGHT_PURPLE + "/skill " + skillName + " ?" + ChatColor.RED + " .");
+                sender.sendMessage(ChatColor.RED + "You have a syntax error in your command. Try " + ChatColor.LIGHT_PURPLE + "/skill ? " + skillName + ChatColor.RED + " .");
                 break;
             case UNTARGETTABLE_TARGET:
                 sender.sendMessage(ChatColor.RED + "You may not target that.");

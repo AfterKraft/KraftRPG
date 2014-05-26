@@ -42,4 +42,16 @@ public class RPGPartyManager implements PartyManager {
     public Party createParty(PartyMember partyLeader, PartyMember... members) {
         return null;
     }
+
+    @Override
+    public boolean isFriendly(PartyMember a, PartyMember b) {
+        if (!a.hasParty() || !b.hasParty()) return false;
+
+        return false;
+    }
+
+    @Override
+    public boolean isEnemy(PartyMember a, PartyMember b) {
+        return false;
+    }
 }

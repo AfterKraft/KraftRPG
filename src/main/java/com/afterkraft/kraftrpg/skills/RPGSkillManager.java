@@ -15,14 +15,10 @@
  */
 package com.afterkraft.kraftrpg.skills;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
+import com.afterkraft.kraftrpg.api.skills.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -34,29 +30,35 @@ import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.events.roles.RoleChangeEvent;
 import com.afterkraft.kraftrpg.api.events.roles.RoleLevelChangeEvent;
-import com.afterkraft.kraftrpg.api.skills.ISkill;
-import com.afterkraft.kraftrpg.api.skills.Passive;
-import com.afterkraft.kraftrpg.api.skills.PassiveSkill;
-import com.afterkraft.kraftrpg.api.skills.Permissible;
-import com.afterkraft.kraftrpg.api.skills.PermissionSkill;
-import com.afterkraft.kraftrpg.api.skills.SkillArgument;
-import com.afterkraft.kraftrpg.api.skills.SkillManager;
-import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
-import com.afterkraft.kraftrpg.api.skills.Stalled;
 
 
 public class RPGSkillManager implements SkillManager {
-    protected final Map<String, String> skillPermissions;
-    protected final Map<String, ISkill> skillMap;
-    protected final KraftRPGPlugin plugin;
+    private final Map<String, ISkill> skillMap;
+    private final KraftRPGPlugin plugin;
     private SkillManagerListener listener;
 
     public RPGSkillManager(KraftRPGPlugin plugin) {
-        skillPermissions = new HashMap<String, String>();
-        skillMap = ExternalProviderRegistration.getRegisteredSkills();
         this.plugin = plugin;
-
         listener = new SkillManagerListener();
+        skillMap = new HashMap<String, ISkill>();
+
+        for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
+            addSkill(skill);
+        }
+    }
+
+    private static final Set<String> defaultAllowedNodes;
+
+    static {
+        defaultAllowedNodes = new HashSet<String>();
+        for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
+            defaultAllowedNodes.add(setting.node());
+            defaultAllowedNodes.add(setting.scalingNode());
+        }
+        defaultAllowedNodes.remove(null);
+
+        // Add more auto-applied stuff here
+        defaultAllowedNodes.add("requirements");
     }
 
     /**
@@ -71,10 +73,42 @@ public class RPGSkillManager implements SkillManager {
     }
 
     public void addSkill(ISkill skill) {
-        skillMap.put(skill.getName().toLowerCase().replace("skill", ""), skill);
+        if (!checkSkillConfig(skill)) {
+            return;
+        }
+        this.skillMap.put(Skill.getNormalizedName(skill.getName()), skill);
         if (skill instanceof Permissible || skill instanceof Passive) {
             this.listener.addSkill(skill);
         }
+    }
+
+    private boolean checkSkillConfig(ISkill skill) {
+        EnumSet<SkillSetting> settings = EnumSet.copyOf(skill.getUsedConfigNodes());
+        ConfigurationSection section = skill.getDefaultConfig();
+
+        Set<String> allowedKeys = new HashSet<String>(defaultAllowedNodes);
+        // Build the allowedKeys set
+        for (SkillSetting setting : settings) {
+            if (setting == SkillSetting.CUSTOM) {
+                return true;
+            } else if (setting == SkillSetting.CUSTOM_PER_CHAMPION) {
+                continue;
+            }
+            allowedKeys.add(setting.node());
+            allowedKeys.add(setting.scalingNode());
+        }
+        allowedKeys.remove(null);
+
+        // Let's provide a nice message
+        // return allowedKeys.containsAll(section.getKeys(false));
+        for (String configKey : section.getKeys(false)) {
+            if (!allowedKeys.contains(configKey)) {
+                plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
+                plugin.getLogger().severe("  Extra default configuration value " + configKey + " not declared in getUsedConfigNodes()");
+                return false;
+            }
+        }
+        return true;
     }
 
     public ISkill getSkill(String name) {
