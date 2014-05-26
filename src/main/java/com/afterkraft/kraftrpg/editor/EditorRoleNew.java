@@ -71,8 +71,8 @@ public class EditorRoleNew extends EditorPrompt {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else if (rt == RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
-                } else if (rt == RoleType.ADDITIONAL) {
-                    context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
+                // } else if (rt == RoleType.ADDITIONAL) {
+                //     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else {
                     context.setSessionData("role.new.stage", Stage.PICK_PARENT);
                 }
@@ -123,7 +123,8 @@ public class EditorRoleNew extends EditorPrompt {
                 } else if (rt == RoleType.SECONDARY) {
                     return "You don't have a default profession. Should this become the default profession for new users?";
                 } else {
-                    return "Should this additional role be included for new users?";
+                    throw new UnsupportedOperationException();
+                    // return "Should this additional role be included for new users?";
                 }
             case PICK_PARENT:
                 return "Should this role be immediately available, or require mastery of another?\nAnswer with \"yes\" or the role they need to master.";
@@ -142,9 +143,9 @@ public class EditorRoleNew extends EditorPrompt {
 
     private EditorPrompt finish(ConversationContext context) {
         String name = (String) context.getSessionData("role.new.name");
-        RoleType type = (RoleType) context.getSessionData("role.new.type");
-        boolean makeDefault = (Boolean) context.getSessionData("role.new.default");
-        Role parent = (Role) context.getSessionData("role.new.parent");
+        final RoleType type = (RoleType) context.getSessionData("role.new.type");
+        final boolean makeDefault = (Boolean) context.getSessionData("role.new.default");
+        final Role parent = (Role) context.getSessionData("role.new.parent");
 
         Map<Object, Object> map = context.getAllSessionData();
         map.remove("role.new.stage");
@@ -153,7 +154,11 @@ public class EditorRoleNew extends EditorPrompt {
         map.remove("role.new.default");
         map.remove("role.new.parent");
 
-        Role r = new Role(plugin, name, type);
+        final Role r = new Role(plugin, name, type);
+
+        // Implicit commit
+        EditorState.commit(context);
+
         plugin.getRoleManager().addRole(r);
         if (makeDefault) {
             switch (type) {
@@ -164,11 +169,12 @@ public class EditorRoleNew extends EditorPrompt {
                     plugin.getRoleManager().setDefaultSecondaryRole(r);
                     break;
                 case ADDITIONAL:
-                    throw new UnsupportedOperationException("TODO");
+                    throw new UnsupportedOperationException();
             }
         }
-
-        // TODO apply parent
+        if (parent != null) {
+            r.addParent(parent);
+        }
 
         EditorState.setSelectedRole(context, r);
         return new EditorRoleFocus();

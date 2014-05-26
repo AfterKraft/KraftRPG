@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.lang.text.StrMatcher;
 import org.apache.commons.lang.text.StrTokenizer;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
@@ -52,14 +53,24 @@ public final class EditorState {
     public static void applyUnstableDefaultState(ConversationContext context) {
         context.setSessionData("stack", new ArrayList<EditorPrompt>());
         context.setSessionData("queue", new ArrayList<String>());
+        context.setSessionData("actions", new ArrayList<EditorRunnable>());
     }
 
     public static boolean isDirty(ConversationContext context) {
-        return (Boolean) context.getSessionData("dirty");
+        List<EditorRunnable> actions = (List<EditorRunnable>) context.getSessionData("actions");
+        return !actions.isEmpty();
     }
 
-    public static void setDirty(ConversationContext context, boolean dirty) {
-        context.setSessionData("dirty", dirty);
+    public static void commit(ConversationContext context) {
+        List<EditorRunnable> actions = (List<EditorRunnable>) context.getSessionData("actions");
+        for (EditorRunnable run : actions) {
+            run.run(context);
+        }
+    }
+
+    public static void saveAction(ConversationContext context, EditorRunnable runnable) {
+        List<EditorRunnable> actions = (List<EditorRunnable>) context.getSessionData("actions");
+        actions.add(runnable);
     }
 
     public static boolean shouldPrintBanner(ConversationContext context) {

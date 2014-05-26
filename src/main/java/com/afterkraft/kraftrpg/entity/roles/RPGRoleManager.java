@@ -79,8 +79,8 @@ public class RPGRoleManager implements RoleManager {
         if (role == null || !this.roleMap.containsKey(role.getName())) {
             return false;
         }
-        roleGraph.addVertex(role);
         this.roleMap.put(role.getName(), role);
+        roleGraph.addVertex(role);
         return true;
     }
 

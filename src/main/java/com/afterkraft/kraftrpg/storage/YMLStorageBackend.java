@@ -45,6 +45,7 @@ public class YMLStorageBackend implements StorageBackend {
     @Override
     public void initialize() throws Throwable {
         directory = new File(plugin.getDataFolder(), "players");
+        //noinspection ResultOfMethodCallIgnored
         directory.mkdirs();
     }
 

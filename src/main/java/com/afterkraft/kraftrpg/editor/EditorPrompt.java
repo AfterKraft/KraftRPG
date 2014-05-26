@@ -75,6 +75,10 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
             return returnPrompt(context);
         } else if (command.equals("quit")) {
             return END_CONVERSATION;
+        } else if (command.equals("save")) {
+            EditorState.commit(context);
+            sendMessage(context, "%sSaved.", ChatColor.GREEN);
+            return this;
         }
         return null;
     }
@@ -82,6 +86,10 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     public String getPathString(ConversationContext context) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
         StringBuilder builder = new StringBuilder(ChatColor.GOLD.toString());
+        if (EditorState.isDirty(context)) {
+            builder.append("[*] ");
+        }
+
         for (EditorPrompt prompt : stack) {
             builder.append(prompt.getName(context)).append(">");
         }
@@ -107,6 +115,17 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         } else {
             // Players are fine, because we're never modal
             who.sendRawMessage(string);
+        }
+    }
+
+    public void sendMessage(ConversationContext context, String format, Object... args) {
+        Conversable who = context.getForWhom();
+        if (who instanceof ConsoleCommandSender) {
+            // This is required for colors in the console
+            ((ConsoleCommandSender) who).sendMessage(String.format(format, args));
+        } else {
+            // Players are fine, because we're never modal
+            who.sendRawMessage(String.format(format, args));
         }
     }
 
