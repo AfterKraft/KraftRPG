@@ -39,7 +39,7 @@ import com.afterkraft.kraftrpg.entity.RPGCombatTracker;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 import com.afterkraft.kraftrpg.entity.effects.RPGEffectManager;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
-import com.afterkraft.kraftrpg.entity.roles.RPGRoleManager;
+import com.afterkraft.kraftrpg.roles.RPGRoleManager;
 import com.afterkraft.kraftrpg.listeners.RPGListenerManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillConfigManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillManager;
