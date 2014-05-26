@@ -21,9 +21,9 @@ import java.util.Map;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.CircularDependencyException;
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleManager;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.RoleManager;
+import com.afterkraft.kraftrpg.api.roles.RoleType;
 import com.afterkraft.kraftrpg.api.util.DirectedGraph;
 
 

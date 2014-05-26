@@ -25,8 +25,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorRoleMenu extends EditorPrompt {
 

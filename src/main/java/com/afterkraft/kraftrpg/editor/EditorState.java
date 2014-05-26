@@ -26,7 +26,7 @@ import org.apache.commons.lang.text.StrTokenizer;
 
 import org.bukkit.conversations.ConversationContext;
 
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role;
 
 /**
  * This class provides a nicer interface into the key-value store of a

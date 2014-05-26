@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableList;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
-import com.afterkraft.kraftrpg.api.entity.roles.Role;
-import com.afterkraft.kraftrpg.api.entity.roles.RoleType;
+import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorRoleNew extends EditorPrompt {
     private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
