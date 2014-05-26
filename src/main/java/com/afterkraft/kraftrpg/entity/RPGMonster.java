@@ -112,6 +112,11 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     }
 
     @Override
+    public ItemStack[] getArmor() {
+        return this.isEntityValid() ? this.getEntity().getEquipment().getArmorContents() : null;
+    }
+
+    @Override
     public void updateInventory() {
         // Nope! no updating inventories
     }
@@ -124,10 +129,5 @@ public class RPGMonster extends RPGEntityInsentient implements Monster {
     @Override
     public Inventory getInventory() {
         return null;
-    }
-
-    @Override
-    public ItemStack[] getArmor() {
-        return this.isEntityValid() ? this.getEntity().getEquipment().getArmorContents() : null;
     }
 }

@@ -82,6 +82,33 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
+    public void onDisable() {
+        try {
+            this.commandManager.shutdown();
+            this.listenerManager.shutdown();
+            this.entityManager.shutdown();
+            this.combatTracker.shutdown();
+            this.roleManager.shutdown();
+            this.skillManager.shutdown();
+            this.partyManager.shutdown();
+            this.effectManager.shutdown();
+            this.skillConfigManager.shutdown();
+            this.damageManager.shutdown();
+            this.storageManager.shutdown();
+        } catch (Exception e) {
+            log(Level.WARNING, "------------------------------------------------");
+            log(Level.WARNING, "|--- Something did not shut down correctly! ---|");
+            log(Level.WARNING, "|--- Please make sure to report the following -|");
+            log(Level.WARNING, "|--- error to the KraftRPG devs! --------------|");
+            e.printStackTrace();
+            log(Level.WARNING, "|----------------------------------------------|");
+            log(Level.WARNING, "|---------------- End of Error ----------------|");
+            log(Level.WARNING, "------------------------------------------------");
+
+        }
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
         if (CraftBukkitHandler.getInterface() == null) {
@@ -114,33 +141,6 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     private void registerCommandExecutors() {
         commandManager.registerCommand("skill", new RPGSkillCommand(this));
         commandManager.registerCommand("rpg", new RPGParentCommand(this));
-    }
-
-    @Override
-    public void onDisable() {
-        try {
-            this.commandManager.shutdown();
-            this.listenerManager.shutdown();
-            this.entityManager.shutdown();
-            this.combatTracker.shutdown();
-            this.roleManager.shutdown();
-            this.skillManager.shutdown();
-            this.partyManager.shutdown();
-            this.effectManager.shutdown();
-            this.skillConfigManager.shutdown();
-            this.damageManager.shutdown();
-            this.storageManager.shutdown();
-        } catch (Exception e) {
-            log(Level.WARNING, "------------------------------------------------");
-            log(Level.WARNING, "|--- Something did not shut down correctly! ---|");
-            log(Level.WARNING, "|--- Please make sure to report the following -|");
-            log(Level.WARNING, "|--- error to the KraftRPG devs! --------------|");
-            e.printStackTrace();
-            log(Level.WARNING, "|----------------------------------------------|");
-            log(Level.WARNING, "|---------------- End of Error ----------------|");
-            log(Level.WARNING, "------------------------------------------------");
-
-        }
     }
 
     @Override

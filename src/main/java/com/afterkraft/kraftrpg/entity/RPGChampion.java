@@ -15,7 +15,6 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,11 +53,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     @Override
     public void removeSkillRequirement(SkillRequirement skillRequirement) {
 
-    }
-
-    @Override
-    public boolean isDead() {
-        return false;
     }
 
     @Override
@@ -294,8 +288,16 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public Location getLocation() {
-        return this.isEntityValid() ? this.getPlayer().getLocation() : null;
+    public boolean isDead() {
+        return false;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void updateInventory() {
+        if (this.isEntityValid()) {
+            this.getPlayer().updateInventory();
+        }
     }
 
     @Override
@@ -319,6 +321,31 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public ItemStack getItemInHand() {
+        return this.isEntityValid() ? this.getPlayer().getItemInHand() : null;
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return this.isEntityValid() ? this.getPlayer().getInventory() : null;
+    }
+
+    @Override
+    public void sendMessage(String message) {
+        if (this.isEntityValid()) {
+            this.getPlayer().sendMessage(message);
+        }
+    }
+
+    @Override
+    public float getStamina() {
+        if (!this.isEntityValid()) {
+            return 0F;
+        }
+        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
+    }
+
+    @Override
     public final Player getEntity() {
         return (Player) super.getEntity();
     }
@@ -333,14 +360,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
-    public float getStamina() {
-        if (!this.isEntityValid()) {
-            return 0F;
-        }
-        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
-    }
-
-    @Override
     public void modifyStamina(float staminaDiff) {
         if (!this.isEntityValid()) {
             return;
@@ -351,30 +370,6 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         } else {
             getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
         }
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void updateInventory() {
-        if (this.isEntityValid()) {
-            this.getPlayer().updateInventory();
-        }
-    }
-
-    @Override
-    public ItemStack getItemInHand() {
-        if (this.isEntityValid()) {
-            return this.getPlayer().getItemInHand();
-        }
-        return null;
-    }
-
-    @Override
-    public Inventory getInventory() {
-        if (this.isEntityValid()) {
-            return this.getPlayer().getInventory();
-        }
-        return null;
     }
 
     @Override

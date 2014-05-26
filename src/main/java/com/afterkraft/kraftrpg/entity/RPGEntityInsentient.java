@@ -24,7 +24,10 @@ import java.util.Set;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -73,11 +76,33 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     }
 
     @Override
-    public Location getLocation() {
-        if (this.isEntityValid()) {
-            return this.getEntity().getLocation();
-        }
+    public void updateInventory() {
+
+    }
+
+    @Override
+    public ItemStack getItemInHand() {
+        return this.isEntityValid() ? this.getEntity().getEquipment().getItemInHand() : null;
+    }
+
+    @Override
+    public Inventory getInventory() {
         return null;
+    }
+
+    @Override
+    public Location getLocation() {
+        return this.isEntityValid() ? this.getEntity().getLocation() : null;
+    }
+
+    @Override
+    public World getWorld() {
+        return this.isEntityValid() ? this.getLocation().getWorld() : null;
+    }
+
+    @Override
+    public boolean isOnGround() {
+        return this.isEntityValid() && this.getEntity().isOnGround();
     }
 
     @Override
@@ -192,5 +217,10 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
                 this.manualRemoveEffect(effect);
             }
         }
+    }
+
+    @Override
+    public void sendMessage(String message) {
+
     }
 }

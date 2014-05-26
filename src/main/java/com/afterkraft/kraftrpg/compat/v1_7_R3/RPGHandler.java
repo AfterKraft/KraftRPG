@@ -81,14 +81,7 @@ import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
 
 public class RPGHandler extends CraftBukkitHandler {
-    private Field ldbpt;
-    private Field conversationTracker, conversationQueue, currentPrompt;
-    private Field modifiersField;
-    private Random random;
-    private boolean listenersLoaded = false;
-    private EnumMap<EntityAttributeType, IAttribute> iattrMap;
     private static final Map<String, PotionEffectType> otherPotionEffectNames = new HashMap<String, PotionEffectType>();
-
     static {
         otherPotionEffectNames.put("nausea", PotionEffectType.CONFUSION);
         otherPotionEffectNames.put("resistance", PotionEffectType.DAMAGE_RESISTANCE);
@@ -101,6 +94,12 @@ public class RPGHandler extends CraftBukkitHandler {
         otherPotionEffectNames.put("fatigue", PotionEffectType.SLOW_DIGGING);
         otherPotionEffectNames.put("mining_fatigue", PotionEffectType.SLOW_DIGGING);
     }
+    private Field ldbpt;
+    private Field conversationTracker, conversationQueue, currentPrompt;
+    private Field modifiersField;
+    private Random random;
+    private boolean listenersLoaded = false;
+    private EnumMap<EntityAttributeType, IAttribute> iattrMap;
 
     public RPGHandler(ServerType type) {
         super(type);
