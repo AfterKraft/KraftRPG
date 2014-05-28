@@ -71,7 +71,7 @@ public class RPGEntity implements IEntity {
     }
 
     @Override
-    public final boolean setEntity(Entity entity) {
+    public boolean setEntity(Entity entity) {
         if (!this.uuid.equals(entity.getUniqueId())) {
             return false;
         }

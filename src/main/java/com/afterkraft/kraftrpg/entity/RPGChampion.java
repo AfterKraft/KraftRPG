@@ -293,7 +293,9 @@ public class RPGChampion extends RPGInsentient implements Champion {
             return 0F;
         }
         return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
-    }    @Override
+    }
+
+    @Override
     public boolean isDead() {
         return false;
     }
@@ -309,7 +311,9 @@ public class RPGChampion extends RPGInsentient implements Champion {
         } else {
             getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
         }
-    }    @Override
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
     public void updateInventory() {
         if (this.isEntityValid()) {
@@ -320,7 +324,19 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public ItemStack[] getArmor() {
         return this.isEntityValid() ? this.getPlayer().getInventory().getArmorContents() : new ItemStack[4];
-    }    @Override
+    }
+
+    @Override
+    public FixedPoint getRewardExperience() {
+        return new FixedPoint();     // TODO implement this
+    }
+
+    @Override
+    public void setRewardExperience(FixedPoint experience) {
+           // TODO implement this
+    }
+
+    @Override
     public final Player getPlayer() {
         return this.getEntity();
     }
@@ -328,7 +344,9 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean hasParty() {
         return party != null;
-    }    @Override
+    }
+
+    @Override
     public final void setPlayer(final Player player) {
         this.setEntity(player);
     }
@@ -336,15 +354,19 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Party getParty() {
         return party;
-    }    @Override
-    public void setEntity(Player player) {
-        setPlayer(player);
+    }
+
+    @Override
+    public boolean setEntity(Player player) {
+        return super.setEntity(player);
     }
 
     @Override
     public void setParty(Party party) {
         this.party = party;
-    }    @Override
+    }
+
+    @Override
     public PlayerData getData() {
         return data;
     }
@@ -352,7 +374,9 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public void leaveParty() {
         this.party = null;
-    }    @Override
+    }
+
+    @Override
     public PlayerData getDataClone() {
         return data.clone();
     }

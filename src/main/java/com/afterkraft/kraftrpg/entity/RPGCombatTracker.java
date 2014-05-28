@@ -20,6 +20,7 @@ import java.util.WeakHashMap;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.CombatTracker;
 import com.afterkraft.kraftrpg.api.entity.EnterCombatReason;
+import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
 
@@ -41,37 +42,37 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
-    public void enterCombat(Sentient target, EnterCombatReason reason) {
+    public void enterCombat(Insentient target, EnterCombatReason reason) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void enterCombatWith(Sentient target, Sentient attacker, EnterCombatReason reason) {
+    public void enterCombatWith(Insentient target, Insentient attacker, EnterCombatReason reason) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void leaveCombat(Sentient target, LeaveCombatReason reason) {
+    public void leaveCombat(Insentient target, LeaveCombatReason reason) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void leaveCombatWith(Sentient target, Sentient attacker, LeaveCombatReason reason) {
+    public void leaveCombatWith(Insentient target, Insentient attacker, LeaveCombatReason reason) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public boolean isInCombat(Sentient sentient) {
+    public boolean isInCombat(Insentient being) {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isInCombatWith(Sentient target, Sentient potentialAttacker) {
+    public boolean isInCombatWith(Insentient target, Insentient potentialAttacker) {
         // TODO Auto-generated method stub
         return false;
     }

@@ -83,12 +83,12 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
-    public FixedPoint getExperience() {
+    public FixedPoint getRewardExperience() {
         return this.experience;
     }
 
     @Override
-    public void setExperience(FixedPoint experience) {
+    public void setRewardExperience(FixedPoint experience) {
         if (!isEntityValid()) {
             return;
         }
