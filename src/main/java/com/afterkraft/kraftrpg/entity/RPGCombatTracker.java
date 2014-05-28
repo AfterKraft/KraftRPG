@@ -42,19 +42,7 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
-    public void enterCombat(Insentient target, EnterCombatReason reason) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void enterCombatWith(Insentient target, Insentient attacker, EnterCombatReason reason) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void leaveCombat(Insentient target, LeaveCombatReason reason) {
         // TODO Auto-generated method stub
 
     }
