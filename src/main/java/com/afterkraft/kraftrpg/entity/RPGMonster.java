@@ -31,7 +31,7 @@ import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.listeners.EntityListener;
 
 
-public class RPGMonster extends RPGEntityInsentient implements Monster {
+public class RPGMonster extends RPGInsentient implements Monster {
 
     private FixedPoint experience = new FixedPoint();
     private double baseDamage = 0;

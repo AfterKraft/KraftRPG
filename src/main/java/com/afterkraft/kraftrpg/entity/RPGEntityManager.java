@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -31,7 +32,6 @@ import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Monster;
-import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
@@ -40,6 +40,7 @@ public class RPGEntityManager implements EntityManager {
     private final KraftRPGPlugin plugin;
     private final Map<UUID, Champion> champions;
     private final Map<UUID, Monster> monsters;
+    private final Map<UUID, IEntity> entities;
     private int entityTaskID;
     private int potionTaskID;
 
@@ -49,28 +50,17 @@ public class RPGEntityManager implements EntityManager {
         this.plugin = plugin;
         this.champions = new HashMap<UUID, Champion>();
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
+        this.entities = new ConcurrentHashMap<UUID, IEntity>();
         this.storage = this.plugin.getStorage();
     }
 
-    public final IEntity getEntity(LivingEntity entity) {
+    public final IEntity getEntity(Entity entity) {
         if (entity instanceof Player) {
             return this.getChampion((Player) entity);
-        } else {
-            return this.getMonster(entity);
-        }
-    }
-
-    @Override
-    public IEntity getEntity(SkillCaster caster) {
-        if (caster instanceof Champion) {
-            return (Champion) caster;
-        } else if (caster instanceof Monster) {
-            return (Monster) caster;
-        } else if (caster instanceof IEntity) {
-            return (IEntity) caster;
-        } else {
-            return null;
-        }
+        } else if (entity instanceof LivingEntity) {
+            return this.getMonster((LivingEntity) entity);
+        } else
+            return this.getIEntity(entity);
     }
 
     public Champion getChampion(Player player) {
@@ -100,7 +90,7 @@ public class RPGEntityManager implements EntityManager {
             final Monster monster = new RPGMonster(plugin, entity);
             monsters.put(id, monster);
 
-            Bukkit.getScheduler().runTaskLater(plugin, new RPGSingleEntityReaper(monster), 200);
+            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(monster), 200, 200);
 
             return monster;
         }
@@ -110,11 +100,8 @@ public class RPGEntityManager implements EntityManager {
         return this.monsters.containsKey(entity.getUniqueId());
     }
 
-    // api - StorageFrontends call this
     public Champion createChampion(Player player, PlayerData data) {
-        // do NOT add to the champions map! that's done elsewhere
-        Champion champ = new RPGChampion(plugin, player, data);
-        return champ;
+        return new RPGChampion(plugin, player, data);
     }
 
     public boolean addMonster(Monster monster) {
@@ -139,20 +126,24 @@ public class RPGEntityManager implements EntityManager {
         return null;
     }
 
-    /**
-     * Attempts to add the given RPGChampion to this player mapping. This
-     * should only be used to add an RPGChampion for custom RPGPlayers that
-     * aren't covered by KraftRPG.
-     * 
-     * @param player - The RPGChampion to add to the player mapping
-     * @return true if the RPGChampion addition was successful
-     */
-    public boolean addChampion(Champion player) {
-        if (!player.isEntityValid() || this.champions.containsKey(player.getPlayer().getUniqueId())) {
-            return false;
+    private IEntity getIEntity(Entity entity) {
+        final UUID id = entity.getUniqueId();
+        if (entities.containsKey(id)) {
+            return entities.get(id);
+        } else {
+            final IEntity iEntity = new RPGEntity(plugin, entity, entity.toString());
+            entities.put(id, iEntity);
+            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(iEntity), 200, 200);
+            return iEntity;
         }
-        this.champions.put(player.getPlayer().getUniqueId(), player);
-        return true;
+    }
+
+    private void removeEntity(IEntity entity) {
+        if (entity instanceof Monster) {
+            removeMonster((Monster) entity);
+        } else {
+            entities.remove(((RPGEntity) entity).uuid);
+        }
     }
 
     public void removeMonster(Monster monster) {
@@ -187,7 +178,7 @@ public class RPGEntityManager implements EntityManager {
             tempPlayer.potionEffectQueue.clear();
         }
         while (monsterIterator.hasNext()) {
-            RPGEntityInsentient tempEntity = (RPGEntityInsentient) monsterIterator.next().getValue();
+            RPGInsentient tempEntity = (RPGInsentient) monsterIterator.next().getValue();
             tempEntity.potionEffectQueue.clear();
         }
     }
@@ -244,7 +235,7 @@ public class RPGEntityManager implements EntityManager {
                 }
             }
             while (monsterIterator.hasNext()) {
-                RPGEntityInsentient tempEntity = (RPGEntityInsentient) monsterIterator.next().getValue();
+                RPGInsentient tempEntity = (RPGInsentient) monsterIterator.next().getValue();
                 if (tempEntity.potionEffectQueue.poll() != null && tempEntity.isEntityValid()) {
                     LivingEntity entity = tempEntity.getEntity();
                     RPGPotionEffect effect = tempEntity.potionEffectQueue.remove();
@@ -260,16 +251,16 @@ public class RPGEntityManager implements EntityManager {
 
     private class RPGSingleEntityReaper implements Runnable {
 
-        private Monster monster;
+        private IEntity monster;
 
-        public RPGSingleEntityReaper(Monster m) {
+        public RPGSingleEntityReaper(IEntity m) {
             this.monster = m;
         }
 
         @Override
         public void run() {
             if (!monster.isEntityValid()) {
-                removeMonster(monster);
+                removeEntity(monster);
             }
         }
 

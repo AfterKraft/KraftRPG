@@ -18,8 +18,11 @@ package com.afterkraft.kraftrpg.entity;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.mutable.MutableInt;
 
@@ -38,13 +41,14 @@ import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
 import com.afterkraft.kraftrpg.api.entity.effects.Timed;
 
 
-public abstract class RPGEntityInsentient extends RPGEntity implements Insentient {
+public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     protected final Map<String, IEffect> effects = new HashMap<String, IEffect>();
     protected final ArrayDeque<RPGPotionEffect> potionEffectQueue = new ArrayDeque<RPGPotionEffect>();
     protected MutableInt mana = new MutableInt(0);
+    protected Map<String, Double> healthMap = new ConcurrentHashMap<String, Double>();
 
-    protected RPGEntityInsentient(RPGPlugin plugin, LivingEntity lEntity, String name) {
+    protected RPGInsentient(RPGPlugin plugin, LivingEntity lEntity, String name) {
         super(plugin, lEntity, name);
     }
 
@@ -64,10 +68,127 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     }
 
     @Override
+    public LivingEntity getEntity() {
+        return (LivingEntity) super.getEntity();
+    }
+
+    @Override
+    public UUID getUniqueID() {
+        return this.isEntityValid() ? this.getEntity().getUniqueId() : null;
+    }
+
+    @Override
+    public Location getLocation() {
+        return this.isEntityValid() ? this.getEntity().getLocation() : null;
+    }
+
+    @Override
+    public World getWorld() {
+        return this.isEntityValid() ? this.getLocation().getWorld() : null;
+    }
+
+    @Override
+    public boolean isOnGround() {
+        return this.isEntityValid() && this.getEntity().isOnGround();
+    }
+
+    @Override
     public void setHealth(double health) {
         if (this.isEntityValid()) {
             this.getEntity().setHealth(health);
         }
+    }
+
+    /**
+     * Adds to the character's maximum health. Maps the amount of health to
+     * add to a key. This operation will fail if the character already has a
+     * health value with the specific key. This operation will add health to
+     * the character's current health.
+     *
+     * @param key to give
+     * @param value amount
+     * @return true if the operation was successful
+     */
+    @Override
+    public boolean addMaxHealth(String key, double value) {
+        if (!this.isEntityValid()) {
+            return false;
+        }
+        // can't add maxHealth to dead players
+        if (this.getEntity().getHealth() < 1) {
+            return false;
+        }
+        if (healthMap.containsKey(key)) {
+            return false;
+        }
+        healthMap.put(key, value);
+        this.getEntity().setMaxHealth(this.getEntity().getMaxHealth() + value);
+        this.getEntity().setHealth(value + this.getEntity().getHealth());
+        return true;
+    }
+
+    /**
+     * Thread-Safe Removes a maximum health addition on the character. This
+     * will also remove current health from the character, down to a minimum
+     * of 1.
+     *
+     * @param key to remove
+     * @return true if health was removed.
+     */
+    @Override
+    public boolean removeMaxHealth(String key) {
+        if (!this.isEntityValid()) {
+            return false;
+        }
+        LivingEntity entity = this.getEntity();
+        Double old = healthMap.remove(key);
+        double currentHealth = entity.getHealth();
+        if (old != null) {
+            double newHealth = entity.getHealth() - old;
+            if (currentHealth > 0 && newHealth < 1) {
+                newHealth = 1;
+
+            }
+            if (this.getEntity().getHealth() != 0) {
+                entity.setHealth(newHealth);
+            }
+            entity.setMaxHealth(entity.getMaxHealth() - old);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public double recalculateMaxHealth() {
+        return 0;
+    }
+
+    @Override
+    public void heal(double amount) {
+
+    }
+
+    /**
+     * Thread-Safe removes all max-health bonuses from the character.
+     */
+    @Override
+    public void clearHealthBonuses() {
+        if (!this.isEntityValid()) {
+            return;
+        }
+        double current = this.getEntity().getHealth();
+        Iterator<Map.Entry<String, Double>> iter = healthMap.entrySet().iterator();
+        int minus = 0;
+        while (iter.hasNext()) {
+            Double val = iter.next().getValue();
+            iter.remove();
+            current -= val;
+            minus += val;
+        }
+        if (this.getEntity().getHealth() != 0) {
+            this.getEntity().setHealth(current < 0 ? 0 : current);
+        }
+        this.getEntity().setMaxHealth(this.getEntity().getMaxHealth() - minus);
     }
 
     @Override
@@ -88,21 +209,6 @@ public abstract class RPGEntityInsentient extends RPGEntity implements Insentien
     @Override
     public Inventory getInventory() {
         return null;
-    }
-
-    @Override
-    public Location getLocation() {
-        return this.isEntityValid() ? this.getEntity().getLocation() : null;
-    }
-
-    @Override
-    public World getWorld() {
-        return this.isEntityValid() ? this.getLocation().getWorld() : null;
-    }
-
-    @Override
-    public boolean isOnGround() {
-        return this.isEntityValid() && this.getEntity().isOnGround();
     }
 
     @Override

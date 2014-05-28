@@ -40,7 +40,7 @@ import com.afterkraft.kraftrpg.api.util.SkillRequirement;
 import com.afterkraft.kraftrpg.util.MathUtil;
 
 
-public class RPGChampion extends RPGEntityInsentient implements Champion {
+public class RPGChampion extends RPGInsentient implements Champion {
     private PlayerData data;
     private Stalled stalled;
     private transient Party party;
@@ -288,11 +288,28 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public float getStamina() {
+        if (!this.isEntityValid()) {
+            return 0F;
+        }
+        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
+    }    @Override
     public boolean isDead() {
         return false;
     }
 
     @Override
+    public void modifyStamina(float staminaDiff) {
+        if (!this.isEntityValid()) {
+            return;
+        }
+        if (staminaDiff < 0) {
+            // adding to exhaustion when negative
+            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
+        } else {
+            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
+        }
+    }    @Override
     @SuppressWarnings("deprecation")
     public void updateInventory() {
         if (this.isEntityValid()) {
@@ -301,21 +318,41 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
     }
 
     @Override
+    public ItemStack[] getArmor() {
+        return this.isEntityValid() ? this.getPlayer().getInventory().getArmorContents() : new ItemStack[4];
+    }    @Override
     public final Player getPlayer() {
         return this.getEntity();
     }
 
     @Override
+    public boolean hasParty() {
+        return party != null;
+    }    @Override
     public final void setPlayer(final Player player) {
         this.setEntity(player);
     }
 
     @Override
+    public Party getParty() {
+        return party;
+    }    @Override
+    public void setEntity(Player player) {
+        setPlayer(player);
+    }
+
+    @Override
+    public void setParty(Party party) {
+        this.party = party;
+    }    @Override
     public PlayerData getData() {
         return data;
     }
 
     @Override
+    public void leaveParty() {
+        this.party = null;
+    }    @Override
     public PlayerData getDataClone() {
         return data.clone();
     }
@@ -337,13 +374,7 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
         }
     }
 
-    @Override
-    public float getStamina() {
-        if (!this.isEntityValid()) {
-            return 0F;
-        }
-        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
-    }
+
 
     @Override
     public final Player getEntity() {
@@ -359,41 +390,15 @@ public class RPGChampion extends RPGEntityInsentient implements Champion {
 
     }
 
-    @Override
-    public void modifyStamina(float staminaDiff) {
-        if (!this.isEntityValid()) {
-            return;
-        }
-        if (staminaDiff < 0) {
-            // adding to exhaustion when negative
-            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
-        } else {
-            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
-        }
-    }
 
-    @Override
-    public ItemStack[] getArmor() {
-        return this.isEntityValid() ? this.getPlayer().getInventory().getArmorContents() : new ItemStack[4];
-    }
 
-    @Override
-    public boolean hasParty() {
-        return party != null;
-    }
 
-    @Override
-    public Party getParty() {
-        return party;
-    }
 
-    @Override
-    public void setParty(Party party) {
-        this.party = party;
-    }
 
-    @Override
-    public void leaveParty() {
-        this.party = null;
-    }
+
+
+
+
+
+
 }

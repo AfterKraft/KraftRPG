@@ -333,6 +333,9 @@ public class RPGHandler extends CraftBukkitHandler {
 
     @Override
     public boolean damageEntity(LivingEntity target, LivingEntity attacker, double damage, DamageCause cause, boolean knockback) {
+        if (target == null || attacker == null) { // We have to consider that Insentient.getEntity() may return null
+            return false;
+        }
         if (target.isDead() || (target.getHealth() <= 0)) {
             return false;
         }

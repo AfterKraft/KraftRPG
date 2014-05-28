@@ -16,27 +16,25 @@
 package com.afterkraft.kraftrpg.entity;
 
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 
-public abstract class RPGEntity implements IEntity {
+public class RPGEntity implements IEntity {
 
     protected final RPGPlugin plugin;
     protected final String name;
     protected final UUID uuid;
-    protected WeakReference<LivingEntity> lEntity;
-    protected Map<String, Double> healthMap = new ConcurrentHashMap<String, Double>();
+    protected WeakReference<Entity> lEntity;
 
-    public RPGEntity(RPGPlugin plugin, LivingEntity lEntity, String name) {
+    public RPGEntity(RPGPlugin plugin, Entity lEntity, String name) {
         this.plugin = plugin;
-        this.lEntity = new WeakReference<LivingEntity>(lEntity);
+        this.lEntity = new WeakReference<Entity>(lEntity);
         this.name = name != null ? name : lEntity.getType().name();
         this.uuid = lEntity.getUniqueId();
     }
@@ -65,7 +63,7 @@ public abstract class RPGEntity implements IEntity {
      *         LivingEntity no longer exists
      */
     @Override
-    public LivingEntity getEntity() {
+    public Entity getEntity() {
         if (!isEntityValid()) {
             return null;
         }
@@ -73,104 +71,32 @@ public abstract class RPGEntity implements IEntity {
     }
 
     @Override
-    public final boolean setEntity(LivingEntity entity) {
+    public final boolean setEntity(Entity entity) {
         if (!this.uuid.equals(entity.getUniqueId())) {
             return false;
         }
-        this.lEntity = new WeakReference<LivingEntity>(entity);
+        this.lEntity = new WeakReference<Entity>(entity);
         return true;
     }
 
-    /**
-     * Adds to the character's maximum health. Maps the amount of health to
-     * add to a key. This operation will fail if the character already has a
-     * health value with the specific key. This operation will add health to
-     * the character's current health.
-     * 
-     * @param key to give
-     * @param value amount
-     * @return true if the operation was successful
-     */
     @Override
-    public boolean addMaxHealth(String key, double value) {
-        if (!this.isEntityValid()) {
-            return false;
-        }
-        // can't add maxHealth to dead players
-        if (this.getEntity().getHealth() < 1) {
-            return false;
-        }
-        if (healthMap.containsKey(key)) {
-            return false;
-        }
-        healthMap.put(key, value);
-        this.getEntity().setMaxHealth(this.getEntity().getMaxHealth() + value);
-        this.getEntity().setHealth(value + this.getEntity().getHealth());
-        return true;
-    }
-
-    /**
-     * Thread-Safe Removes a maximum health addition on the character. This
-     * will also remove current health from the character, down to a minimum
-     * of 1.
-     * 
-     * @param key to remove
-     * @return true if health was removed.
-     */
-    @Override
-    public boolean removeMaxHealth(String key) {
-        if (!this.isEntityValid()) {
-            return false;
-        }
-        LivingEntity entity = this.getEntity();
-        Double old = healthMap.remove(key);
-        double currentHealth = entity.getHealth();
-        if (old != null) {
-            double newHealth = entity.getHealth() - old;
-            if (currentHealth > 0 && newHealth < 1) {
-                newHealth = 1;
-
-            }
-            if (this.getEntity().getHealth() != 0) {
-                entity.setHealth(newHealth);
-            }
-            entity.setMaxHealth(entity.getMaxHealth() - old);
-            return true;
-        }
-        return false;
+    public UUID getUniqueID() {
+        return isEntityValid() ? this.getEntity().getUniqueId() : null;
     }
 
     @Override
-    public double recalculateMaxHealth() {
-        return 0;
+    public Location getLocation() {
+        return isEntityValid() ? this.getEntity().getLocation() : null;
     }
 
     @Override
-    public void heal(double amount) {
-
+    public World getWorld() {
+        return isEntityValid() ? this.getEntity().getLocation().getWorld() : null;
     }
 
-    /**
-     * Thread-Safe removes all max-health bonuses from the character.
-     */
     @Override
-    public void clearHealthBonuses() {
-        if (!this.isEntityValid()) {
-            return;
-        }
-        double current = this.getEntity().getHealth();
-        Iterator<Map.Entry<String, Double>> iter = healthMap.entrySet().iterator();
-        int minus = 0;
-        while (iter.hasNext()) {
-            Double val = iter.next().getValue();
-            iter.remove();
-            current -= val;
-            minus += val;
-        }
-        if (this.getEntity().getHealth() != 0) {
-            this.getEntity().setHealth(current < 0 ? 0 : current);
-        }
-        this.getEntity().setMaxHealth(this.getEntity().getMaxHealth() - minus);
+    public boolean isOnGround() {
+        return isEntityValid() && this.getEntity().isOnGround();
     }
 
     @Override
