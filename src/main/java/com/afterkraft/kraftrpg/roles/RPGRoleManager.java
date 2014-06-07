@@ -113,11 +113,6 @@ public class RPGRoleManager implements RoleManager {
     }
 
     @Override
-    public void queueRoleRefresh(Role role, RoleRefreshReason reason) {
-
-    }
-
-    @Override
     public boolean addRoleDependency(Role parent, Role child) {
         if (parent == null || child == null) {
             return false;

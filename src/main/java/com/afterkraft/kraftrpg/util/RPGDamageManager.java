@@ -93,6 +93,31 @@ public class RPGDamageManager implements DamageManager {
         return 0;
     }
 
+    @Override
+    public double getDefaultItemDamage(Material type, double damage) {
+        return 0;
+    }
+
+    @Override
+    public double getDefaultItemDamage(Material type) {
+        return 0;
+    }
+
+    @Override
+    public void setDefaultItemDamage(Material type, double damage) {
+
+    }
+
+    @Override
+    public boolean doesItemDamageVary(Material type) {
+        return false;
+    }
+
+    @Override
+    public void setItemDamageVarying(Material type, boolean isVarying) {
+
+    }
+
     public double getEntityDamage(EntityType type) {
         return this.defaultCreatureDamage.get(type);
     }
@@ -147,6 +172,16 @@ public class RPGDamageManager implements DamageManager {
     @Override
     public double getModifiedEntityHealth(LivingEntity entity) {
         return 0;
+    }
+
+    @Override
+    public boolean doesEntityDealVaryingDamage(EntityType type) {
+        return false;
+    }
+
+    @Override
+    public void setEntityToDealVaryingDamage(EntityType type, boolean dealsVaryingDamage) {
+
     }
 
 

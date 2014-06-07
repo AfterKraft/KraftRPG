@@ -103,6 +103,7 @@ public class RPGHandler extends CraftBukkitHandler {
 
     public RPGHandler(ServerType type) {
         super(type);
+        serverType = type;
         plugin = KraftRPGPlugin.getInstance();
         try {
             try {

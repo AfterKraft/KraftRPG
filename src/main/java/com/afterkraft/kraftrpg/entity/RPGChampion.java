@@ -28,6 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
+import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.roles.Role;
 import com.afterkraft.kraftrpg.api.roles.RoleType;
@@ -301,6 +302,11 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
+    public int getNoDamageTicks() {
+        return 0;
+    }
+
+    @Override
     public void modifyStamina(float staminaDiff) {
         if (!this.isEntityValid()) {
             return;
@@ -414,15 +420,15 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     }
 
+    @Override
+    public DamageWrapper getDamageWrapper() {
+        return null;
+    }
 
+    @Override
+    public void setDamageWrapper(DamageWrapper wrapper) {
 
-
-
-
-
-
-
-
+    }
 
 
 }

@@ -27,6 +27,7 @@ import org.bukkit.metadata.MetadataValue;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.listeners.EntityListener;
 
@@ -99,6 +100,21 @@ public class RPGMonster extends RPGInsentient implements Monster {
     @Override
     public SpawnReason getSpawnReason() {
         return this.spawnReason;
+    }
+
+    @Override
+    public DamageWrapper getDamageWrapper() {
+        return null;
+    }
+
+    @Override
+    public void setDamageWrapper(DamageWrapper wrapper) {
+
+    }
+
+    @Override
+    public int getNoDamageTicks() {
+        return 0;
     }
 
     @Override

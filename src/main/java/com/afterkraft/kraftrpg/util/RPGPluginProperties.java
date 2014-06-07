@@ -29,14 +29,15 @@ import com.afterkraft.kraftrpg.api.util.Properties;
 public class RPGPluginProperties implements Properties {
 
     public static String storageType = "yml";
-    public static boolean isMobDamageDistanceModified;
-    public static boolean isMobHealthDistanceModified;
-    public static boolean isMobExpDistanceModified;
-    public static double mobDamageDistanceModified;
-    public static double mobHealthDistanceModified;
-    public static double mobExpDistanceModified;
-    public static double distanceTierModifier;
-    public static int maxLevel;
+    public static boolean isMobDamageDistanceModified = false;
+    public static boolean isMobHealthDistanceModified = false;
+    public static boolean isMobExpDistanceModified = false;
+    public static boolean isDamageVarying = false;
+    public static double mobDamageDistanceModified = 0D;
+    public static double mobHealthDistanceModified = 0D;
+    public static double mobExpDistanceModified = 0D;
+    public static double distanceTierModifier = 0D;
+    public static int maxLevel = 50;
     public static int[] levels;
     public Map<EntityType, FixedPoint> creatureExperienceDrop = new EnumMap<EntityType, FixedPoint>(EntityType.class);
 
@@ -68,7 +69,6 @@ public class RPGPluginProperties implements Properties {
         return isMobExpDistanceModified;
     }
 
-
     public String getStorageType() {
         return storageType.toLowerCase();
     }
@@ -76,6 +76,16 @@ public class RPGPluginProperties implements Properties {
     @Override
     public int getDefaultGlobalCooldown() {
         return 0;
+    }
+
+    @Override
+    public boolean isVaryingDamageEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isStarvingDamageEnabled() {
+        return false;
     }
 
     @Override

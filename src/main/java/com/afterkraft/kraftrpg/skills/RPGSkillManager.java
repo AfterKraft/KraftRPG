@@ -83,6 +83,9 @@ public class RPGSkillManager implements SkillManager {
     }
 
     private boolean checkSkillConfig(ISkill skill) {
+        if (skill.getUsedConfigNodes() == null) {
+            return true;
+        }
         EnumSet<SkillSetting> settings = EnumSet.copyOf(skill.getUsedConfigNodes());
         ConfigurationSection section = skill.getDefaultConfig();
 

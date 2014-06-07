@@ -40,7 +40,9 @@ public final class ActiveSkillRunner {
         if (caster.isDead()) {
             return SkillCastResult.DEAD;
         }
-
+        if (caster != null) {
+            return skill.useSkill(caster);
+        }
         if (!caster.canUseSkill(skill)) {
             return SkillCastResult.NOT_AVAILABLE;
         }

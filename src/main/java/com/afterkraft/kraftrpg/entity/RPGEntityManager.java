@@ -77,6 +77,7 @@ public class RPGEntityManager implements EntityManager {
             champions.put(player.getUniqueId(), champion);
         } else {
             champion = createChampion(player, new PlayerData());
+            champions.put(player.getUniqueId(), champion);
             storage.saveChampion(champion);
         }
         return champion;
@@ -96,12 +97,31 @@ public class RPGEntityManager implements EntityManager {
         }
     }
 
-    public boolean isMonsterSetup(LivingEntity entity) {
-        return this.monsters.containsKey(entity.getUniqueId());
+    @Override
+    public boolean isEntityManaged(Entity entity) {
+        return this.monsters.containsKey(entity.getUniqueId()) || this.entities.containsKey(entity.getUniqueId()) || this.champions.containsKey(entity.getUniqueId());
     }
 
     public Champion createChampion(Player player, PlayerData data) {
         return new RPGChampion(plugin, player, data);
+    }
+
+    @Override
+    public boolean addEntity(IEntity entity) throws IllegalArgumentException {
+        if (entity instanceof Champion) {
+           if (this.champions.containsKey(entity.getUniqueID())) {
+               if (this.champions.get(entity.getUniqueID()).equals(entity)) {
+                   throw new IllegalArgumentException("Third Party Plugins can't add duplicate Champions!");
+               } else {
+                   throw new IllegalArgumentException("The provided players differ in their ID! Can't add custom Champions with duplicate ID's!");
+               }
+           }
+        } else if (entity instanceof Monster) {
+            this.monsters.put(entity.getUniqueID(), (Monster) entity);
+        } else {
+            this.entities.put(entity.getUniqueID(), entity);
+        }
+        return false;
     }
 
     public boolean addMonster(Monster monster) {

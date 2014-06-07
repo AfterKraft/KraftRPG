@@ -51,7 +51,7 @@ public class RPGEntity implements IEntity {
 
     @Override
     public final boolean isEntityValid() {
-        return this.isValid() && this.getEntity().isValid();
+        return this.lEntity.get() != null && this.lEntity.get().isValid();
     }
 
     /**
