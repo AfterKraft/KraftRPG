@@ -57,10 +57,11 @@ public class RPGEntityManager implements EntityManager {
     public final IEntity getEntity(Entity entity) {
         if (entity instanceof Player) {
             return this.getChampion((Player) entity);
-        } else if (entity instanceof LivingEntity) {
-            return this.getMonster((LivingEntity) entity);
-        } else
+        } else if (entity instanceof LivingEntity && this.monsters.containsKey(entity.getUniqueId())) {
+            return getMonster((LivingEntity) entity);
+        } else {
             return this.getIEntity(entity);
+        }
     }
 
     public Champion getChampion(Player player) {
@@ -115,26 +116,23 @@ public class RPGEntityManager implements EntityManager {
                } else {
                    throw new IllegalArgumentException("The provided players differ in their ID! Can't add custom Champions with duplicate ID's!");
                }
+           } else {
+               this.champions.put(entity.getUniqueID(), (Champion) entity);
+               return true;
            }
-        } else if (entity instanceof Monster) {
+        } else if (entity instanceof Monster && !this.monsters.containsKey(entity.getUniqueID())) {
+            if (this.entities.containsKey(entity.getUniqueID())) {
+                throw new IllegalArgumentException("The provided custom entity is already registered with KraftRPG!");
+            }
             this.monsters.put(entity.getUniqueID(), (Monster) entity);
-        } else {
+            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(entity), 200, 200);
+            return true;
+        } else if (!this.entities.containsKey(entity.getUniqueID())) {
             this.entities.put(entity.getUniqueID(), entity);
-        }
-        return false;
-    }
-
-    public boolean addMonster(Monster monster) {
-        if (!monster.isEntityValid()) {
-            return false;
-        }
-        final UUID id = monster.getEntity().getUniqueId();
-        if (this.monsters.containsKey(id)) {
-            return false;
-        } else {
-            this.monsters.put(id, monster);
+            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(entity), 200, 200);
             return true;
         }
+        return false;
     }
 
     public Monster getMonster(UUID uuid) {
@@ -162,12 +160,12 @@ public class RPGEntityManager implements EntityManager {
         if (entity instanceof Monster) {
             removeMonster((Monster) entity);
         } else {
-            entities.remove(((RPGEntity) entity).uuid);
+            entities.remove(entity.getUniqueID());
         }
     }
 
     public void removeMonster(Monster monster) {
-        monsters.remove(((RPGEntity) monster).uuid);
+        monsters.remove(monster.getUniqueID());
     }
 
     @Override

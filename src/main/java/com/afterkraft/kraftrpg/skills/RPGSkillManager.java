@@ -180,13 +180,18 @@ public class RPGSkillManager implements SkillManager {
     }
 
     @Override
-    public SkillUseObject<? extends SkillArgument> getSkillTargetInfo(Entity o) {
+    public SkillUseObject getSkillTargetInfo(Entity o) {
         return null;
     }
 
     @Override
     public boolean isSkillTarget(Entity o) {
         return false;
+    }
+
+    @Override
+    public void removeSkillTarget(Entity entity, SkillCaster caster, ISkill skill) {
+
     }
 
     protected class SkillManagerListener implements Listener {

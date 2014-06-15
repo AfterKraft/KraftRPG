@@ -27,7 +27,9 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
+import com.afterkraft.kraftrpg.entity.RPGMonster;
 
 public class EntityListener extends AbstractListener {
     public static final String SPAWNREASON_META_KEY = "KraftRPG: Spawn Reason";
@@ -50,13 +52,13 @@ public class EntityListener extends AbstractListener {
     public void onEntityDamageEarly(EntityDamageEvent event) {
         Entity e = event.getEntity();
         if (e instanceof LivingEntity) {
-            plugin.getEntityManager().getEntity((LivingEntity) e);
+            plugin.getEntityManager().getEntity(e);
         }
 
         if (event instanceof EntityDamageByEntityEvent) {
             Entity d = ((EntityDamageByEntityEvent) event).getDamager();
             if (d instanceof LivingEntity) {
-                plugin.getEntityManager().getEntity((LivingEntity) d);
+                plugin.getEntityManager().getEntity(d);
             }
         }
     }
@@ -66,8 +68,13 @@ public class EntityListener extends AbstractListener {
 
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
         event.getEntity().setMetadata(SPAWNREASON_META_KEY, new FixedMetadataValue(plugin, event.getSpawnReason()));
+        if (!plugin.getEntityManager().isEntityManaged(event.getEntity())) {
+            // We just need to make the EntityManager aware of the newly spawned
+            // entity in the event another plugin hasn't done so already
+            plugin.getEntityManager().getEntity(event.getEntity());
+        }
     }
 }

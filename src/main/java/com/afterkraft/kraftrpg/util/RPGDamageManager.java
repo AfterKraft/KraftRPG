@@ -35,14 +35,17 @@ import org.bukkit.entity.Slime;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
+import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.Monster;
-import com.afterkraft.kraftrpg.api.entity.SkillCaster;
+import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.roles.Role;
 import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
+import com.afterkraft.kraftrpg.api.util.Utilities;
 
 
 public class RPGDamageManager implements DamageManager {
@@ -60,23 +63,83 @@ public class RPGDamageManager implements DamageManager {
         this.plugin = plugin;
     }
 
-    public double getHighestItemDamage(SkillCaster caster, ItemStack item) {
-        final double defaultDamage = this.defaultItemDamage.get(item.getType()) != null ? this.defaultItemDamage.get(item.getType()) : 0.0D;
+    @Override
+    public double getHighestItemDamage(Insentient attacker, Insentient defender, double defaultDamage) {
+        final ItemStack weapon = attacker.getItemInHand();
+
+        Double tmpDamage = getHighestItemDamage(attacker, defaultDamage);
+        if (tmpDamage != null && defender instanceof LivingEntity) {
+            tmpDamage += getExtraDamage(weapon, (LivingEntity) defender);
+        }
+        return tmpDamage == null ? defaultDamage : tmpDamage;
+    }
+
+    private double getHighestItemDamage(Insentient being, double defaultDamage) {
+        if (being instanceof Sentient) {
+            return getHighestItemDamage((Sentient) being, defaultDamage);
+        } else if (being instanceof Monster) {
+            return getHighestMonsterDamage((Monster) being, defaultDamage);
+
+        } else {
+            return getDefaultItemDamage(being.getItemInHand().getType());
+        }
+    }
+
+    private double getExtraDamage(ItemStack item, LivingEntity target) {
+        if (!Utilities.isStandardWeapon(item.getType())) {
+            return 0;
+        }
+        int amount = 0;
+
+        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+            Double val = getEnchantmentDamage(entry.getKey(), entry.getValue());
+            if (val == null) {
+                continue;
+            }
+            boolean extraDamage = false;
+            Enchantment id = entry.getKey();
+            switch (target.getType()) {
+                case CAVE_SPIDER:
+                case SPIDER:
+                case SILVERFISH:
+                    extraDamage = id == Enchantment.DAMAGE_ARTHROPODS || id == Enchantment.DAMAGE_ALL;
+                    break;
+                case ZOMBIE:
+                case SKELETON:
+                case PIG_ZOMBIE:
+                case WITHER:
+                    extraDamage = id == Enchantment.DAMAGE_UNDEAD || id == Enchantment.DAMAGE_ALL;
+                    break;
+                default:
+                    extraDamage = id == Enchantment.DAMAGE_ALL || (id == Enchantment.FIRE_ASPECT && !target.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE));
+                    break;
+            }
+            if (extraDamage) {
+                amount += getEnchantmentDamage(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return amount;
+    }
+
+    private double getHighestItemDamage(Sentient being, double damage) {
+        final ItemStack item = being.getItemInHand();
+        final double defaultDamage = this.defaultItemDamage.get(item.getType()) != null ? this.defaultItemDamage.get(item.getType()) : damage;
         double roleDamage;
         double primaryDamage = 0.0D;
         double secondaryDamage = 0.0D;
         double activeDamage = 0.0D;
-        if (caster.getPrimaryRole() != null) {
-            primaryDamage = caster.getPrimaryRole().getItemDamage(item.getType());
-            primaryDamage += caster.getPrimaryRole().getItemDamagePerLevel(item.getType()) * caster.getLevel(caster.getPrimaryRole());
+        if (being.getPrimaryRole() != null) {
+            primaryDamage = being.getPrimaryRole().getItemDamage(item.getType());
+            primaryDamage += being.getPrimaryRole().getItemDamagePerLevel(item.getType()) * being.getLevel(being.getPrimaryRole());
         }
-        if (caster.getSecondaryRole() != null) {
-            secondaryDamage = caster.getSecondaryRole().getItemDamage(item.getType());
-            secondaryDamage += caster.getSecondaryRole().getItemDamagePerLevel(item.getType()) * caster.getLevel(caster.getPrimaryRole());
+        if (being.getSecondaryRole() != null) {
+            secondaryDamage = being.getSecondaryRole().getItemDamage(item.getType());
+            secondaryDamage += being.getSecondaryRole().getItemDamagePerLevel(item.getType()) * being.getLevel(being.getPrimaryRole());
         }
-        if (!caster.getAdditionalRoles().isEmpty()) {
-            for (Role role : caster.getAdditionalRoles()) {
-                double tempRoleDamage = role.getItemDamage(item.getType()) + role.getItemDamagePerLevel(item.getType()) * caster.getLevel(role);
+        if (!being.getAdditionalRoles().isEmpty()) {
+            for (Role role : being.getAdditionalRoles()) {
+                double tempRoleDamage = role.getItemDamage(item.getType()) + role.getItemDamagePerLevel(item.getType()) * being.getLevel(role);
                 activeDamage = tempRoleDamage > activeDamage ? tempRoleDamage : activeDamage;
             }
         }
@@ -85,7 +148,11 @@ public class RPGDamageManager implements DamageManager {
         } else {
             roleDamage = Math.max(Math.max(primaryDamage, secondaryDamage), activeDamage);
         }
-        return roleDamage;
+        return roleDamage > 0 ? roleDamage : defaultDamage;
+    }
+
+    private double getHighestMonsterDamage(Monster monster, double defaultDamage) {
+        return monster.getModifiedDamage() >= 0 ? monster.getModifiedDamage() : defaultDamage;
     }
 
     @Override
@@ -128,7 +195,17 @@ public class RPGDamageManager implements DamageManager {
     }
 
     @Override
-    public double getEnchantmentDamage(Enchantment enchantment) {
+    public double getEnchantmentDamage(Enchantment enchantment, int enchantmentLevel) {
+        return 0;
+    }
+
+    @Override
+    public double getItemEnchantmentDamage(Insentient being, Enchantment enchantment, ItemStack item) {
+        return 0;
+    }
+
+    @Override
+    public double getFallReduction(Insentient being) {
         return 0;
     }
 
@@ -182,6 +259,11 @@ public class RPGDamageManager implements DamageManager {
     @Override
     public void setEntityToDealVaryingDamage(EntityType type, boolean dealsVaryingDamage) {
 
+    }
+
+    @Override
+    public boolean isStandardWeapon(Material material) {
+        return false;
     }
 
 

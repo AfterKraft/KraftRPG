@@ -333,6 +333,11 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
+    public boolean canEquipItem(ItemStack itemStack) {
+        return false;
+    }
+
+    @Override
     public FixedPoint getRewardExperience() {
         return new FixedPoint();     // TODO implement this
     }
@@ -404,11 +409,30 @@ public class RPGChampion extends RPGInsentient implements Champion {
         }
     }
 
+    @Override
+    public boolean isIgnoringSkill(ISkill skill) {
+        return false;
+    }
 
 
     @Override
     public final Player getEntity() {
         return (Player) super.getEntity();
+    }
+
+    @Override
+    public int getMaxMana() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxMana(int mana) {
+
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 0;
     }
 
     public double recalculateMaxHealth() {

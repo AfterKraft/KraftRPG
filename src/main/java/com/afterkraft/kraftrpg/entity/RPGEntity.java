@@ -81,7 +81,7 @@ public class RPGEntity implements IEntity {
 
     @Override
     public UUID getUniqueID() {
-        return isEntityValid() ? this.getEntity().getUniqueId() : null;
+        return isEntityValid() ? this.getEntity().getUniqueId() : uuid;
     }
 
     @Override

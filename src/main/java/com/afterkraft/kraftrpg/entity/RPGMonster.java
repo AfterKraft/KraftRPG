@@ -28,6 +28,7 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
+import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.listeners.EntityListener;
 
@@ -98,8 +99,28 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
+    public boolean isIgnoringSkill(ISkill skill) {
+        return true;
+    }
+
+    @Override
     public SpawnReason getSpawnReason() {
         return this.spawnReason;
+    }
+
+    @Override
+    public int getMaxMana() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxMana(int mana) {
+
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 0;
     }
 
     @Override
@@ -130,6 +151,11 @@ public class RPGMonster extends RPGInsentient implements Monster {
     @Override
     public ItemStack[] getArmor() {
         return this.isEntityValid() ? this.getEntity().getEquipment().getArmorContents() : null;
+    }
+
+    @Override
+    public boolean canEquipItem(ItemStack itemStack) {
+        return true;
     }
 
     @Override

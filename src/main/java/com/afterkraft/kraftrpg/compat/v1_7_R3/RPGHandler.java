@@ -73,6 +73,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeType;
 import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
@@ -309,6 +310,16 @@ public class RPGHandler extends CraftBukkitHandler {
         int i = 25 - ((CraftLivingEntity) defender).getHandle().aU();
         float f1 = (float) damage * (float) i;
         return f1 / 25;
+    }
+
+    @Override
+    public final double getPostArmorDamage(Insentient being, double damage) {
+        if (being.getEntity() instanceof CraftLivingEntity) {
+            int i = 25 - ((CraftLivingEntity) being.getEntity()).getHandle().aU();
+            float f1 = (float) damage * (float) i;
+            return f1 / 25;
+        }
+        return damage;
     }
 
     @Override
