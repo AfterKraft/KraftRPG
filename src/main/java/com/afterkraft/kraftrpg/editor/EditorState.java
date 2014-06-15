@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.commons.lang.text.StrMatcher;
 import org.apache.commons.lang.text.StrTokenizer;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;

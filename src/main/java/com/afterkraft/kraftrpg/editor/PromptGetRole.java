@@ -15,14 +15,14 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.roles.Role;
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.roles.Role;
 
 public abstract class PromptGetRole extends EditorPrompt {
     private final String prompt;

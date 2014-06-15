@@ -31,8 +31,36 @@ public class EditorRoleNew extends EditorPrompt {
     private static final List<String> falseValues = ImmutableList.of("n", "no", "0", "f", "false");
 
     @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return null;
+    }
+
+    @Override
     public String getName(ConversationContext context) {
         return "new";
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        switch (getStage(context)) {
+            case CHOOSE_NAME:
+                return "What do you want to call the new role?";
+            case CHOOSE_TYPE:
+                return "Is this a class, profession, or extra role?";
+            case MAKE_DEFAULT:
+                RoleType rt = (RoleType) context.getSessionData("role.new.type");
+                if (rt == RoleType.PRIMARY) {
+                    return "You don't have a default primary class. Should this become the default class for new users?";
+                } else if (rt == RoleType.SECONDARY) {
+                    return "You don't have a default profession. Should this become the default profession for new users?";
+                } else {
+                    throw new UnsupportedOperationException();
+                    // return "Should this additional role be included for new users?";
+                }
+            case PICK_PARENT:
+                return "Should this role be immediately available, or require mastery of another?\nAnswer with \"yes\" or the role they need to master.";
+        }
+        return null;
     }
 
     @Override
@@ -71,8 +99,8 @@ public class EditorRoleNew extends EditorPrompt {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else if (rt == RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
-                // } else if (rt == RoleType.ADDITIONAL) {
-                //     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
+                    // } else if (rt == RoleType.ADDITIONAL) {
+                    //     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                 } else {
                     context.setSessionData("role.new.stage", Stage.PICK_PARENT);
                 }
@@ -107,34 +135,6 @@ public class EditorRoleNew extends EditorPrompt {
 
     @Override
     public void printBanner(ConversationContext context) {
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        switch (getStage(context)) {
-            case CHOOSE_NAME:
-                return "What do you want to call the new role?";
-            case CHOOSE_TYPE:
-                return "Is this a class, profession, or extra role?";
-            case MAKE_DEFAULT:
-                RoleType rt = (RoleType) context.getSessionData("role.new.type");
-                if (rt == RoleType.PRIMARY) {
-                    return "You don't have a default primary class. Should this become the default class for new users?";
-                } else if (rt == RoleType.SECONDARY) {
-                    return "You don't have a default profession. Should this become the default profession for new users?";
-                } else {
-                    throw new UnsupportedOperationException();
-                    // return "Should this additional role be included for new users?";
-                }
-            case PICK_PARENT:
-                return "Should this role be immediately available, or require mastery of another?\nAnswer with \"yes\" or the role they need to master.";
-        }
-        return null;
-    }
-
-    @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return null;
     }
 
     private Stage getStage(ConversationContext context) {

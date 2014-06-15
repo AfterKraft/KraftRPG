@@ -15,12 +15,14 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
+import java.util.List;
+
 import com.google.common.collect.ImmutableList;
+
 import org.bukkit.conversations.ConversationContext;
 
-import java.util.List;
+import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorConfirmMakeDefault extends EditorPrompt {
     @Override

@@ -15,14 +15,16 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
-import com.google.common.collect.ImmutableList;
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.collect.ImmutableList;
+
+import org.bukkit.conversations.ConversationContext;
+
+import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorRoleFocusType extends EditorPrompt {
     private static final Map<String, RoleType> roleNameMap;

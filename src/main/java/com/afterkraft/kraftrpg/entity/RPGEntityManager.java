@@ -110,16 +110,16 @@ public class RPGEntityManager implements EntityManager {
     @Override
     public boolean addEntity(IEntity entity) throws IllegalArgumentException {
         if (entity instanceof Champion) {
-           if (this.champions.containsKey(entity.getUniqueID())) {
-               if (this.champions.get(entity.getUniqueID()).equals(entity)) {
-                   throw new IllegalArgumentException("Third Party Plugins can't add duplicate Champions!");
-               } else {
-                   throw new IllegalArgumentException("The provided players differ in their ID! Can't add custom Champions with duplicate ID's!");
-               }
-           } else {
-               this.champions.put(entity.getUniqueID(), (Champion) entity);
-               return true;
-           }
+            if (this.champions.containsKey(entity.getUniqueID())) {
+                if (this.champions.get(entity.getUniqueID()).equals(entity)) {
+                    throw new IllegalArgumentException("Third Party Plugins can't add duplicate Champions!");
+                } else {
+                    throw new IllegalArgumentException("The provided players differ in their ID! Can't add custom Champions with duplicate ID's!");
+                }
+            } else {
+                this.champions.put(entity.getUniqueID(), (Champion) entity);
+                return true;
+            }
         } else if (entity instanceof Monster && !this.monsters.containsKey(entity.getUniqueID())) {
             if (this.entities.containsKey(entity.getUniqueID())) {
                 throw new IllegalArgumentException("The provided custom entity is already registered with KraftRPG!");

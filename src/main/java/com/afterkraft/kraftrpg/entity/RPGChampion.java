@@ -289,21 +289,61 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public float getStamina() {
-        if (!this.isEntityValid()) {
-            return 0F;
-        }
-        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
+    public boolean hasParty() {
+        return party != null;
     }
 
     @Override
-    public boolean isDead() {
-        return false;
+    public Party getParty() {
+        return party;
+    }
+
+    @Override
+    public void setParty(Party party) {
+        this.party = party;
+    }
+
+    @Override
+    public void leaveParty() {
+        this.party = null;
+    }
+
+    @Override
+    public int getMaxMana() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxMana(int mana) {
+
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 0;
+    }
+
+    @Override
+    public DamageWrapper getDamageWrapper() {
+        return null;
+    }
+
+    @Override
+    public void setDamageWrapper(DamageWrapper wrapper) {
+
     }
 
     @Override
     public int getNoDamageTicks() {
         return 0;
+    }
+
+    @Override
+    public float getStamina() {
+        if (!this.isEntityValid()) {
+            return 0F;
+        }
+        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
     }
 
     @Override
@@ -320,14 +360,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void updateInventory() {
-        if (this.isEntityValid()) {
-            this.getPlayer().updateInventory();
-        }
-    }
-
-    @Override
     public ItemStack[] getArmor() {
         return this.isEntityValid() ? this.getPlayer().getInventory().getArmorContents() : new ItemStack[4];
     }
@@ -339,12 +371,44 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public FixedPoint getRewardExperience() {
-        return new FixedPoint();     // TODO implement this
+        return new FixedPoint(); // TODO implement this
     }
 
     @Override
     public void setRewardExperience(FixedPoint experience) {
-           // TODO implement this
+        // TODO implement this
+    }
+
+    @Override
+    public boolean isIgnoringSkill(ISkill skill) {
+        return false;
+    }
+
+    @Override
+    public final Player getEntity() {
+        return (Player) super.getEntity();
+    }
+
+    public double recalculateMaxHealth() {
+        return 0D;
+    }
+
+    @Override
+    public void heal(double amount) {
+
+    }
+
+    @Override
+    public boolean isDead() {
+        return false;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void updateInventory() {
+        if (this.isEntityValid()) {
+            this.getPlayer().updateInventory();
+        }
     }
 
     @Override
@@ -353,18 +417,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public boolean hasParty() {
-        return party != null;
-    }
-
-    @Override
     public final void setPlayer(final Player player) {
         this.setEntity(player);
-    }
-
-    @Override
-    public Party getParty() {
-        return party;
     }
 
     @Override
@@ -373,18 +427,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public void setParty(Party party) {
-        this.party = party;
-    }
-
-    @Override
     public PlayerData getData() {
         return data;
-    }
-
-    @Override
-    public void leaveParty() {
-        this.party = null;
     }
 
     @Override
@@ -407,51 +451,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
         if (this.isEntityValid()) {
             this.getPlayer().sendMessage(message);
         }
-    }
-
-    @Override
-    public boolean isIgnoringSkill(ISkill skill) {
-        return false;
-    }
-
-
-    @Override
-    public final Player getEntity() {
-        return (Player) super.getEntity();
-    }
-
-    @Override
-    public int getMaxMana() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxMana(int mana) {
-
-    }
-
-    @Override
-    public double getMaxHealth() {
-        return 0;
-    }
-
-    public double recalculateMaxHealth() {
-        return 0D;
-    }
-
-    @Override
-    public void heal(double amount) {
-
-    }
-
-    @Override
-    public DamageWrapper getDamageWrapper() {
-        return null;
-    }
-
-    @Override
-    public void setDamageWrapper(DamageWrapper wrapper) {
-
     }
 
 

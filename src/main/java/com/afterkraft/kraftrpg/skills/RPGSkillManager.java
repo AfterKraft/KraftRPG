@@ -15,10 +15,15 @@
  */
 package com.afterkraft.kraftrpg.skills;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
-import com.afterkraft.kraftrpg.api.skills.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -30,9 +35,31 @@ import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.events.roles.RoleChangeEvent;
 import com.afterkraft.kraftrpg.api.events.roles.RoleLevelChangeEvent;
+import com.afterkraft.kraftrpg.api.skills.ISkill;
+import com.afterkraft.kraftrpg.api.skills.Passive;
+import com.afterkraft.kraftrpg.api.skills.PassiveSkill;
+import com.afterkraft.kraftrpg.api.skills.Permissible;
+import com.afterkraft.kraftrpg.api.skills.PermissionSkill;
+import com.afterkraft.kraftrpg.api.skills.Skill;
+import com.afterkraft.kraftrpg.api.skills.SkillManager;
+import com.afterkraft.kraftrpg.api.skills.SkillSetting;
+import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
+import com.afterkraft.kraftrpg.api.skills.Stalled;
 
 
 public class RPGSkillManager implements SkillManager {
+    private static final Set<String> defaultAllowedNodes;
+    static {
+        defaultAllowedNodes = new HashSet<String>();
+        for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
+            defaultAllowedNodes.add(setting.node());
+            defaultAllowedNodes.add(setting.scalingNode());
+        }
+        defaultAllowedNodes.remove(null);
+
+        // Add more auto-applied stuff here
+        defaultAllowedNodes.add("requirements");
+    }
     private final Map<String, ISkill> skillMap;
     private final KraftRPGPlugin plugin;
     private SkillManagerListener listener;
@@ -45,31 +72,6 @@ public class RPGSkillManager implements SkillManager {
         for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
             addSkill(skill);
         }
-    }
-
-    private static final Set<String> defaultAllowedNodes;
-
-    static {
-        defaultAllowedNodes = new HashSet<String>();
-        for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
-            defaultAllowedNodes.add(setting.node());
-            defaultAllowedNodes.add(setting.scalingNode());
-        }
-        defaultAllowedNodes.remove(null);
-
-        // Add more auto-applied stuff here
-        defaultAllowedNodes.add("requirements");
-    }
-
-    /**
-     * Load all the skills.
-     */
-    public void initialize() {
-        plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), plugin);
-    }
-
-    public void shutdown() {
-
     }
 
     public void addSkill(ISkill skill) {
@@ -191,6 +193,17 @@ public class RPGSkillManager implements SkillManager {
 
     @Override
     public void removeSkillTarget(Entity entity, SkillCaster caster, ISkill skill) {
+
+    }
+
+    /**
+     * Load all the skills.
+     */
+    public void initialize() {
+        plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), plugin);
+    }
+
+    public void shutdown() {
 
     }
 

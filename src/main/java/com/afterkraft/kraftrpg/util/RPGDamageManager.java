@@ -96,7 +96,7 @@ public class RPGDamageManager implements DamageManager {
             if (val == null) {
                 continue;
             }
-            boolean extraDamage = false;
+            boolean extraDamage;
             Enchantment id = entry.getKey();
             switch (target.getType()) {
                 case CAVE_SPIDER:

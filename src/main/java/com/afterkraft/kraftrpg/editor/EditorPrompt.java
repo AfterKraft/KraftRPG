@@ -17,7 +17,11 @@ package com.afterkraft.kraftrpg.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -34,7 +38,15 @@ import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
 public abstract class EditorPrompt implements TabCompletablePrompt {
     protected static final RPGPlugin plugin = KraftRPGPlugin.getInstance();
     protected static final EditorPrompt END_CONVERSATION = new EditorPrompt() {
+        public List<String> getCompletions(ConversationContext context) {
+            return null;
+        }
+
         public String getName(ConversationContext context) {
+            return null;
+        }
+
+        public String getPrompt(ConversationContext context) {
             return null;
         }
 
@@ -43,14 +55,6 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         }
 
         public void printBanner(ConversationContext context) {
-        }
-
-        public String getPrompt(ConversationContext context) {
-            return null;
-        }
-
-        public List<String> getCompletions(ConversationContext context) {
-            return null;
         }
     };
 
@@ -83,6 +87,26 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         return null;
     }
 
+    /**
+     * Pop the previous prompt off the stack. Use this to "return to" another
+     * prompt.
+     */
+    public EditorPrompt returnPrompt(ConversationContext context) {
+        List<EditorPrompt> stack = EditorState.getPromptStack(context);
+        return stack.remove(stack.size() - 1);
+    }
+
+    public void sendMessage(ConversationContext context, String format, Object... args) {
+        Conversable who = context.getForWhom();
+        if (who instanceof ConsoleCommandSender) {
+            // This is required for colors in the console
+            ((ConsoleCommandSender) who).sendMessage(String.format(format, args));
+        } else {
+            // Players are fine, because we're never modal
+            who.sendRawMessage(String.format(format, args));
+        }
+    }
+
     public String getPathString(ConversationContext context) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
         StringBuilder builder = new StringBuilder(ChatColor.GOLD.toString());
@@ -98,13 +122,28 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         return builder.toString();
     }
 
+    public abstract String getName(ConversationContext context);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Required abstract methods
+
     /**
-     * Pop the previous prompt off the stack. Use this to "return to" another
-     * prompt.
+     * Perform the actions for this Prompt.
+     *
+     * @param context context
+     * @param command command, after splitting on semicolon
+     * @return Next prompt to advance, or null on syntax error
      */
-    public EditorPrompt returnPrompt(ConversationContext context) {
-        List<EditorPrompt> stack = EditorState.getPromptStack(context);
-        return stack.remove(stack.size() - 1);
+    public abstract EditorPrompt performCommand(ConversationContext context, String command);
+
+    @Override
+    public final String getPromptText(ConversationContext context) {
+        if (EditorState.shouldPrintBanner(context)) {
+            sendMessage(context, ChatColor.YELLOW + "--------------------------------------------------");
+            printBanner(context);
+            EditorState.setBanner(context, false);
+        }
+        return getPrompt(context); // TODO returned strings are color-stripped for the console
     }
 
     public void sendMessage(ConversationContext context, String string) {
@@ -118,39 +157,17 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
         }
     }
 
-    public void sendMessage(ConversationContext context, String format, Object... args) {
-        Conversable who = context.getForWhom();
-        if (who instanceof ConsoleCommandSender) {
-            // This is required for colors in the console
-            ((ConsoleCommandSender) who).sendMessage(String.format(format, args));
-        } else {
-            // Players are fine, because we're never modal
-            who.sendRawMessage(String.format(format, args));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Required abstract methods
-
-    public abstract List<String> getCompletions(ConversationContext context);
-
-    public abstract String getName(ConversationContext context);
+    public abstract void printBanner(ConversationContext context);
 
     public abstract String getPrompt(ConversationContext context);
 
-    /**
-     * Perform the actions for this Prompt.
-     *
-     * @param context context
-     * @param command command, after splitting on semicolon
-     * @return Next prompt to advance, or null on syntax error
-     */
-    public abstract EditorPrompt performCommand(ConversationContext context, String command);
-
-    public abstract void printBanner(ConversationContext context);
-
     ///////////////////////////////////////////////////////////////////////////
     // Bukkit API methods
+
+    @Override
+    public final boolean blocksForInput(ConversationContext context) {
+        return !EditorState.hasQueuedCommands(context);
+    }
 
     @Override
     public final Prompt acceptInput(ConversationContext context, String input) {
@@ -208,24 +225,11 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     }
 
     @Override
-    public final boolean blocksForInput(ConversationContext context) {
-        return !EditorState.hasQueuedCommands(context);
-    }
-
-    @Override
-    public final String getPromptText(ConversationContext context) {
-        if (EditorState.shouldPrintBanner(context)) {
-            sendMessage(context, ChatColor.YELLOW + "--------------------------------------------------");
-            printBanner(context);
-            EditorState.setBanner(context, false);
-        }
-        return getPrompt(context); // TODO returned strings are color-stripped for the console
-    }
-
-    @Override
     public List<String> onTabComplete(ConversationContext context, String fullMessage, String lastToken) {
         List<String> matches = new ArrayList<String>();
         StringUtil.copyPartialMatches(lastToken, getCompletions(context), matches);
         return matches;
     }
+
+    public abstract List<String> getCompletions(ConversationContext context);
 }

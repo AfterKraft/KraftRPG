@@ -27,9 +27,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
-import com.afterkraft.kraftrpg.entity.RPGMonster;
 
 public class EntityListener extends AbstractListener {
     public static final String SPAWNREASON_META_KEY = "KraftRPG: Spawn Reason";
@@ -40,12 +38,12 @@ public class EntityListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-
+        // TODO Handle removal of the entity being handled by KraftRPG
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityTarget(EntityTargetEvent event) {
-
+        // TODO handle invisibility effects and such
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -61,11 +59,6 @@ public class EntityListener extends AbstractListener {
                 plugin.getEntityManager().getEntity(d);
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityDamageEvent(EntityDamageEvent event) {
-
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)

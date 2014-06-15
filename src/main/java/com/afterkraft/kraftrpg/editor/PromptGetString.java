@@ -15,10 +15,11 @@
  */
 package com.afterkraft.kraftrpg.editor;
 
-import com.google.common.collect.ImmutableList;
-import org.bukkit.conversations.ConversationContext;
-
 import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
+import org.bukkit.conversations.ConversationContext;
 
 public abstract class PromptGetString extends EditorPrompt {
     private final String prompt;
@@ -71,8 +72,9 @@ public abstract class PromptGetString extends EditorPrompt {
 
     /**
      * Apply the gotten string.
-     *
-     * @param input user input string, or null if empty allowed and empty given
+     * 
+     * @param input user input string, or null if empty allowed and empty
+     *            given
      * @return True if input OK, false if retry needed
      */
     public abstract boolean apply(String input);

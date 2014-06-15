@@ -35,6 +35,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.BlockProjectileSource;
@@ -67,6 +68,39 @@ public class DamageListener extends AbstractListener {
 
     protected DamageListener(RPGPlugin plugin) {
         super(plugin);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityRegainHealth(EntityRegainHealthEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity) || !(plugin.getEntityManager().isEntityManaged(event.getEntity())) || !(plugin.getEntityManager().getEntity(event.getEntity()) instanceof Insentient)) {
+            return;
+        }
+
+        double amount = event.getAmount();
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(event.getEntity());
+        final double maxHealth = being.getMaxHealth();
+
+        // Satiated players regenerate % of total HP rather than 1 HP
+        double healPercent;
+        switch (event.getRegainReason()) {
+            case SATIATED:
+                healPercent = plugin.getProperties().getFoodHealPercent();
+                amount = Math.ceil(maxHealth * healPercent);
+                break;
+            case MAGIC:
+                healPercent = amount / 6.0;
+                amount = Math.ceil(healPercent * plugin.getProperties().getFoodHealthPerTier() * maxHealth);
+                break;
+            case CUSTOM:
+            case WITHER_SPAWN:
+            case WITHER:
+                healPercent = amount / 20.0;
+                amount = Math.ceil(maxHealth * healPercent);
+                break;
+            default:
+                break;
+        }
+        event.setAmount(amount);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -153,7 +187,7 @@ public class DamageListener extends AbstractListener {
         } else {
             final EntityDamageEvent.DamageCause cause = event.getCause();
             switch (cause) {
-                case SUICIDE:  // DONE
+                case SUICIDE: // DONE
                     if (defendingEntity instanceof LivingEntity) {
                         final LivingEntity livingEntity = (LivingEntity) defendingEntity;
                         if ((livingEntity.getLastDamageCause() != null) && (livingEntity.getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
@@ -180,49 +214,49 @@ public class DamageListener extends AbstractListener {
                 case FALL: // DONE
                     damage = onFall(event, defendingEntity, event.getDamage());
                     break;
-                case SUFFOCATION:
+                case SUFFOCATION: // DONE
                     damage = onSuffocation(event, defendingEntity, event.getDamage());
                     break;
-                case DROWNING:
+                case DROWNING: // DONE
                     damage = onDrowning(event, defendingEntity, event.getDamage());
                     break;
-                case STARVATION:
+                case STARVATION: // DONE
                     damage = onStarving(event, defendingEntity, event.getDamage());
                     break;
-                case CONTACT:
+                case CONTACT: // DONE
                     damage = onContact(event, defendingEntity, event.getDamage());
                     break;
                 case FIRE:
                 case LAVA:
-                case FIRE_TICK:
+                case FIRE_TICK: // DONE
                     damage = onFlame(event, defendingEntity, event.getDamage());
                     break;
-                case POISON:
+                case POISON: // DONE
                     damage = onPoison(event, defendingEntity, event.getDamage());
                     break;
                 case BLOCK_EXPLOSION:
-                case ENTITY_EXPLOSION:
+                case ENTITY_EXPLOSION: // DONE
                     damage = onExplosion(event, defendingEntity, event.getDamage());
                     break;
-                case MELTING:
+                case MELTING: // DONE
                     damage = onMelting(event, defendingEntity, event.getDamage());
                     break;
                 case THORNS: // DONE
                     damage = onSpiked(event, defendingEntity, event.getDamage());
                     break;
-                case WITHER:
+                case WITHER: // DONE
                     damage = onWither(event, defendingEntity, event.getDamage());
                     break;
-                case MAGIC:
+                case MAGIC: // DONE
                     damage = onMagicDamage(event, defendingEntity, event.getDamage());
                     break;
-                case VOID:
+                case VOID: // DONE
                     damage = onVoid(event, defendingEntity, event.getDamage());
                     break;
-                case LIGHTNING:
+                case LIGHTNING: // DONE
                     damage = onLightningStrike(event, defendingEntity, event.getDamage());
                     break;
-                case FALLING_BLOCK:  // Done
+                case FALLING_BLOCK:
                 case CUSTOM:
                 default:
                     break;
@@ -402,7 +436,7 @@ public class DamageListener extends AbstractListener {
             // We must check the item in hand and for all possible damages it may have.
             // This needs to be improved later on as we need to handle customized damages
             if (attackingInsentient.getItemInHand().getType() != Material.AIR && plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
-                damage = plugin.getDamageManager().getDefaultItemDamage( attackingInsentient.getItemInHand().getType(), damage);
+                damage = plugin.getDamageManager().getDefaultItemDamage(attackingInsentient.getItemInHand().getType(), damage);
                 final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, attackingInsentient.getItemInHand(), initialDamage, damage, plugin.getProperties().isVaryingDamageEnabled());
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
@@ -457,43 +491,177 @@ public class DamageListener extends AbstractListener {
     }
 
     private double onSuffocation(EntityDamageEvent event, Entity suffocating, double damage) {
+        if (!(suffocating instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(suffocating) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(suffocating);
 
-        return 0D;
+        // Cancel if the being has the effect for safefall
+        if (being.hasEffectType(EffectType.RESIST_EARTH) || being.hasEffectType(EffectType.INVULNERABILITY)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.SUFFOCATION);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onDrowning(EntityDamageEvent event, Entity drowning, double damage) {
+        if (!(drowning instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(drowning) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(drowning);
 
-        return 0D;
+        // Cancel if the being has the effect for safefall
+        if (being.hasEffectType(EffectType.RESIST_WATER) || being.hasEffectType(EffectType.WATER_BREATHING) || being.hasEffectType(EffectType.INVULNERABILITY)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.DROWNING);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onStarving(EntityDamageEvent event, Entity starving, double damage) {
+        if (!(starving instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(starving) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(starving);
 
-        return 0D;
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.STARVATION);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onContact(EntityDamageEvent event, Entity defending, double damage) {
+        if (!(defending instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(defending) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(defending);
 
-        return 0D;
+        if (being.hasEffectType(EffectType.RESIST_EARTH)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.CONTACT);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onFlame(EntityDamageEvent event, Entity burning, double damage) {
+        if (!(burning instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(burning) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(burning);
 
-        return 0D;
+        if (being.hasEffectType(EffectType.RESIST_FIRE)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.FIRE);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onPoison(EntityDamageEvent event, Entity poisoned, double damage) {
+        if (!(poisoned instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(poisoned) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(poisoned);
 
-        return 0D;
+        if (being.hasEffectType(EffectType.RESIST_POISON)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.POISON);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onExplosion(EntityDamageEvent event, Entity exploded, double damage) {
+        if (!(exploded instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(exploded) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(exploded);
 
-        return 0D;
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onMelting(EntityDamageEvent event, Entity melting, double damage) {
+        if (!(melting instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(melting) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(melting);
 
-        return 0D;
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.MELTING);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onSpiked(EntityDamageEvent event, Entity spiked, double damage) {
@@ -516,34 +684,92 @@ public class DamageListener extends AbstractListener {
     }
 
     private double onWither(EntityDamageEvent event, Entity withered, double damage) {
+        if (!(withered instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(withered) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(withered);
 
-        return 0D;
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.MELTING);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onMagicDamage(EntityDamageEvent event, Entity victim, double damage) {
+        if (!(victim instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(victim) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(victim);
 
-        return 0D;
+        if (being.hasEffectType(EffectType.RESIST_MAGICAL)) {
+            event.setCancelled(true);
+            return 0;
+        }
+
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.MAGIC);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onVoid(EntityDamageEvent event, Entity fallen, double damage) {
+        if (!(fallen instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(fallen) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(fallen);
 
-        return 0D;
+        if (being.hasEffectType(EffectType.RESIST_VOID)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.VOID);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
+
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private double onLightningStrike(EntityDamageEvent event, Entity struck, double damage) {
+        if (!(struck instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(struck) instanceof Insentient)) {
+            return 0;
+        }
+        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(struck);
 
-        return 0D;
-    }
+        if (being.hasEffectType(EffectType.RESIST_LIGHTNING)) {
+            event.setCancelled(true);
+            return 0;
+        }
+        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(EntityDamageEvent.DamageCause.LIGHTNING);
+        if (damage <= 0) {
+            event.setCancelled(true);
+            return 0;
+        }
+        if (damagePercent == null) {
+            return damage;
+        }
 
-    private double getPlayerProjectileDamage(Player attacker, Projectile projectile, double damage) {
-        Champion champion = plugin.getEntityManager().getChampion(attacker);
-        final double tempDamage = plugin.getDamageManager().getHighestProjectileDamage(champion, DamageManager.ProjectileType.valueOf(projectile));
-        return tempDamage > 0 ? tempDamage : damage;
-    }
-
-    private double onFallingBlock(EntityDamageEvent event, Entity smacked, double damage) {
-
-        return 0D;
+        damage = damage * damagePercent * being.getMaxHealth();
+        return damage < 1 ? 1 : damage;
     }
 
     private boolean resistanceCheck(Entity defender, ISkill skill) {
@@ -629,6 +855,12 @@ public class DamageListener extends AbstractListener {
         if (damage > 0) {
             CraftBukkitHandler.getInterface().modifyArrowDamage(arrow, damage);
         }
+    }
+
+    private double getPlayerProjectileDamage(Player attacker, Projectile projectile, double damage) {
+        Champion champion = plugin.getEntityManager().getChampion(attacker);
+        final double tempDamage = plugin.getDamageManager().getHighestProjectileDamage(champion, DamageManager.ProjectileType.valueOf(projectile));
+        return tempDamage > 0 ? tempDamage : damage;
     }
 
     @SuppressWarnings("deprecation")

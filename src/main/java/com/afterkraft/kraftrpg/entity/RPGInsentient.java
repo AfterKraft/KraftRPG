@@ -17,13 +17,13 @@ package com.afterkraft.kraftrpg.entity;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import org.bukkit.Location;
@@ -104,7 +104,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
      * add to a key. This operation will fail if the character already has a
      * health value with the specific key. This operation will add health to
      * the character's current health.
-     *
+     * 
      * @param key to give
      * @param value amount
      * @return true if the operation was successful
@@ -131,7 +131,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
      * Thread-Safe Removes a maximum health addition on the character. This
      * will also remove current health from the character, down to a minimum
      * of 1.
-     *
+     * 
      * @param key to remove
      * @return true if health was removed.
      */
@@ -221,7 +221,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public Set<IEffect> getEffects() {
-        return new HashSet<IEffect>(this.effects.values());
+        return ImmutableSet.copyOf(this.effects.values());
     }
 
     @Override

@@ -85,25 +85,6 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
-    public FixedPoint getRewardExperience() {
-        return this.experience;
-    }
-
-    @Override
-    public void setRewardExperience(FixedPoint experience) {
-        if (!isEntityValid()) {
-            return;
-        }
-        this.experience = experience;
-        CraftBukkitHandler.getInterface().setMonsterExperience(getEntity(), experience);
-    }
-
-    @Override
-    public boolean isIgnoringSkill(ISkill skill) {
-        return true;
-    }
-
-    @Override
     public SpawnReason getSpawnReason() {
         return this.spawnReason;
     }
@@ -155,6 +136,25 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public boolean canEquipItem(ItemStack itemStack) {
+        return true;
+    }
+
+    @Override
+    public FixedPoint getRewardExperience() {
+        return this.experience;
+    }
+
+    @Override
+    public void setRewardExperience(FixedPoint experience) {
+        if (!isEntityValid()) {
+            return;
+        }
+        this.experience = experience;
+        CraftBukkitHandler.getInterface().setMonsterExperience(getEntity(), experience);
+    }
+
+    @Override
+    public boolean isIgnoringSkill(ISkill skill) {
         return true;
     }
 

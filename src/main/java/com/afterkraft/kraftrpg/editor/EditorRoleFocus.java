@@ -16,26 +16,31 @@
 package com.afterkraft.kraftrpg.editor;
 
 import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.StringUtils;
+
+import org.bukkit.ChatColor;
+import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
 import com.afterkraft.kraftrpg.api.roles.RoleType;
 import com.afterkraft.kraftrpg.api.util.Utilities;
-import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.Prompt;
 
 public class EditorRoleFocus extends EditorPrompt {
+    @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.of("type", "default", "description", "parents", "hp", "mp", "regen", "skills", "armor", "tools", "delete");
+    }
+
     @Override
     public String getName(ConversationContext context) {
         return EditorState.getSelectedRole(context).getName();
     }
 
     @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of("type", "default", "description", "parents", "hp", "mp", "regen", "skills", "armor", "tools", "delete");
+    public String getPrompt(ConversationContext context) {
+        return getPathString(context) + "type default description parents hp mp regen skills armor tools delete save exit";
     }
 
     @Override
@@ -93,19 +98,11 @@ public class EditorRoleFocus extends EditorPrompt {
 
         }
         /*
-        Name Type Default Description
-        Parents hp/mp/regen
-        Skills
-        Armor/tools
-        delete
+         * Name Type Default Description Parents hp/mp/regen Skills
+         * Armor/tools delete
          */
 
         return null;
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        return getPathString(context) + "type default description parents hp mp regen skills armor tools delete save exit";
     }
 
     @Override

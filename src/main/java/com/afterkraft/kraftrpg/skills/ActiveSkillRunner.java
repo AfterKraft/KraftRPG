@@ -202,11 +202,10 @@ public final class ActiveSkillRunner {
 
             double exp = plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.EXP_ON_CAST, 0.0, false);
             if (exp > 0) {
-                /*
-        if (caster.canGainExperience(ExperienceType.SKILL)) {
-            caster.gainExperience(FixedPoint.valueOf(plugin.getSkillConfigManager().getUseSetting(caster, this, SkillSetting.EXP, 0, false)), ExperienceType.SKILL, caster.getLocation());
-        }
-        */
+
+//                 if (caster.canGainExperience(ExperienceType.SKILL)) {
+//                     caster.gainExperience(FixedPoint.valueOf(plugin.getSkillConfigManager().getUseSetting(caster, this, SkillSetting.EXP, 0,false)), ExperienceType.SKILL, caster.getLocation());
+//                 }
                 // TODO caster.get
             }
 
