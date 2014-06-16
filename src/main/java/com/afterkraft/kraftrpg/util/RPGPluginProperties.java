@@ -94,6 +94,16 @@ public class RPGPluginProperties implements Properties {
     }
 
     @Override
+    public int getFoodHealPercent() {
+        return 0;
+    }
+
+    @Override
+    public int getFoodHealthPerTier() {
+        return 0;
+    }
+
+    @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
         if (isMobExpDistanceModified) {
             FixedPoint exp = creatureExperienceDrop.get(entity.getType());

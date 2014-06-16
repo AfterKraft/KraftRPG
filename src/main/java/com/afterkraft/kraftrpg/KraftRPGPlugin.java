@@ -63,7 +63,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     private RPGDamageManager damageManager;
     private RPGConfigManager configManager;
     private RPGRoleManager roleManager;
-    private RPGPartyManager partyManager;
+    private PartyManager partyManager;
     private RPGEffectManager effectManager;
     private RPGListenerManager listenerManager;
     private RPGCommandManager commandManager;
@@ -131,7 +131,11 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.skillManager = new RPGSkillManager(this);
         this.skillConfigManager = new RPGSkillConfigManager(this);
         this.effectManager = new RPGEffectManager(this);
-        this.partyManager = new RPGPartyManager(this);
+        if (ExternalProviderRegistration.getPartyManager() != null) {
+            this.partyManager = ExternalProviderRegistration.getPartyManager();
+        } else {
+            this.partyManager = new RPGPartyManager(this);
+        }
         this.listenerManager = new RPGListenerManager(this);
         CraftBukkitHandler.getInterface().loadExtraListeners();
         this.commandManager = new RPGCommandManager(this);
