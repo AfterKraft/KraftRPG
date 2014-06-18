@@ -187,7 +187,7 @@ public class DamageListener extends AbstractListener {
         } else {
             final EntityDamageEvent.DamageCause cause = event.getCause();
             switch (cause) {
-                case SUICIDE: // DONE
+                case SUICIDE:
                     if (defendingEntity instanceof LivingEntity) {
                         final LivingEntity livingEntity = (LivingEntity) defendingEntity;
                         if ((livingEntity.getLastDamageCause() != null) && (livingEntity.getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
@@ -201,8 +201,8 @@ public class DamageListener extends AbstractListener {
                         }
                     }
                     break;
-                case ENTITY_ATTACK: // Done
-                case PROJECTILE: // Done
+                case ENTITY_ATTACK:
+                case PROJECTILE:
                     // When the attack is guaranteed to have been caused by an enemy entity
                     alreadyProcessed = true;
                     if (event.getDamage() == 0) {
@@ -211,53 +211,45 @@ public class DamageListener extends AbstractListener {
                         damage = onEntityDamage(event, attackingEntity, defendingEntity, attackingIEntity, defendingIEntity, event.getDamage());
                     }
                     break;
-                case FALL: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.SAFEFALL);
-                    break;
-                case SUFFOCATION: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_EARTH);
-                    break;
-                case DROWNING: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.WATER_BREATHING, EffectType.RESIST_WATER);
-                    break;
-                case STARVATION: // DONE
+                case STARVATION:
+                case WITHER:
+                case MELTING:
+                case BLOCK_EXPLOSION:
+                case ENTITY_EXPLOSION:
                     damage = onResistDamage(event, defendingEntity, event.getDamage());
                     break;
-                case CONTACT: // DONE
+                case FALL:
+                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.SAFEFALL);
+                    break;
+                case SUFFOCATION:
+                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_EARTH);
+                    break;
+                case DROWNING:
+                    damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.WATER_BREATHING, EffectType.RESIST_WATER);
+                    break;
+                case CONTACT:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_EARTH);
                     break;
                 case FIRE:
                 case LAVA:
-                case FIRE_TICK: // DONE
+                case FIRE_TICK:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_FIRE);
                     break;
-                case POISON: // DONE
+                case POISON:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_POISON);
                     break;
-                case BLOCK_EXPLOSION:
-                case ENTITY_EXPLOSION: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage());
-                    break;
-                case MELTING: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage());
-                    break;
-                case THORNS: // DONE
+                case THORNS:
                     damage = onSpiked(event, defendingEntity, event.getDamage());
                     break;
-                case WITHER: // DONE
-                    damage = onResistDamage(event, defendingEntity, event.getDamage());
-                    break;
-                case MAGIC: // DONE
+                case MAGIC:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_MAGICAL);
                     break;
-                case VOID: // DONE
+                case VOID:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_VOID);
                     break;
-                case LIGHTNING: // DONE
+                case LIGHTNING:
                     damage = onResistDamage(event, defendingEntity, event.getDamage(), EffectType.RESIST_LIGHTNING);
                     break;
-                case FALLING_BLOCK:
-                case CUSTOM:
                 default:
                     break;
             }
@@ -513,42 +505,10 @@ public class DamageListener extends AbstractListener {
     private boolean resistanceCheck(Entity defender, ISkill skill) {
         if (defender instanceof LivingEntity) {
             final Insentient being = (Insentient) plugin.getEntityManager().getEntity(defender);
-            if (being.hasEffectType(EffectType.RESIST_AIR) && skill.isType(SkillType.ABILITY_PROPERTY_AIR)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_BLEED) && skill.isType(SkillType.ABILITY_PROPERTY_BLEED)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_DARK) && skill.isType(SkillType.ABILITY_PROPERTY_DARK)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_DISEASE) && skill.isType(SkillType.ABILITY_PROPERTY_DISEASE)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_EARTH) && skill.isType(SkillType.ABILITY_PROPERTY_EARTH)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_FIRE) && skill.isType(SkillType.ABILITY_PROPERTY_FIRE)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_ICE) && skill.isType(SkillType.ABILITY_PROPERTY_ICE)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_ILLUSION) && skill.isType(SkillType.ABILITY_PROPERTY_ILLUSION)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_LIGHT) && skill.isType(SkillType.ABILITY_PROPERTY_LIGHT)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_LIGHTNING) && skill.isType(SkillType.ABILITY_PROPERTY_LIGHTNING)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_MAGICAL) && skill.isType(SkillType.ABILITY_PROPERTY_MAGICAL)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_PHYSICAL) && skill.isType(SkillType.ABILITY_PROPERTY_PHYSICAL)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_POISON) && skill.isType(SkillType.ABILITY_PROPERTY_POISON)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_PROJECTILE) && skill.isType(SkillType.ABILITY_PROPERTY_PROJECTILE)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_SONG) && skill.isType(SkillType.ABILITY_PROPERTY_SONG)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_WATER) && skill.isType(SkillType.ABILITY_PROPERTY_WATER)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_POISON) && skill.isType(SkillType.ABILITY_PROPERTY_POISON)) {
-                return true;
-            } else if (being.hasEffectType(EffectType.RESIST_VOID) && skill.isType(SkillType.ABILITY_PROPERTY_VOID)) {
-                return true;
+            for (EffectType type : EffectType.values()) {
+                if (type.isSkillResisted(being, skill)) {
+                    return true;
+                }
             }
         }
         return false;
