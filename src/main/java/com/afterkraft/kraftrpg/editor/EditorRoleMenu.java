@@ -26,7 +26,6 @@ import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorRoleMenu extends EditorPrompt {
 
@@ -44,17 +43,17 @@ public class EditorRoleMenu extends EditorPrompt {
     public String getPrompt(ConversationContext context) {
         StringBuilder sb = new StringBuilder(getPathString(context));
         sb.append("[role] new exit ");
-        RoleType filter = getFilter(context);
+        Role.RoleType filter = getFilter(context);
         if (filter != null) {
             sb.append("none ");
         }
-        if (filter != RoleType.PRIMARY) {
+        if (filter != Role.RoleType.PRIMARY) {
             sb.append("primary ");
         }
-        if (filter != RoleType.SECONDARY) {
+        if (filter != Role.RoleType.SECONDARY) {
             sb.append("secondary ");
         }
-        if (filter != RoleType.ADDITIONAL) {
+        if (filter != Role.RoleType.ADDITIONAL) {
             sb.append("extra ");
         }
         return sb.toString();
@@ -81,15 +80,15 @@ public class EditorRoleMenu extends EditorPrompt {
             return this;
         }
         if (command.equals("2") || command.equals("primary")) {
-            setFilter(context, RoleType.PRIMARY);
+            setFilter(context, Role.RoleType.PRIMARY);
             return this;
         }
         if (command.equals("3") || command.equals("secondary")) {
-            setFilter(context, RoleType.SECONDARY);
+            setFilter(context, Role.RoleType.SECONDARY);
             return this;
         }
         if (command.equals("4") || command.equals("extra")) {
-            setFilter(context, RoleType.ADDITIONAL);
+            setFilter(context, Role.RoleType.ADDITIONAL);
             return this;
         }
 
@@ -117,11 +116,11 @@ public class EditorRoleMenu extends EditorPrompt {
         }
     }
 
-    private RoleType getFilter(ConversationContext context) {
-        return (RoleType) context.getSessionData("role.rolefilter");
+    private Role.RoleType getFilter(ConversationContext context) {
+        return (Role.RoleType) context.getSessionData("role.rolefilter");
     }
 
-    private void setFilter(ConversationContext context, RoleType type) {
+    private void setFilter(ConversationContext context, Role.RoleType type) {
         context.setSessionData("role.rolefilter", type);
     }
 }

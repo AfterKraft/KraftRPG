@@ -24,7 +24,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorRoleNew extends EditorPrompt {
     private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
@@ -48,10 +47,10 @@ public class EditorRoleNew extends EditorPrompt {
             case CHOOSE_TYPE:
                 return "Is this a class, profession, or extra role?";
             case MAKE_DEFAULT:
-                RoleType rt = (RoleType) context.getSessionData("role.new.type");
-                if (rt == RoleType.PRIMARY) {
+                Role.RoleType rt = (Role.RoleType) context.getSessionData("role.new.type");
+                if (rt == Role.RoleType.PRIMARY) {
                     return "You don't have a default primary class. Should this become the default class for new users?";
-                } else if (rt == RoleType.SECONDARY) {
+                } else if (rt == Role.RoleType.SECONDARY) {
                     return "You don't have a default profession. Should this become the default profession for new users?";
                 } else {
                     throw new UnsupportedOperationException();
@@ -74,16 +73,16 @@ public class EditorRoleNew extends EditorPrompt {
                 context.setSessionData("role.new.stage", Stage.CHOOSE_TYPE);
                 return this;
             case CHOOSE_TYPE:
-                RoleType rt = null;
+                Role.RoleType rt = null;
                 if (command.equalsIgnoreCase("extra")) {
-                    rt = RoleType.ADDITIONAL;
+                    rt = Role.RoleType.ADDITIONAL;
                 } else if (command.equalsIgnoreCase("class")) {
-                    rt = RoleType.PRIMARY;
+                    rt = Role.RoleType.PRIMARY;
                 } else if (command.equalsIgnoreCase("profession")) {
-                    rt = RoleType.SECONDARY;
+                    rt = Role.RoleType.SECONDARY;
                 } else {
                     try {
-                        rt = RoleType.valueOf(command.toUpperCase());
+                        rt = Role.RoleType.valueOf(command.toUpperCase());
                     } catch (IllegalArgumentException ignored) {
                     }
                 }
@@ -95,9 +94,9 @@ public class EditorRoleNew extends EditorPrompt {
                 context.setSessionData("role.new.type", rt);
 
                 context.setSessionData("role.new.default", false);
-                if (rt == RoleType.PRIMARY && plugin.getRoleManager().getDefaultPrimaryRole() == null) {
+                if (rt == Role.RoleType.PRIMARY && plugin.getRoleManager().getDefaultPrimaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
-                } else if (rt == RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
+                } else if (rt == Role.RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                     // } else if (rt == RoleType.ADDITIONAL) {
                     //     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
@@ -143,7 +142,7 @@ public class EditorRoleNew extends EditorPrompt {
 
     private EditorPrompt finish(ConversationContext context) {
         String name = (String) context.getSessionData("role.new.name");
-        final RoleType type = (RoleType) context.getSessionData("role.new.type");
+        final Role.RoleType type = (Role.RoleType) context.getSessionData("role.new.type");
         final boolean makeDefault = (Boolean) context.getSessionData("role.new.default");
         final Role parent = (Role) context.getSessionData("role.new.parent");
 
@@ -154,7 +153,11 @@ public class EditorRoleNew extends EditorPrompt {
         map.remove("role.new.default");
         map.remove("role.new.parent");
 
-        final Role r = new Role(plugin, name, type);
+        final Role r = Role.builder(plugin)
+                .setName(name)
+                .setType(type)
+                .addParent(parent)
+                .build();
 
         // Implicit commit
         EditorState.commit(context);
@@ -173,7 +176,7 @@ public class EditorRoleNew extends EditorPrompt {
             }
         }
         if (parent != null) {
-            r.addParent(parent);
+            plugin.getRoleManager().addRoleDependency(parent, r);
         }
 
         EditorState.setSelectedRole(context, r);

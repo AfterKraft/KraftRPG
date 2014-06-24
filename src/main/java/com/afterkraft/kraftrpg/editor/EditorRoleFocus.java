@@ -24,7 +24,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
 import com.afterkraft.kraftrpg.api.util.Utilities;
 
 public class EditorRoleFocus extends EditorPrompt {
@@ -48,7 +47,8 @@ public class EditorRoleFocus extends EditorPrompt {
         EditorPrompt common = commonActions(context, command);
         if (common != null) return common;
 
-        final Role role = EditorState.getSelectedRole(context);
+        Role role = EditorState.getSelectedRole(context);
+        final Role.Builder builder = Role.builder(plugin).copyOf(role);
 
         if (command.equals("name")) {
             sendMessage(context, "Unfortunately, changing the name of a role is not supported.");
@@ -58,7 +58,7 @@ public class EditorRoleFocus extends EditorPrompt {
                     "Choose a new description. & for color codes. Don't use a semicolon.", false) {
                 @Override
                 public boolean apply(String input) {
-                    role.setDescription(ChatColor.translateAlternateColorCodes('&', input));
+                    builder.setDescription(ChatColor.translateAlternateColorCodes('&', input));
                     return true;
                 }
             });
@@ -68,7 +68,7 @@ public class EditorRoleFocus extends EditorPrompt {
             // If already default, choose a new default.
             // If not default, confirm to make default.
             if (role.isDefault()) {
-                final boolean primary = role.getType() == RoleType.PRIMARY;
+                final boolean primary = role.getType() == Role.RoleType.PRIMARY;
 
                 return callPrompt(context, new PromptGetRole(
                         "Please choose the new default " + (primary ? "class" : "profession") + ".") {
@@ -83,7 +83,7 @@ public class EditorRoleFocus extends EditorPrompt {
                     }
                 });
             } else {
-                if (role.getType() == RoleType.ADDITIONAL) {
+                if (role.getType() == Role.RoleType.ADDITIONAL) {
                     sendMessage(context, "Extra roles cannot be defaults");
                     return null;
                 }
@@ -138,12 +138,12 @@ public class EditorRoleFocus extends EditorPrompt {
                 ChatColor.GREEN,
                 ChatColor.WHITE, ChatColor.ITALIC, role.getDescription(), ChatColor.WHITE);
 
-        if (role.getType() == RoleType.PRIMARY) {
+        if (role.getType() == Role.RoleType.PRIMARY) {
             // TODO fix maxlevel=50 assumption
             sendMessage(context, "%sHP: %s %sMP: %s %sMP Regen: %s [Level 1-50]",
-                    ChatColor.DARK_RED, Utilities.minMaxString(role.getHpAt0(), role.getHp(50), ChatColor.RED),
-                    ChatColor.DARK_BLUE, Utilities.minMaxString(role.getMpAt0(), role.getMp(50), ChatColor.BLUE),
-                    ChatColor.DARK_AQUA, Utilities.minMaxString(role.getMpRegenAt0(), role.getMpRegen(50), ChatColor.AQUA));
+                    ChatColor.DARK_RED, Utilities.minMaxString(role.getMaxHealthAtZero(), role.getMaxHealthAtLevel(50), ChatColor.RED),
+                    ChatColor.DARK_BLUE, Utilities.minMaxString(role.getMaxManaAtZero(), role.getMaxManaAtLevel(50), ChatColor.BLUE),
+                    ChatColor.DARK_AQUA, Utilities.minMaxString(role.getManaRegenAtZero(), role.getManaRegenAtLevel(50), ChatColor.AQUA));
         }
 
         sendMessage(context, "%s%d%s Skills", ChatColor.YELLOW, role.getAllSkills().size(), ChatColor.GREEN);

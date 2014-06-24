@@ -17,6 +17,9 @@ package com.afterkraft.kraftrpg;
 
 import java.util.logging.Level;
 
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -25,13 +28,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.entity.CombatTracker;
+import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
+import com.afterkraft.kraftrpg.api.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillBind;
+import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
+import com.afterkraft.kraftrpg.api.skills.SkillManager;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
+import com.afterkraft.kraftrpg.api.util.DamageManager;
 import com.afterkraft.kraftrpg.commands.RPGCommandManager;
 import com.afterkraft.kraftrpg.commands.RPGParentCommand;
 import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
@@ -67,6 +76,9 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     private RPGEffectManager effectManager;
     private RPGListenerManager listenerManager;
     private RPGCommandManager commandManager;
+
+    private Permission permisisons;
+    private Economy economy;
 
     public static KraftRPGPlugin getInstance() {
         return KraftRPGPlugin.instance;
@@ -154,17 +166,27 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
-    public RPGSkillConfigManager getSkillConfigManager() {
+    public Permission getVaultPermissions() {
+        return permisisons;
+    }
+
+    @Override
+    public Economy getVaultEconomy() {
+        return economy;
+    }
+
+    @Override
+    public SkillConfigManager getSkillConfigManager() {
         return this.skillConfigManager;
     }
 
     @Override
-    public RPGCombatTracker getCombatTracker() {
+    public CombatTracker getCombatTracker() {
         return this.combatTracker;
     }
 
     @Override
-    public RPGEntityManager getEntityManager() {
+    public EntityManager getEntityManager() {
         return this.entityManager;
     }
 
@@ -184,17 +206,17 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
-    public RPGDamageManager getDamageManager() {
+    public DamageManager getDamageManager() {
         return this.damageManager;
     }
 
     @Override
-    public RPGSkillManager getSkillManager() {
+    public SkillManager getSkillManager() {
         return this.skillManager;
     }
 
     @Override
-    public RPGRoleManager getRoleManager() {
+    public RoleManager getRoleManager() {
         return this.roleManager;
     }
 

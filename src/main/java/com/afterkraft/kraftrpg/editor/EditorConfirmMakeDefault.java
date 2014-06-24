@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
-import com.afterkraft.kraftrpg.api.roles.RoleType;
 
 public class EditorConfirmMakeDefault extends EditorPrompt {
     @Override
@@ -38,7 +37,7 @@ public class EditorConfirmMakeDefault extends EditorPrompt {
     @Override
     public String getPrompt(ConversationContext context) {
         Role newDefault = EditorState.getSelectedRole(context);
-        boolean primary = newDefault.getType() == RoleType.PRIMARY;
+        boolean primary = newDefault.getType() == Role.RoleType.PRIMARY;
         return null;
     }
 

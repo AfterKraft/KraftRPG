@@ -16,8 +16,10 @@
 package com.afterkraft.kraftrpg.entity;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -32,6 +34,7 @@ import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Monster;
+import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
@@ -52,6 +55,24 @@ public class RPGEntityManager implements EntityManager {
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
         this.entities = new ConcurrentHashMap<UUID, IEntity>();
         this.storage = this.plugin.getStorage();
+    }
+
+    public final Set<Sentient> getAllSentientBeings() {
+        Set<Sentient> sentients = new HashSet<Sentient>();
+        for (Champion champion : champions.values()) {
+            sentients.add(champion);
+        }
+        for (IEntity entity : entities.values()) {
+            if (entity instanceof Sentient) {
+                sentients.add((Sentient) entity);
+            }
+        }
+        for (Monster monster : monsters.values()) {
+            if (monster instanceof Sentient) {
+                sentients.add((Sentient) monster);
+            }
+        }
+        return sentients;
     }
 
     public final IEntity getEntity(Entity entity) {

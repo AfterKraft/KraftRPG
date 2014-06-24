@@ -84,6 +84,11 @@ public class RPGSkillManager implements SkillManager {
         }
     }
 
+    @Override
+    public boolean hasSkill(String skillName) throws IllegalArgumentException {
+        return false;
+    }
+
     private boolean checkSkillConfig(ISkill skill) {
         if (skill.getUsedConfigNodes() == null) {
             return true;

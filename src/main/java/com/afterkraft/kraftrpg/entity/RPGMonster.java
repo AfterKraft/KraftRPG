@@ -17,6 +17,8 @@ package com.afterkraft.kraftrpg.entity;
 
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
+
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -131,7 +133,21 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public ItemStack[] getArmor() {
-        return this.isEntityValid() ? this.getEntity().getEquipment().getArmorContents() : null;
+        if (!this.isEntityValid()) {
+            return new ItemStack[4];
+        } else {
+            ItemStack[] armor = new ItemStack[4];
+            for (int i = 0; i < getEntity().getEquipment().getArmorContents().length; i++) {
+                armor[i] = new ItemStack(getEntity().getEquipment().getArmorContents()[i]);
+            }
+            return armor;
+        }
+    }
+
+    @Override
+    public void setArmor(ItemStack item, int armorSlot) throws IllegalArgumentException {
+        Validate.isTrue(armorSlot < getEntity().getEquipment().getArmorContents().length, "Cannot set the armor slot greater than the current armor!");
+        getEntity().getEquipment().getArmorContents()[armorSlot] = new ItemStack(item);
     }
 
     @Override
