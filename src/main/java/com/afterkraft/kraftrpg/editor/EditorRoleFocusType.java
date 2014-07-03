@@ -24,18 +24,19 @@ import com.google.common.collect.ImmutableList;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 
 public class EditorRoleFocusType extends EditorPrompt {
     private static final Map<String, Role.RoleType> roleNameMap;
 
     static {
         roleNameMap = new HashMap<String, Role.RoleType>();
-        for (Role.RoleType elem : Role.RoleType.values()) {
+        for (Role.RoleType elem : RoleType.values()) {
             roleNameMap.put(elem.toString().toLowerCase(), elem);
         }
-        roleNameMap.put("class", Role.RoleType.PRIMARY);
-        roleNameMap.put("profession", Role.RoleType.SECONDARY);
-        roleNameMap.put("extra", Role.RoleType.ADDITIONAL);
+        roleNameMap.put("class", RoleType.PRIMARY);
+        roleNameMap.put("profession", RoleType.SECONDARY);
+        roleNameMap.put("extra", RoleType.ADDITIONAL);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class EditorRoleFocusType extends EditorPrompt {
                 return null;
             }
 
-            EditorState.setSelectedRole(context, Role.Builder.copyOf(role).setType(type).build());
+            EditorState.setSelectedRole(context, Role.copyOf(role).setType(type).build());
             return returnPrompt(context);
         }
     }

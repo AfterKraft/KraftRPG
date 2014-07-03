@@ -35,6 +35,7 @@ import com.afterkraft.kraftrpg.api.entity.party.Party;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.skills.Active;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
@@ -261,7 +262,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean setPrimaryRole(Role role) {
-        if (role == null || role.getType() != Role.RoleType.PRIMARY) {
+        if (role == null || role.getType() != RoleType.PRIMARY) {
             return false;
         }
         data.primary = role;
@@ -271,7 +272,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean setSecondaryRole(Role role) {
-        if (role == null || role.getType() != Role.RoleType.SECONDARY) {
+        if (role == null || role.getType() != RoleType.SECONDARY) {
             return false;
         }
         data.profession = role;
@@ -286,7 +287,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean addAdditionalRole(Role role) {
-        if (role == null || role.getType() != Role.RoleType.ADDITIONAL) {
+        if (role == null || role.getType() != RoleType.ADDITIONAL) {
             return false;
         }
         if (role.equals(data.primary) || role.equals(data.profession)) {

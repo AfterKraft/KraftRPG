@@ -26,6 +26,7 @@ import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 
 public class EditorRoleMenu extends EditorPrompt {
 
@@ -55,15 +56,15 @@ public class EditorRoleMenu extends EditorPrompt {
             return this;
         }
         if (command.equals("2") || command.equals("primary")) {
-            setFilter(context, Role.RoleType.PRIMARY);
+            setFilter(context, RoleType.PRIMARY);
             return this;
         }
         if (command.equals("3") || command.equals("secondary")) {
-            setFilter(context, Role.RoleType.SECONDARY);
+            setFilter(context, RoleType.SECONDARY);
             return this;
         }
         if (command.equals("4") || command.equals("extra")) {
-            setFilter(context, Role.RoleType.ADDITIONAL);
+            setFilter(context, RoleType.ADDITIONAL);
             return this;
         }
 
@@ -99,13 +100,13 @@ public class EditorRoleMenu extends EditorPrompt {
         if (filter != null) {
             sb.append("none ");
         }
-        if (filter != Role.RoleType.PRIMARY) {
+        if (filter != RoleType.PRIMARY) {
             sb.append("primary ");
         }
-        if (filter != Role.RoleType.SECONDARY) {
+        if (filter != RoleType.SECONDARY) {
             sb.append("secondary ");
         }
-        if (filter != Role.RoleType.ADDITIONAL) {
+        if (filter != RoleType.ADDITIONAL) {
             sb.append("extra ");
         }
         return sb.toString();

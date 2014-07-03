@@ -24,6 +24,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 
 public class EditorRoleNew extends EditorPrompt {
     private static final List<String> trueValues = ImmutableList.of("y", "yes", "1", "t", "true");
@@ -47,14 +48,14 @@ public class EditorRoleNew extends EditorPrompt {
             case CHOOSE_TYPE:
                 Role.RoleType rt = null;
                 if (command.equalsIgnoreCase("extra")) {
-                    rt = Role.RoleType.ADDITIONAL;
+                    rt = RoleType.ADDITIONAL;
                 } else if (command.equalsIgnoreCase("class")) {
-                    rt = Role.RoleType.PRIMARY;
+                    rt = RoleType.PRIMARY;
                 } else if (command.equalsIgnoreCase("profession")) {
-                    rt = Role.RoleType.SECONDARY;
+                    rt = RoleType.SECONDARY;
                 } else {
                     try {
-                        rt = Role.RoleType.valueOf(command.toUpperCase());
+                        rt = RoleType.valueOf(command.toUpperCase());
                     } catch (IllegalArgumentException ignored) {
                     }
                 }
@@ -66,9 +67,9 @@ public class EditorRoleNew extends EditorPrompt {
                 context.setSessionData("role.new.type", rt);
 
                 context.setSessionData("role.new.default", false);
-                if (rt == Role.RoleType.PRIMARY && plugin.getRoleManager().getDefaultPrimaryRole() == null) {
+                if (rt == RoleType.PRIMARY && plugin.getRoleManager().getDefaultPrimaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
-                } else if (rt == Role.RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
+                } else if (rt == RoleType.SECONDARY && plugin.getRoleManager().getDefaultSecondaryRole() == null) {
                     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
                     // } else if (rt == RoleType.ADDITIONAL) {
                     //     context.setSessionData("role.new.stage", Stage.MAKE_DEFAULT);
@@ -117,9 +118,9 @@ public class EditorRoleNew extends EditorPrompt {
                 return "Is this a class, profession, or extra role?";
             case MAKE_DEFAULT:
                 Role.RoleType rt = (Role.RoleType) context.getSessionData("role.new.type");
-                if (rt == Role.RoleType.PRIMARY) {
+                if (rt == RoleType.PRIMARY) {
                     return "You don't have a default primary class. Should this become the default class for new users?";
-                } else if (rt == Role.RoleType.SECONDARY) {
+                } else if (rt == RoleType.SECONDARY) {
                     return "You don't have a default profession. Should this become the default profession for new users?";
                 } else {
                     throw new UnsupportedOperationException();

@@ -24,6 +24,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.conversations.ConversationContext;
 
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.util.Utilities;
 
 public class EditorRoleFocus extends EditorPrompt {
@@ -38,7 +39,7 @@ public class EditorRoleFocus extends EditorPrompt {
         if (common != null) return common;
 
         Role role = EditorState.getSelectedRole(context);
-        final Role.Builder builder = Role.Builder.copyOf(role);
+        final Role.Builder builder = Role.copyOf(role);
 
         if (command.equals("name")) {
             sendMessage(context, "Unfortunately, changing the name of a role is not supported.");
@@ -58,7 +59,7 @@ public class EditorRoleFocus extends EditorPrompt {
             // If already default, choose a new default.
             // If not default, confirm to make default.
             if (role.isDefault()) {
-                final boolean primary = role.getType() == Role.RoleType.PRIMARY;
+                final boolean primary = role.getType() == RoleType.PRIMARY;
 
                 return callPrompt(context, new PromptGetRole(
                         "Please choose the new default " + (primary ? "class" : "profession") + ".") {
@@ -73,7 +74,7 @@ public class EditorRoleFocus extends EditorPrompt {
                     }
                 });
             } else {
-                if (role.getType() == Role.RoleType.ADDITIONAL) {
+                if (role.getType() == RoleType.ADDITIONAL) {
                     sendMessage(context, "Extra roles cannot be defaults");
                     return null;
                 }
@@ -128,7 +129,7 @@ public class EditorRoleFocus extends EditorPrompt {
                 ChatColor.GREEN,
                 ChatColor.WHITE, ChatColor.ITALIC, role.getDescription(), ChatColor.WHITE);
 
-        if (role.getType() == Role.RoleType.PRIMARY) {
+        if (role.getType() == RoleType.PRIMARY) {
             // TODO fix maxlevel=50 assumption
             sendMessage(context, "%sHP: %s %sMP: %s %sMP Regen: %s [Level 1-50]",
                     ChatColor.DARK_RED, Utilities.minMaxString(role.getMaxHealthAtZero(), role.getMaxHealthAtLevel(50), ChatColor.RED),

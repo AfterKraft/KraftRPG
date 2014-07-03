@@ -37,6 +37,7 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.PermissionSkill;
 import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
@@ -360,9 +361,9 @@ public class RPGSkillConfigManager implements SkillConfigManager {
             return outsourcedSkillConfig.getInt(name + "." + SkillSetting.LEVEL.node(), def);
         }
 
-        int val1 = getLevel(being, skill, Role.RoleType.PRIMARY, def);
-        int val2 = getLevel(being, skill, Role.RoleType.SECONDARY, def);
-        int val3 = getLevel(being, skill, Role.RoleType.ADDITIONAL, def);
+        int val1 = getLevel(being, skill, RoleType.PRIMARY, def);
+        int val2 = getLevel(being, skill, RoleType.SECONDARY, def);
+        int val3 = getLevel(being, skill, RoleType.ADDITIONAL, def);
         int max = Math.max(Math.max(val1, val2), val3);
         if (max != -1) {
             return max;

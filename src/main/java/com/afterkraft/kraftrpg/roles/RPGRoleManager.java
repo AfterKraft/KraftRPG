@@ -40,6 +40,7 @@ import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
@@ -72,7 +73,7 @@ public class RPGRoleManager implements RoleManager {
     @Override
     public boolean setDefaultPrimaryRole(Role role) {
         Validate.notNull(role, "Cannot set the a default Primary null Role!");
-        Validate.isTrue(role.getType() == Role.RoleType.PRIMARY, "Cannot have a non Primary RoleType as the default Primary Role!");
+        Validate.isTrue(role.getType() == RoleType.PRIMARY, "Cannot have a non Primary RoleType as the default Primary Role!");
         this.defaultPrimaryRole = role;
         return true;
     }
@@ -85,7 +86,7 @@ public class RPGRoleManager implements RoleManager {
     @Override
     public void setDefaultSecondaryRole(Role role) {
         Validate.notNull(role, "Cannot set the a default secondary null Role!");
-        Validate.isTrue(role.getType() == Role.RoleType.SECONDARY, "Cannot have a non Secondary RoleType as the default Secondary Role!");
+        Validate.isTrue(role.getType() == RoleType.SECONDARY, "Cannot have a non Secondary RoleType as the default Secondary Role!");
         this.defaultSecondaryRole = role;
     }
 
@@ -144,8 +145,8 @@ public class RPGRoleManager implements RoleManager {
         Validate.notNull(child, "Cannot add a null Role child dependency!");
         reconstructRoleGraph();
         roleGraph.addEdge(parent, child);
-        Role newParent = Role.Builder.copyOf(parent).addChild(child).build();
-        Role newChild = Role.Builder.copyOf(child).addParent(newParent).build();
+        Role newParent = Role.copyOf(parent).addChild(child).build();
+        Role newChild = Role.copyOf(child).addParent(newParent).build();
         this.roleMap.remove(parent.getName());
         this.roleMap.remove(child.getName());
         this.roleMap.put(newParent.getName(), newParent);
@@ -161,8 +162,8 @@ public class RPGRoleManager implements RoleManager {
         Validate.notNull(child, "Cannot remove a null Role child dependency!");
         reconstructRoleGraph();
         roleGraph.removeEdge(parent, child);
-        Role newParent = Role.Builder.copyOf(parent).removeChild(child).build();
-        Role newChild = Role.Builder.copyOf(child).removeParent(newParent).build();
+        Role newParent = Role.copyOf(parent).removeChild(child).build();
+        Role newChild = Role.copyOf(child).removeParent(newParent).build();
         this.roleMap.remove(parent.getName());
         this.roleMap.remove(child.getName());
         this.roleMap.put(newParent.getName(), newParent);
@@ -251,14 +252,14 @@ public class RPGRoleManager implements RoleManager {
                     if (hasNoDependencies(roleYmlConfig)) {
 
                         // By virtue of Roles, a default Role can not have any dependencies
-                        if (roleYmlConfig.getBoolean("default-primary") && role.getType() == Role.RoleType.PRIMARY) {
+                        if (roleYmlConfig.getBoolean("default-primary") && role.getType() == RoleType.PRIMARY) {
                             if (defaultPrimaryRole == null) {
                                 defaultPrimaryRole = role;
                             } else {
                                 plugin.debugLog(Level.WARNING, "Cannot have multiple default Primary Roles!");
                             }
                         }
-                        if (roleYmlConfig.getBoolean("default-secondary") && role.getType() == Role.RoleType.SECONDARY) {
+                        if (roleYmlConfig.getBoolean("default-secondary") && role.getType() == RoleType.SECONDARY) {
                             if (defaultSecondaryRole == null) {
                                 defaultSecondaryRole = role;
                             } else {
@@ -298,7 +299,7 @@ public class RPGRoleManager implements RoleManager {
         roleBuilder.setDescription(configuration.getString("description", ""));
         roleBuilder.setChoosable(configuration.getBoolean("choosable", true));
         roleBuilder.setManaName(configuration.getString("mana-name", "mana"));
-        roleBuilder.setType(Role.RoleType.valueOf(configuration.getString("role-type")));
+        roleBuilder.setType(RoleType.valueOf(configuration.getString("role-type")));
         roleBuilder.setHpAt0(configuration.getDouble("max-health-at-zero", 100.0D));
         roleBuilder.setHpPerLevel(configuration.getDouble("max-health-increase-per-level", 10.0D));
         roleBuilder.setMpAt0(configuration.getInt("max-mana-at-zero", 100));
