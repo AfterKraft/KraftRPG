@@ -24,18 +24,8 @@ import org.bukkit.conversations.ConversationContext;
 
 public class EditorMainMenu extends EditorPrompt {
 
-    @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of("roles", "class", "skills", "settings", "save", "exit", "quit");
-    }
-
     public String getName(ConversationContext context) {
         return "main";
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        return getPathString(context) + "roles skills settings save exit";
     }
 
     @Override
@@ -72,5 +62,15 @@ public class EditorMainMenu extends EditorPrompt {
         if (EditorState.isDirty(context)) {
             sendMessage(context, ChatColor.GOLD + "* You have un" + ChatColor.AQUA + "save" + ChatColor.GOLD + "d changes.");
         }
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        return getPathString(context) + "roles skills settings save exit";
+    }
+
+    @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.of("roles", "class", "skills", "settings", "save", "exit", "quit");
     }
 }

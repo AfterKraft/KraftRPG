@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.afterkraft</groupId>
             <artifactId>tweakkit-api</artifactId>
-            <version>1.7.9-R0.1-SNAPSHOT</version>
+            <version>1.7.9-R0.3-SNAPSHOT</version>
         </dependency>
         <!-- API Dependency -->
         <dependency>

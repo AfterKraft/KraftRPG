@@ -28,18 +28,8 @@ import com.afterkraft.kraftrpg.api.util.Utilities;
 
 public class EditorRoleFocus extends EditorPrompt {
     @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of("type", "default", "description", "parents", "hp", "mp", "regen", "skills", "armor", "tools", "delete");
-    }
-
-    @Override
     public String getName(ConversationContext context) {
         return EditorState.getSelectedRole(context).getName();
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        return getPathString(context) + "type default description parents hp mp regen skills armor tools delete save exit";
     }
 
     @Override
@@ -48,7 +38,7 @@ public class EditorRoleFocus extends EditorPrompt {
         if (common != null) return common;
 
         Role role = EditorState.getSelectedRole(context);
-        final Role.Builder builder = Role.builder(plugin).copyOf(role);
+        final Role.Builder builder = Role.Builder.copyOf(role);
 
         if (command.equals("name")) {
             sendMessage(context, "Unfortunately, changing the name of a role is not supported.");
@@ -147,5 +137,15 @@ public class EditorRoleFocus extends EditorPrompt {
         }
 
         sendMessage(context, "%s%d%s Skills", ChatColor.YELLOW, role.getAllSkills().size(), ChatColor.GREEN);
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        return getPathString(context) + "type default description parents hp mp regen skills armor tools delete save exit";
+    }
+
+    @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.of("type", "default", "description", "parents", "hp", "mp", "regen", "skills", "armor", "tools", "delete");
     }
 }

@@ -39,18 +39,8 @@ public class EditorRoleFocusType extends EditorPrompt {
     }
 
     @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.copyOf(roleNameMap.keySet());
-    }
-
-    @Override
     public String getName(ConversationContext context) {
         return "type";
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        return "Choose the new type for this role (primary, secondary, extra).";
     }
 
     @Override
@@ -82,12 +72,22 @@ public class EditorRoleFocusType extends EditorPrompt {
                 return null;
             }
 
-            EditorState.setSelectedRole(context, Role.builder(plugin).copyOf(role).setType(type).build());
+            EditorState.setSelectedRole(context, Role.Builder.copyOf(role).setType(type).build());
             return returnPrompt(context);
         }
     }
 
     @Override
     public void printBanner(ConversationContext context) {
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        return "Choose the new type for this role (primary, secondary, extra).";
+    }
+
+    @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.copyOf(roleNameMap.keySet());
     }
 }

@@ -66,6 +66,7 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
@@ -313,7 +314,7 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public final double getPostArmorDamage(Insentient being, double damage) {
+    public final double getPostArmorDamage(Insentient being, EntityDamageEvent event, double damage) {
         if (being.getEntity() instanceof CraftLivingEntity) {
             int i = 25 - ((CraftLivingEntity) being.getEntity()).getHandle().aU();
             float f1 = (float) damage * (float) i;

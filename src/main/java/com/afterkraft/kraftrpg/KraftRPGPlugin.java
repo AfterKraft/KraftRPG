@@ -136,22 +136,33 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.configManager = new RPGConfigManager(this);
         this.storageManager = new RPGStorageManager(this);
         if (cancel) return;
+        this.skillManager = new RPGSkillManager(this);
+        this.skillConfigManager = new RPGSkillConfigManager(this);
+        this.effectManager = new RPGEffectManager(this);
         this.damageManager = new RPGDamageManager(this);
         this.roleManager = new RPGRoleManager(this);
         this.combatTracker = new RPGCombatTracker(this);
         this.entityManager = new RPGEntityManager(this);
-        this.skillManager = new RPGSkillManager(this);
-        this.skillConfigManager = new RPGSkillConfigManager(this);
-        this.effectManager = new RPGEffectManager(this);
         if (ExternalProviderRegistration.getPartyManager() != null) {
             this.partyManager = ExternalProviderRegistration.getPartyManager();
         } else {
             this.partyManager = new RPGPartyManager(this);
         }
+        this.storageManager.initialize();
+        this.skillConfigManager.initialize();
+        this.skillManager.initialize();
+        this.effectManager.initialize();
+        this.damageManager.initialize();
+        this.roleManager.initialize();
+        this.combatTracker.initialize();
+        this.entityManager.initialize();
+        this.partyManager.initialize();
         this.listenerManager = new RPGListenerManager(this);
         CraftBukkitHandler.getInterface().loadExtraListeners();
+        this.listenerManager.initialize();
         this.commandManager = new RPGCommandManager(this);
         registerCommandExecutors();
+        this.commandManager.initialize();
     }
 
     private void registerCommandExecutors() {

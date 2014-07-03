@@ -155,9 +155,9 @@ public class RPGChampion extends RPGInsentient implements Champion {
             return true;
         } else {
             for (Role additional : data.additionalRoles) {
-               if (additional.isSkillRestricted(skill)) {
-                   return true;
-               }
+                if (additional.isSkillRestricted(skill)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -305,10 +305,10 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public List<Role> getAllRoles() {
         ImmutableList.Builder<Role> roleBuilder = ImmutableList.builder();
-        roleBuilder.add(data.primary.asNewCopy());
-        roleBuilder.add(data.profession.asNewCopy());
+        roleBuilder.add(data.primary);
+        roleBuilder.add(data.profession);
         for (Role role : data.additionalRoles) {
-            roleBuilder.add(role.asNewCopy());
+            roleBuilder.add(role);
         }
         return roleBuilder.build();
     }
@@ -431,6 +431,11 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
+    public final Player getPlayer() {
+        return this.getEntity();
+    }
+
+    @Override
     public final Player getEntity() {
         return (Player) super.getEntity();
     }
@@ -458,8 +463,20 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public final Player getPlayer() {
-        return this.getEntity();
+    public ItemStack getItemInHand() {
+        return this.isEntityValid() ? this.getPlayer().getItemInHand() : null;
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return this.isEntityValid() ? this.getPlayer().getInventory() : null;
+    }
+
+    @Override
+    public void sendMessage(String message) {
+        if (this.isEntityValid()) {
+            this.getPlayer().sendMessage(message);
+        }
     }
 
     @Override
@@ -481,23 +498,5 @@ public class RPGChampion extends RPGInsentient implements Champion {
     public PlayerData getDataClone() {
         return data.clone();
     }
-
-    @Override
-    public ItemStack getItemInHand() {
-        return this.isEntityValid() ? this.getPlayer().getItemInHand() : null;
-    }
-
-    @Override
-    public Inventory getInventory() {
-        return this.isEntityValid() ? this.getPlayer().getInventory() : null;
-    }
-
-    @Override
-    public void sendMessage(String message) {
-        if (this.isEntityValid()) {
-            this.getPlayer().sendMessage(message);
-        }
-    }
-
 
 }

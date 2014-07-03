@@ -31,16 +31,8 @@ public abstract class PromptGetRole extends EditorPrompt {
         this.prompt = prompt;
     }
 
-    public List<String> getCompletions(ConversationContext context) {
-        return new ArrayList<String>(KraftRPGPlugin.getInstance().getRoleManager().getRoles().keySet());
-    }
-
     public String getName(ConversationContext context) {
         return "role";
-    }
-
-    public String getPrompt(ConversationContext context) {
-        return prompt;
     }
 
     public EditorPrompt performCommand(ConversationContext context, String command) {
@@ -70,6 +62,14 @@ public abstract class PromptGetRole extends EditorPrompt {
         }
         sendMessage(context, sb.toString());
         sendMessage(context, "To cancel, type '!cancel'.");
+    }
+
+    public String getPrompt(ConversationContext context) {
+        return prompt;
+    }
+
+    public List<String> getCompletions(ConversationContext context) {
+        return new ArrayList<String>(KraftRPGPlugin.getInstance().getRoleManager().getRoles().keySet());
     }
 
     public abstract boolean apply(Role r);

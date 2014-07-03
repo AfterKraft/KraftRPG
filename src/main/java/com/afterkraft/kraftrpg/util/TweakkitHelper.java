@@ -15,126 +15,151 @@
  */
 package com.afterkraft.kraftrpg.util;
 
-import org.bukkit.entity.Entity;
+import java.util.List;
 
-import com.afterkraft.configuration.CustomDataCompound;
+import org.bukkit.entity.Entity;
+import org.bukkit.metadata.MetadataValue;
+
+import com.afterkraft.metadata.PersistentMetadataValue;
+
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
 
 public final class TweakkitHelper {
 
     public static double getEntityData(Entity entity, String key, double def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setDouble(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asDouble();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getDouble(key) != 0.0D ? compound.getDouble(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asDouble();
+                }
+            }
+            return value.asDouble();
         }
     }
 
     public static int getEntityData(Entity entity, String key, int def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setInt(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asInt();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getInt(key) != 0 ? compound.getInt(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asInt();
+                }
+            }
+            return value.asInt();
         }
     }
 
     public static String getEntityData(Entity entity, String key, String def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setString(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asString();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getString(key) != null ? compound.getString(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asString();
+                }
+            }
+            return value.asString();
         }
     }
 
     public static long getEntityData(Entity entity, String key, long def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setLong(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asLong();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getLong(key) != 0 ? compound.getLong(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asLong();
+                }
+            }
+            return value.asLong();
         }
     }
 
     public static byte getEntityData(Entity entity, String key, byte def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setByte(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asByte();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getByte(key) != 0 ? compound.getByte(key) : def;
-        }
-    }
-
-    public static byte[] getEntityData(Entity entity, String key, byte[] def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setByteArray(key, def);
-            return def;
-        } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getByteArray(key) != null ? compound.getByteArray(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asByte();
+                }
+            }
+            return value.asByte();
         }
     }
 
     public static float getEntityData(Entity entity, String key, float def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setFloat(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asByte();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getFloat(key) != 0 ? compound.getFloat(key) : def;
-        }
-    }
-
-    public static int[] getEntityData(Entity entity, String key, int[] def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setIntArray(key, def);
-            return def;
-        } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getIntArray(key) != null ? compound.getIntArray(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asFloat();
+                }
+            }
+            return value.asFloat();
         }
     }
 
     public static short getEntityData(Entity entity, String key, short def) {
-        if (!entity.getCustomData().hasKey("kraftrpg")) {
-            CustomDataCompound compound = entity.getCustomData();
-            compound.set("kraftrpg", new CustomDataCompound());
-            compound = compound.getCompound("kraftrpg");
-            compound.setShort(key, def);
-            return def;
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asByte();
         } else {
-            CustomDataCompound compound = entity.getCustomData().getCompound("kraftrpg");
-            return compound.getShort(key) != 0 ? compound.getShort(key) : def;
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return data.asShort();
+                }
+            }
+            return value.asShort();
+        }
+    }
+
+    public static List<Object> getEntityData(Entity entity, String key, List<Object> def) {
+        if (!entity.hasMetadata("kraftrpg" + key)) {
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            entity.setMetadata("kraftrpg" + key, value);
+            return value.asList();
+        } else {
+            List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
+            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            for (MetadataValue data : compound) {
+                if (data instanceof PersistentMetadataValue) {
+                    return ((PersistentMetadataValue) data).asList();
+                }
+            }
+            return value.asList();
         }
     }
 

@@ -68,10 +68,16 @@ public class RPGSkillManager implements SkillManager {
         this.plugin = plugin;
         listener = new SkillManagerListener();
         skillMap = new HashMap<String, ISkill>();
+    }
 
+    /**
+     * Load all the skills.
+     */
+    public void initialize() {
         for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
             addSkill(skill);
         }
+        plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), plugin);
     }
 
     public void addSkill(ISkill skill) {
@@ -87,38 +93,6 @@ public class RPGSkillManager implements SkillManager {
     @Override
     public boolean hasSkill(String skillName) throws IllegalArgumentException {
         return false;
-    }
-
-    private boolean checkSkillConfig(ISkill skill) {
-        if (skill.getUsedConfigNodes() == null) {
-            return true;
-        }
-        EnumSet<SkillSetting> settings = EnumSet.copyOf(skill.getUsedConfigNodes());
-        ConfigurationSection section = skill.getDefaultConfig();
-
-        Set<String> allowedKeys = new HashSet<String>(defaultAllowedNodes);
-        // Build the allowedKeys set
-        for (SkillSetting setting : settings) {
-            if (setting == SkillSetting.CUSTOM) {
-                return true;
-            } else if (setting == SkillSetting.CUSTOM_PER_CHAMPION) {
-                continue;
-            }
-            allowedKeys.add(setting.node());
-            allowedKeys.add(setting.scalingNode());
-        }
-        allowedKeys.remove(null);
-
-        // Let's provide a nice message
-        // return allowedKeys.containsAll(section.getKeys(false));
-        for (String configKey : section.getKeys(false)) {
-            if (!allowedKeys.contains(configKey)) {
-                plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
-                plugin.getLogger().severe("  Extra default configuration value " + configKey + " not declared in getUsedConfigNodes()");
-                return false;
-            }
-        }
-        return true;
     }
 
     public ISkill getSkill(String name) {
@@ -201,11 +175,36 @@ public class RPGSkillManager implements SkillManager {
 
     }
 
-    /**
-     * Load all the skills.
-     */
-    public void initialize() {
-        plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), plugin);
+    private boolean checkSkillConfig(ISkill skill) {
+        if (skill.getUsedConfigNodes() == null) {
+            return true;
+        }
+        EnumSet<SkillSetting> settings = EnumSet.copyOf(skill.getUsedConfigNodes());
+        ConfigurationSection section = skill.getDefaultConfig();
+
+        Set<String> allowedKeys = new HashSet<String>(defaultAllowedNodes);
+        // Build the allowedKeys set
+        for (SkillSetting setting : settings) {
+            if (setting == SkillSetting.CUSTOM) {
+                return true;
+            } else if (setting == SkillSetting.CUSTOM_PER_CHAMPION) {
+                continue;
+            }
+            allowedKeys.add(setting.node());
+            allowedKeys.add(setting.scalingNode());
+        }
+        allowedKeys.remove(null);
+
+        // Let's provide a nice message
+        // return allowedKeys.containsAll(section.getKeys(false));
+        for (String configKey : section.getKeys(false)) {
+            if (!allowedKeys.contains(configKey)) {
+                plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
+                plugin.getLogger().severe("  Extra default configuration value " + configKey + " not declared in getUsedConfigNodes()");
+                return false;
+            }
+        }
+        return true;
     }
 
     public void shutdown() {

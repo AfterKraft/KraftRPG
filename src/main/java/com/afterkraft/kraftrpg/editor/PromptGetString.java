@@ -30,16 +30,8 @@ public abstract class PromptGetString extends EditorPrompt {
         this.emptyAllowed = allowEmpty;
     }
 
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of();
-    }
-
     public String getName(ConversationContext context) {
         return "input";
-    }
-
-    public String getPrompt(ConversationContext context) {
-        return prompt;
     }
 
     public EditorPrompt performCommand(ConversationContext context, String command) {
@@ -68,6 +60,14 @@ public abstract class PromptGetString extends EditorPrompt {
 
     public void printBanner(ConversationContext context) {
         sendMessage(context, "To cancel, type '!cancel'.");
+    }
+
+    public String getPrompt(ConversationContext context) {
+        return prompt;
+    }
+
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.of();
     }
 
     /**

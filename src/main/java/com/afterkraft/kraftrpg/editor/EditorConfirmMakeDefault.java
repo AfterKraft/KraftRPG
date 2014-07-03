@@ -25,20 +25,8 @@ import com.afterkraft.kraftrpg.api.roles.Role;
 
 public class EditorConfirmMakeDefault extends EditorPrompt {
     @Override
-    public List<String> getCompletions(ConversationContext context) {
-        return ImmutableList.of("confirm", "cancel");
-    }
-
-    @Override
     public String getName(ConversationContext context) {
         return "default";
-    }
-
-    @Override
-    public String getPrompt(ConversationContext context) {
-        Role newDefault = EditorState.getSelectedRole(context);
-        boolean primary = newDefault.getType() == Role.RoleType.PRIMARY;
-        return null;
     }
 
     @Override
@@ -49,5 +37,17 @@ public class EditorConfirmMakeDefault extends EditorPrompt {
     @Override
     public void printBanner(ConversationContext context) {
 
+    }
+
+    @Override
+    public String getPrompt(ConversationContext context) {
+        Role newDefault = EditorState.getSelectedRole(context);
+        boolean primary = newDefault.getType() == Role.RoleType.PRIMARY;
+        return null;
+    }
+
+    @Override
+    public List<String> getCompletions(ConversationContext context) {
+        return ImmutableList.of("confirm", "cancel");
     }
 }

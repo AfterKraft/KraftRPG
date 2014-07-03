@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.Validate;
+
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -109,11 +111,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public void addClassSkillSettings(String className, String skillName, ConfigurationSection section) {
-        Configuration config = roleSkillConfigurations.get(className);
+    public void addClassSkillSettings(String roleName, String skillName, ConfigurationSection section) {
+        Validate.notNull(roleName, "Cannot add Role Skill configurations with a null Role name!");
+        Validate.notNull(skillName, "Cannot add a Role Skill configuration with a null Skill name");
+        Validate.notNull(section, "Cannot add a null configuration section!");
+        Configuration config = roleSkillConfigurations.get(roleName);
         if (config == null) {
             config = new MemoryConfiguration();
-            roleSkillConfigurations.put(className, config);
+            roleSkillConfigurations.put(roleName, config);
         }
         if (section == null) {
             return;

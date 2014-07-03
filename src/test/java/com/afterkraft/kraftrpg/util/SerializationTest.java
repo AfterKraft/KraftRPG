@@ -78,7 +78,7 @@ public class SerializationTest {
 
         @SuppressWarnings({ "unchecked" })
         public TestObject(Map<String, Object> data) {
-            number = (double) data.get("number");
+            number = (Double) data.get("number");
             someList = (List<TestObject>) data.get("list");
         }
 

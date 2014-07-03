@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.afterkraft</groupId>
             <artifactId>tweakkit</artifactId>
-            <version>1.7.9-R0.1-SNAPSHOT</version>
+            <version>1.7.9-R0.3-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
             <optional>true</optional>

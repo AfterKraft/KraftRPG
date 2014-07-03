@@ -45,7 +45,6 @@ public class RPGConfigManager implements ConfigManager {
     public RPGConfigManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
         final File dataFolder = plugin.getDataFolder();
-        RPGConfigManager.roleConfigFolder = new File(dataFolder + File.separator + "roles");
         RPGConfigManager.expConfigFile = new File(dataFolder, "experience.yml");
         RPGConfigManager.damageConfigFile = new File(dataFolder, "damages.yml");
         RPGConfigManager.recipesConfigFile = new File(dataFolder, "recipes.yml");
@@ -60,7 +59,7 @@ public class RPGConfigManager implements ConfigManager {
                 config.getParentFile().mkdir();
                 config.createNewFile();
                 final OutputStream output = new FileOutputStream(config, false);
-                final InputStream input = ConfigManager.class.getResourceAsStream("/defaults/" + config.getName());
+                final InputStream input = RPGConfigManager.class.getResourceAsStream("/defaults/" + config.getName());
                 final byte[] buf = new byte[8192];
                 while (true) {
                     final int length = input.read(buf);

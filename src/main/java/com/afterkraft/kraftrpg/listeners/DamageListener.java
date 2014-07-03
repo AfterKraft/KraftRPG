@@ -15,6 +15,8 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -58,7 +60,6 @@ import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.listeners.SkillDamageWrapper;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
-import com.afterkraft.kraftrpg.api.skills.SkillType;
 import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
@@ -110,8 +111,20 @@ public class DamageListener extends AbstractListener {
         Entity attackingEntity = null;
         IEntity attackingIEntity = null;
         // Initialize the wrapped object for handling this event.
-        DamageWrapper wrapper = new DamageWrapper(event.getCause(), event.getDamage(), event.getDamage(), event.getCause());
+        DamageWrapper wrapper = new DamageWrapper(event.getCause(), event.getDamage(), event.getFinalDamage(), event.getCause());
 
+        // TODO Somewhere... write some armor/item damage handling that may ignore someof these damages
+        final double initialDamage = event.getOriginalDamage(EntityDamageEvent.DamageModifier.BASE);
+        final double initialArmor = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ARMOR);
+        final double initialAbsorbtion = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ABSORPTION);
+        final double initialBlocking = event.getOriginalDamage(EntityDamageEvent.DamageModifier.BLOCKING);
+        final double initialMagic = event.getOriginalDamage(EntityDamageEvent.DamageModifier.MAGIC);
+        final double initialResistance = event.getOriginalDamage(EntityDamageEvent.DamageModifier.RESISTANCE);
+        double armorPercentage = (initialArmor / initialDamage);
+        double absorbtionPercentage = (initialAbsorbtion / initialDamage);
+        double blockingPercentage = (initialBlocking / initialDamage);
+        double magicPercentage = (initialMagic / initialDamage);
+        double resistancePercentage = (initialResistance / initialResistance);
         double damage = event.getDamage();
         // We need to check if any exterior plugin added an IEntity to our EntityManager
         // as a SkillCaster or just plain special Monster
@@ -155,6 +168,7 @@ public class DamageListener extends AbstractListener {
             Insentient being = (Insentient) defendingIEntity;
             if (being.hasEffectType(EffectType.INVULNERABILITY)) {
                 event.setCancelled(true);
+                return;
             }
 
             // We can't damage the entity any further.
@@ -169,6 +183,29 @@ public class DamageListener extends AbstractListener {
             if (attackingEntity instanceof Projectile && ((Projectile) attackingEntity).getShooter() instanceof LivingEntity) {
                 attackingEntity = (LivingEntity) ((Projectile) attackingEntity).getShooter();
                 attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
+            }
+
+            // Check that the LivingEntity isn't inflicting damage to itself.
+            // If it isn't, we need to remove the appropriate effects
+            if (!defendingEntity.equals(attackingEntity)) {
+                if (damage > 0) {
+                    for (final IEffect effect : being.getEffects()) {
+                        if (effect.isType(EffectType.ROOT) || effect.isType(EffectType.INVIS) && !effect.isType(EffectType.UNBREAKABLE)) {
+                            being.removeEffect(effect);
+                        }
+                    }
+                }
+            }
+        }
+
+        // TODO Add check for summons and party summons
+
+        // We can only cancel damage events with friendlies if the PartyManager
+        // is our own. Then we can continue to process and cancel the event.
+        if (plugin.getPartyManager() instanceof RPGPartyManager && defendingIEntity instanceof PartyMember && attackingIEntity instanceof PartyMember) {
+            if (plugin.getPartyManager().isFriendly((PartyMember) defendingIEntity, (PartyMember) attackingIEntity)) {
+                event.setCancelled(true);
+                return;
             }
         }
 
@@ -192,7 +229,9 @@ public class DamageListener extends AbstractListener {
                         final LivingEntity livingEntity = (LivingEntity) defendingEntity;
                         if ((livingEntity.getLastDamageCause() != null) && (livingEntity.getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
                             final Entity tempDamager = ((EntityDamageByEntityEvent) livingEntity.getLastDamageCause()).getDamager();
-                            livingEntity.setLastDamageCause(new EntityDamageByEntityEvent(tempDamager, livingEntity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, 1000D));
+                            Map<EntityDamageEvent.DamageModifier, Double> modifiers = new HashMap<EntityDamageEvent.DamageModifier, Double>();
+                            modifiers.put(EntityDamageEvent.DamageModifier.BASE, 1000D);
+                            livingEntity.setLastDamageCause(new EntityDamageByEntityEvent(tempDamager, livingEntity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, modifiers));
                             livingEntity.damage(1000, tempDamager);
                             event.setDamage(0);
                         } else {
@@ -262,56 +301,11 @@ public class DamageListener extends AbstractListener {
             }
         }
 
-        // We need to process a few things depending on the types of Entity
-        // and IEntity. More importantly to handle some effects.
-        if (defendingEntity instanceof LivingEntity || defendingIEntity instanceof Insentient) {
-            Insentient being = (Insentient) defendingIEntity;
-            if (being.hasEffectType(EffectType.INVULNERABILITY)) {
-                event.setCancelled(true);
-            }
-
-            // We can't damage the entity any further.
-            if (((being.getNoDamageTicks() > 10) && damage > 0) || being.isDead() || being.getHealth() <= 0) {
-                event.setCancelled(true);
-                return;
-            }
-
-            // Check if the attackingEntity is an instance of Projectile,
-            // If so, we need to re-assign the variables for the proper IEntity
-            if (attackingEntity instanceof Projectile && ((Projectile) attackingEntity).getShooter() instanceof LivingEntity) {
-                attackingEntity = (LivingEntity) ((Projectile) attackingEntity).getShooter();
-                attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
-            }
-
-            // Check that the LivingEntity isn't inflicting damage to itself.
-            // If it isn't, we need to remove the appropriate effects
-            if (!defendingEntity.equals(attackingEntity)) {
-                if (damage > 0) {
-                    for (final IEffect effect : being.getEffects()) {
-                        if (effect.isType(EffectType.ROOT) || effect.isType(EffectType.INVIS) && !effect.isType(EffectType.UNBREAKABLE)) {
-                            being.removeEffect(effect);
-                        }
-                    }
-                }
-            }
-        }
-
-        // We can only cancel damage events with friendlies if the PartyManager
-        // is our own. Then we can continue to process and cancel the event.
-        if (plugin.getPartyManager() instanceof RPGPartyManager && defendingIEntity instanceof PartyMember && attackingIEntity instanceof PartyMember) {
-            if (plugin.getPartyManager().isFriendly((PartyMember) defendingIEntity, (PartyMember) attackingIEntity)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-
-        // TODO Add check for summons and party summons
-
         // Here we need to check if the event is handled already and whether
         // the defender is an Insentient.
         if (!alreadyProcessed) {
             if (defendingIEntity instanceof Insentient) {
-                final InsentientDamageEvent insentientDamageEvent = new InsentientDamageEvent((Insentient) defendingIEntity, event.getCause(), damage, damage, plugin.getProperties().isVaryingDamageEnabled());
+                final InsentientDamageEvent insentientDamageEvent = new InsentientDamageEvent((Insentient) defendingIEntity, cloneEvent(event, defendingEntity, damage), damage, plugin.getProperties().isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(insentientDamageEvent);
                 if (insentientDamageEvent.isCancelled()) {
                     event.setCancelled(true);
@@ -328,7 +322,7 @@ public class DamageListener extends AbstractListener {
             return;
         }
 
-        event.setDamage(damage);
+        setEventDamage(event, damage, absorbtionPercentage, armorPercentage, blockingPercentage, magicPercentage, resistancePercentage);
 
         if ((defendingEntity instanceof ComplexEntityPart) || (defendingEntity instanceof ComplexLivingEntity)) {
             // Handle ComplexLivingEntity stuffs
@@ -342,7 +336,8 @@ public class DamageListener extends AbstractListener {
                 event.setCancelled(true);
                 return;
             }
-            event.setDamage(damage);
+            setEventDamage(event, damage, absorbtionPercentage, armorPercentage, blockingPercentage, magicPercentage, resistancePercentage);
+
         } else if (defendingEntity instanceof LivingEntity) {
             // Perform last minute damage checks and damageTicks.
             LivingEntity livingEntity = (LivingEntity) defendingEntity;
@@ -350,9 +345,8 @@ public class DamageListener extends AbstractListener {
                 event.setCancelled(true);
                 return;
             }
-            event.setDamage(damage);
+            setEventDamage(event, damage, absorbtionPercentage, armorPercentage, blockingPercentage, magicPercentage, resistancePercentage);
         }
-
     }
 
     private double onSkillDamage(EntityDamageEvent event, Entity attacker, Entity defender, double damage) {
@@ -370,7 +364,7 @@ public class DamageListener extends AbstractListener {
             // Check for possible resistances
             if (resistanceCheck(defender, skillInfo.getSkill())) {
                 // Send the resist messages to all players in the location radius
-                final Player[] players = plugin.getServer().getOnlinePlayers();
+                final Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
                 ISkill skill = skillInfo.getSkill();
                 for (final Player player : players) {
                     final Location playerLocation = player.getLocation();
@@ -386,7 +380,7 @@ public class DamageListener extends AbstractListener {
                 return 0;
             }
             // Call the API Event
-            final SkillDamageEvent spellDamageEvent = new SkillDamageEvent(caster, being, EntityDamageEvent.DamageCause.ENTITY_ATTACK, damage, damage, plugin.getProperties().isVaryingDamageEnabled());
+            final SkillDamageEvent spellDamageEvent = new SkillDamageEvent(caster, being, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), damage, plugin.getProperties().isVaryingDamageEnabled());
             plugin.getServer().getPluginManager().callEvent(spellDamageEvent);
             if (spellDamageEvent.isCancelled()) {
                 event.setCancelled(true);
@@ -395,8 +389,8 @@ public class DamageListener extends AbstractListener {
             damage = spellDamageEvent.getFinalDamage();
 
             // Double check the armor resistance damages for Entity Attack
-            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-                damage = CraftBukkitHandler.getInterface().getPostArmorDamage(being, damage);
+            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK || event.getCause() == EntityDamageEvent.DamageCause.PROJECTILE) {
+                damage = CraftBukkitHandler.getInterface().getPostArmorDamage(being, event, damage);
             }
 
             // Reset the wrapper
@@ -429,7 +423,7 @@ public class DamageListener extends AbstractListener {
             // This needs to be improved later on as we need to handle customized damages
             if (attackingInsentient.getItemInHand().getType() != Material.AIR && plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
                 damage = plugin.getDamageManager().getDefaultItemDamage(attackingInsentient.getItemInHand().getType(), damage);
-                final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, attackingInsentient.getItemInHand(), initialDamage, damage, plugin.getProperties().isVaryingDamageEnabled());
+                final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), attackingInsentient.getItemInHand(), initialDamage, plugin.getProperties().isVaryingDamageEnabled());
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -440,7 +434,7 @@ public class DamageListener extends AbstractListener {
                 }
             } else {
                 // We need to handle for when the defending entity is just being touched by something unidentified
-                final InsentientDamageInsentientEvent insentientEvent = new InsentientDamageInsentientEvent(attackingInsentient, (Insentient) defendingIEntity, event.getCause(), initialDamage, damage, plugin.getProperties().isVaryingDamageEnabled());
+                final InsentientDamageInsentientEvent insentientEvent = new InsentientDamageInsentientEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent(event, defender, damage), initialDamage, plugin.getProperties().isVaryingDamageEnabled());
                 if (insentientEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -502,6 +496,36 @@ public class DamageListener extends AbstractListener {
         return damage;
     }
 
+    private EntityDamageEvent cloneEvent(EntityDamageEvent event, Entity defender, double damage) {
+        final double initialArmor = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ARMOR);
+        final double initialAbsorbtion = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ABSORPTION);
+        final double initialBlocking = event.getOriginalDamage(EntityDamageEvent.DamageModifier.BLOCKING);
+        final double initialMagic = event.getOriginalDamage(EntityDamageEvent.DamageModifier.MAGIC);
+        final double initialResistance = event.getOriginalDamage(EntityDamageEvent.DamageModifier.RESISTANCE);
+        double armorPercentage = (initialArmor / damage);
+        double absorbtionPercentage = (initialAbsorbtion / damage);
+        double blockingPercentage = (initialBlocking / damage);
+        double magicPercentage = (initialMagic / damage);
+        double resistancePercentage = (initialResistance / initialResistance);
+        Map<EntityDamageEvent.DamageModifier, Double> modifiers = new HashMap<EntityDamageEvent.DamageModifier, Double>();
+        modifiers.put(EntityDamageEvent.DamageModifier.BASE, damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.ARMOR, armorPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.ABSORPTION, absorbtionPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.BLOCKING, blockingPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.MAGIC, magicPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.RESISTANCE, resistancePercentage * damage);
+        return new EntityDamageEvent(defender, EntityDamageEvent.DamageCause.ENTITY_ATTACK, modifiers);
+    }
+
+    private void setEventDamage(EntityDamageEvent event, double damage, double absorbtion, double armor, double blocking, double magic, double resistance) {
+        event.setDamage(damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.ABSORPTION, absorbtion * damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, armor * damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, blocking * damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.MAGIC, magic * damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, resistance * damage);
+    }
+
     private boolean resistanceCheck(Entity defender, ISkill skill) {
         if (defender instanceof LivingEntity) {
             final Insentient being = (Insentient) plugin.getEntityManager().getEntity(defender);
@@ -512,6 +536,27 @@ public class DamageListener extends AbstractListener {
             }
         }
         return false;
+    }
+
+    private EntityDamageByEntityEvent cloneEvent(EntityDamageByEntityEvent event, Entity attacker, Entity defender, double damage) {
+        final double initialArmor = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ARMOR);
+        final double initialAbsorbtion = event.getOriginalDamage(EntityDamageEvent.DamageModifier.ABSORPTION);
+        final double initialBlocking = event.getOriginalDamage(EntityDamageEvent.DamageModifier.BLOCKING);
+        final double initialMagic = event.getOriginalDamage(EntityDamageEvent.DamageModifier.MAGIC);
+        final double initialResistance = event.getOriginalDamage(EntityDamageEvent.DamageModifier.RESISTANCE);
+        double armorPercentage = (initialArmor / damage);
+        double absorbtionPercentage = (initialAbsorbtion / damage);
+        double blockingPercentage = (initialBlocking / damage);
+        double magicPercentage = (initialMagic / damage);
+        double resistancePercentage = (initialResistance / initialResistance);
+        Map<EntityDamageEvent.DamageModifier, Double> modifiers = new HashMap<EntityDamageEvent.DamageModifier, Double>();
+        modifiers.put(EntityDamageEvent.DamageModifier.BASE, damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.ARMOR, armorPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.ABSORPTION, absorbtionPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.BLOCKING, blockingPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.MAGIC, magicPercentage * damage);
+        modifiers.put(EntityDamageEvent.DamageModifier.RESISTANCE, resistancePercentage * damage);
+        return new EntityDamageByEntityEvent(attacker, defender, EntityDamageEvent.DamageCause.ENTITY_ATTACK, modifiers);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
