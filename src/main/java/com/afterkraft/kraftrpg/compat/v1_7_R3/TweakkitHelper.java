@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.util;
+package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.util.List;
 
@@ -22,18 +22,18 @@ import org.bukkit.metadata.MetadataValue;
 
 import com.afterkraft.metadata.PersistentMetadataValue;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 
 public final class TweakkitHelper {
 
-    public static double getEntityData(Entity entity, String key, double def) {
+    public static double getEntityData(RPGPlugin plugin, Entity entity, String key, double def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asDouble();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asDouble();
@@ -43,15 +43,15 @@ public final class TweakkitHelper {
         }
     }
 
-    public static int getEntityData(Entity entity, String key, int def) {
+    public static int getEntityData(RPGPlugin plugin, Entity entity, String key, int def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asInt();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asInt();
@@ -61,14 +61,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static String getEntityData(Entity entity, String key, String def) {
+    public static String getEntityData(RPGPlugin plugin, Entity entity, String key, String def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asString();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asString();
@@ -78,14 +78,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static long getEntityData(Entity entity, String key, long def) {
+    public static long getEntityData(RPGPlugin plugin, Entity entity, String key, long def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asLong();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asLong();
@@ -95,14 +95,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static byte getEntityData(Entity entity, String key, byte def) {
+    public static byte getEntityData(RPGPlugin plugin, Entity entity, String key, byte def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asByte();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asByte();
@@ -112,14 +112,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static float getEntityData(Entity entity, String key, float def) {
+    public static float getEntityData(RPGPlugin plugin, Entity entity, String key, float def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asByte();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asFloat();
@@ -129,14 +129,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static short getEntityData(Entity entity, String key, short def) {
+    public static short getEntityData(RPGPlugin plugin, Entity entity, String key, short def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asByte();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return data.asShort();
@@ -146,14 +146,14 @@ public final class TweakkitHelper {
         }
     }
 
-    public static List<Object> getEntityData(Entity entity, String key, List<Object> def) {
+    public static List<Object> getEntityData(RPGPlugin plugin, Entity entity, String key, List<Object> def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);
             return value.asList();
         } else {
             List<MetadataValue> compound = entity.getMetadata("kraftrpg" + key);
-            PersistentMetadataValue value = new PersistentMetadataValue(KraftRPGPlugin.getInstance(), def);
+            PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             for (MetadataValue data : compound) {
                 if (data instanceof PersistentMetadataValue) {
                     return ((PersistentMetadataValue) data).asList();

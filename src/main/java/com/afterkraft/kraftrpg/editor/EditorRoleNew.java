@@ -146,13 +146,11 @@ public class EditorRoleNew extends EditorPrompt {
         final Role.RoleType type = (Role.RoleType) context.getSessionData("role.new.type");
         final boolean makeDefault = (Boolean) context.getSessionData("role.new.default");
         final Role parent = (Role) context.getSessionData("role.new.parent");
-
-        Map<Object, Object> map = context.getAllSessionData();
-        map.remove("role.new.stage");
-        map.remove("role.new.name");
-        map.remove("role.new.type");
-        map.remove("role.new.default");
-        map.remove("role.new.parent");
+        context.setSessionData("role.new.stage", null);
+        context.setSessionData("role.new.name", null);
+        context.setSessionData("role.new.type", null);
+        context.setSessionData("role.new.default", null);
+        context.setSessionData("role.new.parent", null);
 
         final Role r = Role.builder(plugin)
                 .setName(name)

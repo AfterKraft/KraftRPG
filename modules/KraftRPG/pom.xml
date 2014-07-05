@@ -35,8 +35,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.afterkraft</groupId>
-            <artifactId>tweakkit-api</artifactId>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
             <version>1.7.9-R0.3-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>

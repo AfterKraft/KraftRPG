@@ -343,7 +343,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public int getMaxMana() {
-        return 0;
+        return ((data.primary.getMaxManaAtLevel(getLevel(data.primary))) + data.profession.getMaxManaAtLevel(getLevel(data.profession)));
     }
 
     @Override

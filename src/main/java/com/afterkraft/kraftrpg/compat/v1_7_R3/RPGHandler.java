@@ -79,7 +79,6 @@ import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeType;
 import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.util.TweakkitHelper;
 
 
 public class RPGHandler extends CraftBukkitHandler {
@@ -175,9 +174,9 @@ public class RPGHandler extends CraftBukkitHandler {
                 spawnz = getOrSetAttribute(entity, EntityAttributeType.SPAWNZ, spawnz);
                 break;
             case TWEAKKIT:
-                spawnx = TweakkitHelper.getEntityData(entity, SPAWNX_STRING, spawnx);
-                spawny = TweakkitHelper.getEntityData(entity, SPAWNY_STRING, spawny);
-                spawnz = TweakkitHelper.getEntityData(entity, SPAWNZ_STRING, spawnz);
+                spawnx = TweakkitHelper.getEntityData(plugin, entity, SPAWNX_STRING, spawnx);
+                spawny = TweakkitHelper.getEntityData(plugin, entity, SPAWNY_STRING, spawny);
+                spawnz = TweakkitHelper.getEntityData(plugin, entity, SPAWNZ_STRING, spawnz);
                 break;
 
         }
@@ -197,7 +196,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 ordinal = (int) getOrSetAttribute(entity, EntityAttributeType.SPAWNREASON, ordinal);
                 break;
             case TWEAKKIT:
-                ordinal = TweakkitHelper.getEntityData(entity, SPAWNREASON_STRING, ordinal);
+                ordinal = TweakkitHelper.getEntityData(plugin, entity, SPAWNREASON_STRING, ordinal);
                 break;
         }
         CreatureSpawnEvent.SpawnReason reason = CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
@@ -214,7 +213,7 @@ public class RPGHandler extends CraftBukkitHandler {
     public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
         switch (serverType) {
             case TWEAKKIT:
-                return FixedPoint.valueOf(TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, value.doubleValue()));
+                return FixedPoint.valueOf(TweakkitHelper.getEntityData(plugin, entity, EXPERIENCE_STRING, value.doubleValue()));
             default:
             case BUKKIT:
             case SPIGOT:
@@ -233,7 +232,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
                 break;
             case TWEAKKIT:
-                TweakkitHelper.getEntityData(entity, EXPERIENCE_STRING, experience.doubleValue());
+                TweakkitHelper.getEntityData(plugin, entity, EXPERIENCE_STRING, experience.doubleValue());
                 break;
         }
     }
@@ -247,7 +246,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 value = getOrSetAttribute(entity, EntityAttributeType.DAMAGE, calculated);
                 break;
             case TWEAKKIT:
-                value = TweakkitHelper.getEntityData(entity, DAMAGE_STRING, calculated);
+                value = TweakkitHelper.getEntityData(plugin, entity, DAMAGE_STRING, calculated);
                 break;
         }
         return value;
