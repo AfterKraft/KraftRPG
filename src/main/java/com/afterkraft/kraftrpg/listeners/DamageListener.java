@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -139,6 +140,12 @@ public class DamageListener extends AbstractListener {
             if (plugin.getEntityManager().isEntityManaged(attackingEntity)) {
                 attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
             }
+            // Cancel the PVP events if the attacking and defending are players and world pvp is false.
+            if ((!defendingEntity.getWorld().getPVP() && !defendingIEntity.getWorld().getPVP()) && (defendingEntity instanceof Player || defendingIEntity instanceof Champion) && (attackingEntity instanceof Player || attackingIEntity instanceof Champion)) {
+                event.setCancelled(true);
+                ((Insentient) attackingIEntity).sendMessage(ChatColor.RED + Messaging.getMessage("pvp_disabled"));
+                return;
+            }
         }
 
         if (defendingIEntity == null) {
@@ -185,6 +192,14 @@ public class DamageListener extends AbstractListener {
             if (attackingEntity instanceof Projectile && ((Projectile) attackingEntity).getShooter() instanceof LivingEntity) {
                 attackingEntity = (LivingEntity) ((Projectile) attackingEntity).getShooter();
                 attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
+            }
+
+            // Cancel the PVP events if the attacking and defending are players and world pvp is false.
+            if (!defendingEntity.getWorld().getPVP() && (defendingEntity instanceof Player || defendingIEntity instanceof Champion) && (attackingEntity instanceof Player || attackingIEntity instanceof Champion)) {
+                event.setCancelled(true);
+                // By default, a player is always a Champion. If not, then there's a serious error.
+                ((Insentient) attackingIEntity).sendMessage(ChatColor.RED + Messaging.getMessage("pvp_disabled"));
+                return;
             }
 
             // Check that the LivingEntity isn't inflicting damage to itself.

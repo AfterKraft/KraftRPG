@@ -104,6 +104,11 @@ public class RPGPluginProperties implements Properties {
     }
 
     @Override
+    public long getCombatPeriod() {
+        return 0;
+    }
+
+    @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
         if (isMobExpDistanceModified) {
             FixedPoint exp = creatureExperienceDrop.get(entity.getType());
@@ -115,5 +120,40 @@ public class RPGPluginProperties implements Properties {
             return FixedPoint.valueOf(value);
         }
         return null;
+    }
+
+    @Override
+    public double getExperienceLossMultiplier() {
+        return 0;
+    }
+
+    @Override
+    public double getExperienceLossMultiplierForPVP() {
+        return 0;
+    }
+
+    @Override
+    public FixedPoint getPlayerKillingExperience() {
+        return new FixedPoint();
+    }
+
+    @Override
+    public boolean hasEntityRewardType(EntityType type) {
+        return true;
+    }
+
+    @Override
+    public FixedPoint getEntityReward(EntityType type) {
+        return new FixedPoint();
+    }
+
+    @Override
+    public boolean allowSpawnCamping() {
+        return false;
+    }
+
+    @Override
+    public double getSpawnCampingMultiplier() {
+        return 0;
     }
 }

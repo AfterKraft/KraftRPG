@@ -15,6 +15,7 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
@@ -42,6 +43,11 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
+    public Map<Insentient, EnterCombatReason> getCombatants(Insentient target) {
+        return null;
+    }
+
+    @Override
     public void enterCombatWith(Insentient target, Insentient attacker, EnterCombatReason reason) {
         // TODO Auto-generated method stub
 
@@ -50,6 +56,11 @@ public class RPGCombatTracker implements CombatTracker {
     @Override
     public void leaveCombatWith(Insentient target, Insentient attacker, LeaveCombatReason reason) {
         // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void leaveCombat(Insentient target, LeaveCombatReason reason) {
 
     }
 

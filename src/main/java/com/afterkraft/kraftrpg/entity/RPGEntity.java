@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
@@ -68,6 +69,11 @@ public class RPGEntity implements IEntity {
             return null;
         }
         return lEntity.get();
+    }
+
+    @Override
+    public EntityType getEntityType() {
+        return isEntityValid() ? lEntity.get().getType() : EntityType.UNKNOWN;
     }
 
     @Override

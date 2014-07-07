@@ -251,6 +251,11 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
+    public void loseExperienceFromDeath(double multiplier, boolean byPVP) {
+
+    }
+
+    @Override
     public Role getPrimaryRole() {
         return data.primary;
     }
