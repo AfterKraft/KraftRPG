@@ -4,8 +4,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 
-import com.google.common.collect.ImmutableList;
-import org.easymock.EasyMock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -18,22 +16,28 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 import com.afterkraft.kraftrpg.util.FileUtils;
@@ -43,13 +47,20 @@ public class RPGTestCreator {
 
 
     private RPGPlugin mockPlugin;
+    private CraftBukkitHandler mockHandler;
+
     private ISkill mockSkill;
 
     public static final File pluginDirectory = new File("bin/test/server/plugins/rpgtest");
+
     public static final File serverDirectory = new File("bin/test/server");
 
     public RPGPlugin getMockPlugin() {
         return mockPlugin;
+    }
+
+    public CraftBukkitHandler getMockHandler() {
+        return mockHandler;
     }
 
     public ISkill getMockSkill() {
@@ -72,7 +83,7 @@ public class RPGTestCreator {
             doReturn(Util.logger).when(mockPlugin).getLogger();
 
             // Add Core to the list of loaded plugins
-            Plugin[] plugins = new RPGPlugin[] { mockPlugin };
+            Plugin[] plugins = new RPGPlugin[]{mockPlugin};
 
             // Mock the Plugin Manager
             PluginManager mockPluginManager = PowerMockito.mock(PluginManager.class);
@@ -121,6 +132,23 @@ public class RPGTestCreator {
             assertThat(mockPlugin.getServer(), is(mockServer));
 
             Bukkit.setServer(mockServer);
+
+            mockHandler = mock(CraftBukkitHandler.class);
+
+            mockStatic(CraftBukkitHandler.class, new Answer() {
+                @Override
+                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    if (invocationOnMock.getMethod().getName().equalsIgnoreCase("getInterface")) {
+                        return mockHandler;
+                    } else {
+                        return 1;
+                    }
+                }
+            });
+            when(mockHandler.getSpawnReason(any(LivingEntity.class), any(SpawnReason.class))).thenReturn(SpawnReason.NATURAL);
+            when(mockHandler.getSpawnLocation(any(LivingEntity.class))).thenReturn(mock(Location.class));
+            when(mockHandler.getEntityDamage(any(LivingEntity.class), anyDouble())).thenReturn(10D);
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();

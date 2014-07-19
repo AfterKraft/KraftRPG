@@ -4,14 +4,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.java.JavaPluginLoader;
+import org.bukkit.entity.EntityType;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 
@@ -50,5 +49,18 @@ public class TestRPGIEntity {
     @Test
     public void testNamedEntity() {
         new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+    }
+
+    @Test
+    public void testValidEntity() {
+        IEntity entity = new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+        assertTrue(entity.isEntityValid());
+        assertTrue(entity.isValid());
+    }
+
+    @Test
+    public void testGetEntityType() {
+        IEntity entity = new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+        assertThat(entity.getEntityType(), is(EntityType.PIG));
     }
 }

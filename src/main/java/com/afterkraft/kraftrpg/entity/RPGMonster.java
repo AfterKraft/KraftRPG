@@ -23,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 
@@ -41,6 +42,9 @@ public class RPGMonster extends RPGInsentient implements Monster {
     private double baseDamage = 0;
     private double damage = 0;
     private SpawnReason spawnReason = null;
+    private int mana;
+    private int maxMana;
+    private DamageWrapper wrapper;
 
     private Location spawnPoint;
 
@@ -94,32 +98,33 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public int getMaxMana() {
-        return 0;
+        return maxMana;
     }
 
     @Override
     public void setMaxMana(int mana) {
         Validate.isTrue(mana > 0, "Cannot set mana to be negative or zero!");
+        this.maxMana = mana;
     }
 
     @Override
     public double getMaxHealth() {
-        return 0;
+        return this.isEntityValid() ? this.getEntity().getMaxHealth() : 0D;
     }
 
     @Override
     public DamageWrapper getDamageWrapper() {
-        return null;
+        return wrapper;
     }
 
     @Override
     public void setDamageWrapper(DamageWrapper wrapper) {
-
+        this.wrapper = wrapper;
     }
 
     @Override
     public int getNoDamageTicks() {
-        return 0;
+        return this.isEntityValid() ? this.getEntity().getNoDamageTicks() : 0;
     }
 
     @Override
@@ -187,6 +192,6 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public Inventory getInventory() {
-        return null;
+        return this.isEntityValid() ? (this.getEntity() instanceof InventoryHolder) ? ((InventoryHolder) this.getEntity()).getInventory() : null : null;
     }
 }

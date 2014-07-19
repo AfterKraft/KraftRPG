@@ -31,6 +31,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -165,9 +166,6 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     }
 
-    /**
-     * Thread-Safe removes all max-health bonuses from the character.
-     */
     @Override
     public void clearHealthBonuses() {
         if (!this.isEntityValid()) {
@@ -205,7 +203,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public Inventory getInventory() {
-        return null;
+        return this.isEntityValid() ? (this.getEntity() instanceof InventoryHolder) ? ((InventoryHolder) this.getEntity()).getInventory() : null : null;
     }
 
     @Override
