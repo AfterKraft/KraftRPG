@@ -18,6 +18,8 @@ package com.afterkraft.kraftrpg.entity;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
+import org.apache.commons.lang.Validate;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -34,9 +36,12 @@ public class RPGEntity implements IEntity {
     protected WeakReference<Entity> lEntity;
 
     public RPGEntity(RPGPlugin plugin, Entity lEntity, String name) {
+        Validate.notNull(plugin, "Cannot create an RPGEntity with a null plugin!");
+        Validate.notNull(lEntity, "Cannot create an RPGEntity with a null Entity!");
         this.plugin = plugin;
         this.lEntity = new WeakReference<Entity>(lEntity);
         this.name = name != null ? name : lEntity.getType().name();
+        Validate.notNull(this.name, "Failed to create a name for this entity!");
         this.uuid = lEntity.getUniqueId();
     }
 
@@ -78,6 +83,7 @@ public class RPGEntity implements IEntity {
 
     @Override
     public boolean setEntity(Entity entity) {
+        Validate.notNull(entity, "Cannot set a null Entity!");
         if (!this.uuid.equals(entity.getUniqueId())) {
             return false;
         }

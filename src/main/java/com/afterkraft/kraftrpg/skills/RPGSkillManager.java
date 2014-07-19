@@ -30,8 +30,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.events.roles.RoleChangeEvent;
 import com.afterkraft.kraftrpg.api.events.roles.RoleLevelChangeEvent;
@@ -61,10 +61,10 @@ public class RPGSkillManager implements SkillManager {
         defaultAllowedNodes.add("requirements");
     }
     private final Map<String, ISkill> skillMap;
-    private final KraftRPGPlugin plugin;
+    private final RPGPlugin plugin;
     private SkillManagerListener listener;
 
-    public RPGSkillManager(KraftRPGPlugin plugin) {
+    public RPGSkillManager(RPGPlugin plugin) {
         this.plugin = plugin;
         listener = new SkillManagerListener();
         skillMap = new HashMap<String, ISkill>();

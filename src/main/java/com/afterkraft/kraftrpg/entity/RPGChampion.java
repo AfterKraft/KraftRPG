@@ -204,6 +204,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
+        Validate.notNull(role, "Cannot check a null role!");
         return role.hasSkillAtLevel(skill, getLevel(role));
     }
 
@@ -242,16 +243,21 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean canGainExperience(ExperienceType type) {
+        Validate.notNull(type, "Cannot check on a null experience type!");
         return false;
     }
 
     @Override
     public FixedPoint gainExperience(FixedPoint exp, ExperienceType type, Location location) {
+        Validate.notNull(exp, "Cannot gain null experience!");
+        Validate.notNull(type, "Cannot gain from a null experience type!");
+        Validate.notNull(location, "Cannot gain from a null location!");
         return null;
     }
 
     @Override
     public void loseExperienceFromDeath(double multiplier, boolean byPVP) {
+        Validate.isTrue(multiplier < 0, "Cannot use a negative multiplier!");
 
     }
 
@@ -267,8 +273,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean setPrimaryRole(Role role) {
-        if (role == null || role.getType() != RoleType.PRIMARY) {
-            return false;
+        if (role != null) {
+            Validate.isTrue(role.getType() == RoleType.PRIMARY, "Cannot set the primary role type to a different type!");
         }
         data.primary = role;
         this.recalculateMaxHealth();
@@ -277,8 +283,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean setSecondaryRole(Role role) {
-        if (role == null || role.getType() != RoleType.SECONDARY) {
-            return false;
+        if (role != null) {
+            Validate.isTrue(role.getType() == RoleType.SECONDARY, "Cannot set the secondary role type to a different type!");
         }
         data.profession = role;
         this.recalculateMaxHealth();
@@ -292,9 +298,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean addAdditionalRole(Role role) {
-        if (role == null || role.getType() != RoleType.ADDITIONAL) {
-            return false;
-        }
+        Validate.notNull(role, "Cannot add a null Additional role!");
+        Validate.isTrue(role.getType() == RoleType.ADDITIONAL, "Cannot add a different typed role to the Additional roles!");
         if (role.equals(data.primary) || role.equals(data.profession)) {
             return false;
         }
@@ -304,8 +309,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean removeAdditionalRole(Role role) {
-        // TODO employ some sort of Role interference logic
-        return (role != null) && (data.additionalRoles.contains(role)) && !data.primary.equals(role) && !data.profession.equals(role) && data.additionalRoles.remove(role);
+        Validate.notNull(role, "Cannot remove a null additional role!");
+        return (data.additionalRoles.contains(role)) && !data.primary.equals(role) && !data.profession.equals(role) && data.additionalRoles.remove(role);
     }
 
     @Override
@@ -353,7 +358,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public void setMaxMana(int mana) {
-
+        Validate.isTrue(mana > 0, "Cannot set mana to zero or negative!");
     }
 
     @Override
@@ -487,6 +492,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public final void setPlayer(final Player player) {
+        Validate.notNull(player, "Cannot set a null player!");
+        Validate.isTrue(player.getUniqueId().equals(this.uuid), "Cannot set a different Player object with differing UUID's!");
         this.setEntity(player);
     }
 

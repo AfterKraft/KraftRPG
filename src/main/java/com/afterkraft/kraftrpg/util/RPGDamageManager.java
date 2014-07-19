@@ -37,7 +37,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.Monster;
@@ -50,7 +50,7 @@ import com.afterkraft.kraftrpg.api.util.Utilities;
 
 public class RPGDamageManager implements DamageManager {
 
-    private final KraftRPGPlugin plugin;
+    private final RPGPlugin plugin;
     private final Map<UUID, SkillUseObject> skillTargets = new HashMap<UUID, SkillUseObject>();
     private Map<Material, Double> defaultItemDamage;
     private Map<ProjectileType, Double> defaultProjectileDamage;
@@ -59,7 +59,7 @@ public class RPGDamageManager implements DamageManager {
     private Map<EntityDamageEvent.DamageCause, Double> defaultEnvironmentDamage;
     private Map<Enchantment, Double> defaultEnchantmentDamage;
 
-    public RPGDamageManager(KraftRPGPlugin plugin) {
+    public RPGDamageManager(RPGPlugin plugin) {
         this.plugin = plugin;
     }
 

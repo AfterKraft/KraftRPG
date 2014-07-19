@@ -17,10 +17,10 @@ package com.afterkraft.kraftrpg.compat.v1_7_R3;
 
 import java.util.List;
 
+import com.afterkraft.metadata.PersistentMetadataValue;
+
 import org.bukkit.entity.Entity;
 import org.bukkit.metadata.MetadataValue;
-
-import com.afterkraft.metadata.PersistentMetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 

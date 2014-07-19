@@ -40,7 +40,9 @@ import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
 import com.afterkraft.kraftrpg.api.skills.SkillManager;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
+import com.afterkraft.kraftrpg.api.util.ConfigManager;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
+import com.afterkraft.kraftrpg.api.util.Properties;
 import com.afterkraft.kraftrpg.commands.RPGCommandManager;
 import com.afterkraft.kraftrpg.commands.RPGParentCommand;
 import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
@@ -212,7 +214,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     }
 
     @Override
-    public RPGConfigManager getConfigurationManager() {
+    public ConfigManager getConfigurationManager() {
         return this.configManager;
     }
 
@@ -236,7 +238,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         return this.partyManager;
     }
 
-    public RPGPluginProperties getProperties() {
+    public Properties getProperties() {
         return this.properties;
     }
 

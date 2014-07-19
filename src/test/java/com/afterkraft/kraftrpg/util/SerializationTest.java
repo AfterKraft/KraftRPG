@@ -18,13 +18,15 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import com.afterkraft.kraftrpg.RPGTestCreator;
 import com.afterkraft.kraftrpg.api.util.SerializationUtil;
 
 public class SerializationTest {
 
     @BeforeClass
     public static void initCraftBukkit() {
-        ServerInitializer.init();
+        RPGTestCreator creator = new RPGTestCreator();
+        assertTrue(creator.setup());
     }
 
     @Test

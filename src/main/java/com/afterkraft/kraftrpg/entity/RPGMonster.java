@@ -83,6 +83,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public void setModifiedDamage(double damage) {
+        Validate.isTrue(damage > 0, "Cannot set the attacking damage to zero or less than zero!");
         this.damage = damage > 0 ? damage : 1;
     }
 
@@ -98,7 +99,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public void setMaxMana(int mana) {
-
+        Validate.isTrue(mana > 0, "Cannot set mana to be negative or zero!");
     }
 
     @Override

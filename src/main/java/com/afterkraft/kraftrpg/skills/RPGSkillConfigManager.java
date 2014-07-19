@@ -33,7 +33,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.roles.Role;
@@ -56,9 +56,9 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     private static File skillConfigFile;
     private static File outsourcedSkillConfigFile;
 
-    private final KraftRPGPlugin plugin;
+    private final RPGPlugin plugin;
 
-    public RPGSkillConfigManager(KraftRPGPlugin plugin) {
+    public RPGSkillConfigManager(RPGPlugin plugin) {
         final File dataFolder = plugin.getDataFolder();
         skillConfigFile = new File(dataFolder, "skills.yml");
         outsourcedSkillConfigFile = new File(dataFolder, "permission-skills.yml");

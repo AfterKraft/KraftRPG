@@ -24,12 +24,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.Validate;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
@@ -40,7 +42,7 @@ import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
 public class RPGEntityManager implements EntityManager {
 
-    private final KraftRPGPlugin plugin;
+    private final RPGPlugin plugin;
     private final Map<UUID, Champion> champions;
     private final Map<UUID, Monster> monsters;
     private final Map<UUID, IEntity> entities;
@@ -49,7 +51,7 @@ public class RPGEntityManager implements EntityManager {
 
     private StorageFrontend storage;
 
-    public RPGEntityManager(KraftRPGPlugin plugin) {
+    public RPGEntityManager(RPGPlugin plugin) {
         this.plugin = plugin;
         this.champions = new HashMap<UUID, Champion>();
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
@@ -76,6 +78,7 @@ public class RPGEntityManager implements EntityManager {
     }
 
     public final IEntity getEntity(Entity entity) {
+        Validate.notNull(entity, "Cannot get an IEntity of a null Entity!");
         if (entity instanceof Player) {
             return this.getChampion((Player) entity);
         } else if (entity instanceof LivingEntity && this.monsters.containsKey(entity.getUniqueId())) {
@@ -86,9 +89,8 @@ public class RPGEntityManager implements EntityManager {
     }
 
     public Champion getChampion(Player player) {
-        if (player == null) {
-            return null;
-        }
+        Validate.notNull(player, "Cannot get a Champion of a null Player!");
+
         Champion champion = this.champions.get(player.getUniqueId());
         if (champion != null) {
             if (!champion.isEntityValid() || (champion.getPlayer().getEntityId() != player.getEntityId())) {
@@ -106,6 +108,7 @@ public class RPGEntityManager implements EntityManager {
     }
 
     public Monster getMonster(LivingEntity entity) {
+        Validate.notNull(entity, "Cannot get a Monster with a null LivingEntity!");
         final UUID id = entity.getUniqueId();
         if (monsters.containsKey(id)) {
             return monsters.get(id);
@@ -121,15 +124,20 @@ public class RPGEntityManager implements EntityManager {
 
     @Override
     public boolean isEntityManaged(Entity entity) {
+        Validate.notNull(entity, "Cannot check for a null entity!");
         return this.monsters.containsKey(entity.getUniqueId()) || this.entities.containsKey(entity.getUniqueId()) || this.champions.containsKey(entity.getUniqueId());
     }
 
     public Champion createChampion(Player player, PlayerData data) {
+        Validate.notNull(player, "Cannot create a Champion with a null player!");
+        Validate.notNull(data, "Cannot create a Champion with a null player data!");
         return new RPGChampion(plugin, player, data);
     }
 
     @Override
-    public boolean addEntity(IEntity entity) throws IllegalArgumentException {
+    public boolean addEntity(IEntity entity) {
+        Validate.notNull(entity, "Cannot add a null IEntity!");
+        Validate.isTrue(entity.isEntityValid(), "Cannot add an invalid IEntity!");
         if (entity instanceof Champion) {
             if (this.champions.containsKey(entity.getUniqueID())) {
                 if (this.champions.get(entity.getUniqueID()).equals(entity)) {
@@ -157,11 +165,14 @@ public class RPGEntityManager implements EntityManager {
     }
 
     public Monster getMonster(UUID uuid) {
+        Validate.notNull(uuid, "Cannot get a Monster from a null UUID!");
         return this.monsters.get(uuid);
     }
 
     @Override
     public Champion getChampion(UUID uuid, boolean ignoreOffline) {
+        Validate.notNull(uuid, "Cannot get a Champion from a null UUID!");
+
         return null;
     }
 

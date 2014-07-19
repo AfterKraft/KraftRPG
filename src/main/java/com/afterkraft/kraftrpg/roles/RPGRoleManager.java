@@ -34,8 +34,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.CircularDependencyException;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.roles.ExperienceType;
@@ -52,13 +52,13 @@ import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 public class RPGRoleManager implements RoleManager {
 
     private static File rolesDirectory;
-    private final KraftRPGPlugin plugin;
+    private final RPGPlugin plugin;
     private final Map<String, Role> roleMap;
     private Role defaultPrimaryRole;
     private Role defaultSecondaryRole;
     private DirectedGraph<Role> roleGraph = new DirectedGraph<Role>();
 
-    public RPGRoleManager(KraftRPGPlugin plugin) {
+    public RPGRoleManager(RPGPlugin plugin) {
         this.plugin = plugin;
         this.roleMap = new HashMap<String, Role>();
         rolesDirectory = new File(plugin.getDataFolder() + File.separator + "roles");

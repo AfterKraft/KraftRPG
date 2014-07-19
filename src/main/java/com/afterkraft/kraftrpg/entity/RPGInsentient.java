@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import org.bukkit.Location;
@@ -59,6 +60,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void setMana(int mana) {
+        Validate.isTrue(mana > 0, "Cannot set a negative mana value!");
         this.mana.setValue(mana);
     }
 
@@ -94,23 +96,16 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void setHealth(double health) {
+        Validate.isTrue(health > 0, "Cannot set health to less than zero!");
         if (this.isEntityValid()) {
             this.getEntity().setHealth(health);
         }
     }
 
-    /**
-     * Adds to the character's maximum health. Maps the amount of health to
-     * add to a key. This operation will fail if the character already has a
-     * health value with the specific key. This operation will add health to
-     * the character's current health.
-     * 
-     * @param key to give
-     * @param value amount
-     * @return true if the operation was successful
-     */
     @Override
     public boolean addMaxHealth(String key, double value) {
+        Validate.notNull(key, "Cannot add a MaxHealth module with a null key!");
+        Validate.isTrue(!key.isEmpty(), "Cannot add a MaxHealth module with an empty key!");
         if (!this.isEntityValid()) {
             return false;
         }
@@ -137,6 +132,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
      */
     @Override
     public boolean removeMaxHealth(String key) {
+        Validate.notNull(key, "Cannot remove a null key health module!");
+        Validate.isTrue(!key.isEmpty(), "Cannot remove an empty key health module!");
         if (!this.isEntityValid()) {
             return false;
         }
@@ -226,9 +223,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void addEffect(IEffect effect) {
-        if (effect == null) {
-            return;
-        }
+        Validate.notNull(effect, "Cannot add a null IEffect!");
+
         if (hasEffect(effect.getName())) {
             removeEffect(getEffect(effect.getName()));
         }
@@ -243,9 +239,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void addPotionEffect(PotionEffect potion) {
-        if (potion == null) {
-            return;
-        }
+        Validate.notNull(potion, "Cannot add a null PotionEffect!");
+
         if (this.isEntityValid()) {
             potionEffectQueue.add(new RPGPotionEffect(potion, true));
         }
@@ -253,9 +248,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void removePotionEffect(PotionEffectType type) {
-        if (type == null) {
-            return;
-        }
+        Validate.notNull(type, "Cannot remove a null potion effect type!");
         if (this.isEntityValid()) {
             potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
         }
@@ -263,19 +256,20 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public boolean hasPotionEffect(PotionEffectType type) {
+        Validate.notNull(type, "Cannot check on a null potion effect type!");
         return this.getEntity() != null && this.getEntity().hasPotionEffect(type);
     }
 
     @Override
     public boolean hasEffect(String name) {
-        return name != null && this.effects.containsKey(name.toLowerCase());
+        Validate.notNull(name, "Cannot check if an effect with a null name!");
+        Validate.isTrue(!name.isEmpty(), "Cannot check an empty effect name!");
+        return this.effects.containsKey(name.toLowerCase());
     }
 
     @Override
     public boolean hasEffectType(EffectType type) {
-        if (type == null) {
-            return false;
-        }
+        Validate.notNull(type, "Cannot check on a null effect type!");
         for (final IEffect effect : this.effects.values()) {
             if (effect.isType(type)) {
                 return true;
@@ -286,24 +280,22 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     @Override
     public void removeEffect(IEffect effect) {
-        if (effect != null) {
-            effect.remove(this);
-            effects.remove(effect.getName().toLowerCase());
+        Validate.notNull(effect, "Cannot remove a null effect!");
+        effect.remove(this);
+        effects.remove(effect.getName().toLowerCase());
 
-            if (effect instanceof Timed) {
-                plugin.getEffectManager().queueRemoval(this, (Timed) effect);
-            }
+        if (effect instanceof Timed) {
+            plugin.getEffectManager().queueRemoval(this, (Timed) effect);
         }
     }
 
     @Override
     public void manualRemoveEffect(IEffect effect) {
-        if (effect != null) {
-            effects.remove(effect.getName().toLowerCase());
+        Validate.notNull(effect, "Cannot remove a null effect!");
+        effects.remove(effect.getName().toLowerCase());
 
-            if (effect instanceof Timed) {
-                plugin.getEffectManager().queueRemoval(this, (Timed) effect);
-            }
+        if (effect instanceof Timed) {
+            plugin.getEffectManager().queueRemoval(this, (Timed) effect);
         }
     }
 

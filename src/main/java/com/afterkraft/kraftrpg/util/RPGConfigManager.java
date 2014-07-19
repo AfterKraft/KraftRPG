@@ -23,7 +23,7 @@ import java.util.logging.Level;
 
 import org.bukkit.configuration.Configuration;
 
-import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.util.ConfigManager;
 
 
@@ -39,10 +39,10 @@ public class RPGConfigManager implements ConfigManager {
     private static Configuration damageConfig;
     private static Configuration expConfig;
     private static Configuration recipeConfig;
-    protected final KraftRPGPlugin plugin;
+    protected final RPGPlugin plugin;
 
 
-    public RPGConfigManager(KraftRPGPlugin plugin) {
+    public RPGConfigManager(RPGPlugin plugin) {
         this.plugin = plugin;
         final File dataFolder = plugin.getDataFolder();
         RPGConfigManager.expConfigFile = new File(dataFolder, "experience.yml");

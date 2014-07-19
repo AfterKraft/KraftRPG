@@ -15,6 +15,8 @@
  */
 package com.afterkraft.kraftrpg.entity.party;
 
+import org.apache.commons.lang.Validate;
+
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.PartyMember;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
@@ -40,6 +42,7 @@ public class RPGPartyManager implements PartyManager {
 
     @Override
     public Party createParty(PartyMember partyLeader, PartyMember... members) {
+        Validate.notNull(partyLeader, "Cannot create a party with a null leader!");
         return null;
     }
 
