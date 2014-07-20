@@ -116,7 +116,7 @@ public class DamageListener extends AbstractListener {
         // Initialize the wrapped object for handling this event.
         DamageWrapper wrapper = new DamageWrapper(event.getCause(), event.getDamage(), event.getFinalDamage(), event.getCause());
 
-        // TODO Somewhere... write some armor/item damage handling that may ignore someof these damages
+        // TODO Somewhere... write some armor/item damage handling that may ignore some of these damages
         final double initialDamage = event.getOriginalDamage(DamageModifier.BASE);
         final double initialArmor = event.getOriginalDamage(DamageModifier.ARMOR);
         final double initialAbsorbtion = event.getOriginalDamage(DamageModifier.ABSORPTION);

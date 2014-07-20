@@ -4,21 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import org.hamcrest.core.Is;
-import org.mockito.Matchers;
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import net.minecraft.server.v1_7_R3.EntityZombie;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -31,7 +25,6 @@ import com.afterkraft.kraftrpg.RPGTestCreator;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
-import com.afterkraft.kraftrpg.listeners.EntityListener;
 import com.afterkraft.kraftrpg.util.RPGDamageManager;
 import com.afterkraft.kraftrpg.util.RPGPluginProperties;
 
@@ -104,6 +97,8 @@ public class RPGEntityCreator {
             mockEntityManager = spy(new RPGEntityManager(mockPlugin));
             doReturn(mockEntityManager).when(mockPlugin).getEntityManager();
 
+            mockEntityManager.initialize();
+
             RPGPluginProperties mockProperties = new RPGPluginProperties();
             RPGPluginProperties.isMobDamageDistanceModified = false;
             RPGPluginProperties.isMobExpDistanceModified = false;
@@ -127,6 +122,30 @@ public class RPGEntityCreator {
             replay(mockLivingEntity);
 
             assertThat(mockPlugin.getEntityManager(), is(mockEntityManager));
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean setupPlayer() {
+        try {
+            creator = new RPGTestCreator();
+            assertThat(creator.setup(), is(true));
+            RPGPlugin mockPlugin = creator.getMockPlugin();
+
+            mockEntityManager = spy(new RPGEntityManager(mockPlugin));
+            doReturn(mockEntityManager).when(mockPlugin).getEntityManager();
+
+            mockEntityManager.initialize();
+
+            RPGPluginProperties mockProperties = new RPGPluginProperties();
+            RPGPluginProperties.isMobDamageDistanceModified = false;
+            RPGPluginProperties.isMobExpDistanceModified = false;
+            RPGPluginProperties.isMobHealthDistanceModified = false;
+            doReturn(mockProperties).when(mockPlugin).getProperties();
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();

@@ -35,6 +35,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
@@ -104,9 +105,9 @@ public class RPGTestCreator {
             // Set up Scheduler
             BukkitScheduler mockScheduler = mock(BukkitScheduler.class);
             when(mockScheduler.runTaskTimer(any(Plugin.class), any(Runnable.class), anyLong(), anyLong()))
-                    .thenAnswer(new Answer<Integer>() {
+                    .thenAnswer(new Answer<BukkitTask>() {
                         @Override
-                        public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                        public BukkitTask answer(InvocationOnMock invocationOnMock) throws Throwable {
                             Runnable arg;
                             try {
                                 arg = (Runnable) invocationOnMock.getArguments()[1];
@@ -114,7 +115,10 @@ public class RPGTestCreator {
                                 return null;
                             }
                             arg.run();
-                            return null;
+                            BukkitTask mockTask = createNiceMock(BukkitTask.class);
+                            expect(mockTask.getTaskId()).andReturn(arg.hashCode()).anyTimes();
+                            replay(mockTask);
+                            return mockTask;
                         }
                     });
             expect(mockServer.getScheduler()).andReturn(mockScheduler).anyTimes();
@@ -133,6 +137,7 @@ public class RPGTestCreator {
 
             Bukkit.setServer(mockServer);
 
+            // We need to mock the CraftBukkitHandler. We shouldn't test NMS implementation
             mockHandler = mock(CraftBukkitHandler.class);
 
             mockStatic(CraftBukkitHandler.class, new Answer() {
