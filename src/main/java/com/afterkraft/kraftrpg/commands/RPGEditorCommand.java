@@ -44,7 +44,7 @@ public class RPGEditorCommand extends BasicSubcommand {
 
         setPermission("kraftrpg.admin.edit");
 
-        factory = new ConversationFactory(plugin)
+        this.factory = new ConversationFactory(plugin)
                 .withFirstPrompt(new EditorMainMenu())
                 .withModality(false)
                 .withLocalEcho(false)
@@ -54,7 +54,7 @@ public class RPGEditorCommand extends BasicSubcommand {
     @Override
     public void onCommand(CommandSender sender, String[] args, int depth) {
         if (sender instanceof Conversable) {
-            Conversation conv = factory.buildConversation((Conversable) sender);
+            Conversation conv = this.factory.buildConversation((Conversable) sender);
             EditorState.applyUnstableDefaultState(conv.getContext());
             if (args.length > depth) {
                 String input = StringUtils.join(Arrays.copyOfRange(args, depth, args.length), " ");

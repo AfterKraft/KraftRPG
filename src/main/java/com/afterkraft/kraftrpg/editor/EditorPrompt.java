@@ -38,21 +38,26 @@ import com.afterkraft.kraftrpg.api.conversations.TabCompletablePrompt;
 public abstract class EditorPrompt implements TabCompletablePrompt {
     protected static final RPGPlugin plugin = KraftRPGPlugin.getInstance();
     protected static final EditorPrompt END_CONVERSATION = new EditorPrompt() {
+        @Override
         public String getName(ConversationContext context) {
             return null;
         }
 
+        @Override
         public EditorPrompt performCommand(ConversationContext context, String command) {
             return null;
         }
 
+        @Override
         public void printBanner(ConversationContext context) {
         }
 
+        @Override
         public String getPrompt(ConversationContext context) {
             return null;
         }
 
+        @Override
         public List<String> getCompletions(ConversationContext context) {
             return null;
         }

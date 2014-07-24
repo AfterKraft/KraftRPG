@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.Validate;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -42,6 +43,7 @@ import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.api.util.SkillRequirement;
+import com.afterkraft.kraftrpg.api.util.Utilities;
 import com.afterkraft.kraftrpg.util.MathUtil;
 
 
@@ -49,6 +51,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     private PlayerData data;
     private Stalled stalled;
     private transient Party party;
+    private transient DamageWrapper damageWrapper;
 
     protected RPGChampion(RPGPlugin plugin, Player player, PlayerData data) {
         super(plugin, player, player.getName());
@@ -62,35 +65,34 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public Long getCooldown(String key) {
-        if (key != null) {
-            return data.cooldowns.get(key);
-        } else {
-            return 0L;
-        }
+        Validate.notNull(key, "Cannot get a null cooldown!");
+        Validate.isTrue(key.isEmpty(), "Cannot get an empty keyed cooldown!");
+            return this.data.cooldowns.get(key);
     }
 
     @Override
     public long getGlobalCooldown() {
-        return data.cooldowns.get("global");
+        return this.data.cooldowns.get("global");
     }
 
     @Override
     public void setGlobalCooldown(long duration) {
-        data.cooldowns.put("global", duration);
+        this.data.cooldowns.put("global", duration);
     }
 
     @Override
     public void setCooldown(String key, long duration) {
         if (key != null) {
-            data.cooldowns.put(key, duration);
+            this.data.cooldowns.put(key, duration);
         }
     }
 
     @Override
     public int getHighestSkillLevel(ISkill skill) {
+        Validate.notNull(skill, "Cannot get the highest null skill level!");
         int level = 0;
 
-        for (Role r : data.allRoles()) {
+        for (Role r : this.data.allRoles()) {
             int roleLevel = getLevel(r);
             if (r.hasSkillAtLevel(skill, roleLevel)) {
                 if (roleLevel > level) {
@@ -103,7 +105,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean canUseSkill(ISkill skill) {
-        for (Role r : data.allRoles()) {
+        Validate.notNull(skill, "Cannot check whether Champion can use null skill!");
+        for (Role r : this.data.allRoles()) {
             if (r.hasSkillAtLevel(skill, getLevel(r))) {
                 return true;
             }
@@ -114,7 +117,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Collection<ISkill> getAvailableSkills() {
         Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : data.allRoles()) {
+        for (Role r : this.data.allRoles()) {
             skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
         }
         return skills;
@@ -126,7 +129,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
         // this is basically /only/ for tab-completion
 
         Set<String> skillNames = new HashSet<String>();
-        for (Role r : data.allRoles()) {
+        for (Role r : this.data.allRoles()) {
             for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
                 if (skill instanceof Active) {
                     skillNames.add(skill.getName());
@@ -139,7 +142,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Collection<ISkill> getPossibleSkillsInRoles() {
         Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : data.allRoles()) {
+        for (Role r : this.data.allRoles()) {
             for (ISkill skill : r.getAllSkills()) {
                 skills.add(skill);
             }
@@ -150,12 +153,12 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean isSkillRestricted(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-        if (data.primary.isSkillRestricted(skill)) {
+        if (this.data.primary.isSkillRestricted(skill)) {
             return true;
-        } else if (data.profession != null && data.profession.isSkillRestricted(skill)) {
+        } else if (this.data.profession != null && this.data.profession.isSkillRestricted(skill)) {
             return true;
         } else {
-            for (Role additional : data.additionalRoles) {
+            for (Role additional : this.data.additionalRoles) {
                 if (additional.isSkillRestricted(skill)) {
                     return true;
                 }
@@ -167,33 +170,31 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean canPrimaryUseSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-
-        return data.primary.hasSkillAtLevel(skill, getLevel(data.primary));
+        return this.data.primary.hasSkillAtLevel(skill, getLevel(this.data.primary));
     }
 
     @Override
     public boolean doesPrimaryRestrictSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-
-        return false;
+        return this.data.primary.isSkillRestricted(skill);
     }
 
     @Override
     public boolean canSecondaryUseSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-        return data.profession.hasSkillAtLevel(skill, getLevel(data.profession));
+        return this.data.profession != null && this.data.profession.hasSkillAtLevel(skill, getLevel(this.data.profession));
     }
 
     @Override
     public boolean doesSecondaryRestrictSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-        return false;
+        return this.data.profession != null && this.data.profession.isSkillRestricted(skill);
     }
 
     @Override
     public boolean canAdditionalUseSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-        for (Role r : data.additionalRoles) {
+        for (Role r : this.data.additionalRoles) {
             if (r.hasSkillAtLevel(skill, getLevel(r))) {
                 return true;
             }
@@ -205,27 +206,36 @@ public class RPGChampion extends RPGInsentient implements Champion {
     public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
         Validate.notNull(role, "Cannot check a null role!");
-        return role.hasSkillAtLevel(skill, getLevel(role));
+        return role.hasSkillAtLevel(skill, this.getLevel(role));
     }
 
     @Override
     public boolean doesAdditionalRestrictSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check a null Skill!");
-        return false;
+        if (this.data.additionalRoles.isEmpty()) {
+            return false;
+        } else {
+            for (Role role : this.data.additionalRoles) {
+                if (role.isSkillRestricted(skill)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     @Override
     public Stalled getStalledSkill() {
-        return stalled;
+        return this.stalled;
     }
 
     @Override
     public boolean setStalledSkill(Stalled stalledSkill) {
-        if (stalled != null && stalledSkill != null) {
+        if (this.stalled != null && stalledSkill != null) {
             return false;
         }
         // TODO
-        stalled = stalledSkill;
+        this.stalled = stalledSkill;
         return true;
     }
 
@@ -237,7 +247,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public FixedPoint getExperience(Role role) {
         Validate.notNull(role, "Cannot check a null Role!");
-        final FixedPoint exp = data.exp.get(role);
+        final FixedPoint exp = this.data.exp.get(role);
         return exp == null ? new FixedPoint() : exp;
     }
 
@@ -263,20 +273,21 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public Role getPrimaryRole() {
-        return data.primary;
+        return this.data.primary;
     }
 
     @Override
     public Role getSecondaryRole() {
-        return data.profession;
+        return this.data.profession;
     }
 
     @Override
     public boolean setPrimaryRole(Role role) {
+        Validate.notNull(role, "Cannot set the primary role to null!");
         if (role != null) {
             Validate.isTrue(role.getType() == RoleType.PRIMARY, "Cannot set the primary role type to a different type!");
         }
-        data.primary = role;
+        this.data.primary = role;
         this.recalculateMaxHealth();
         return true;
     }
@@ -286,39 +297,42 @@ public class RPGChampion extends RPGInsentient implements Champion {
         if (role != null) {
             Validate.isTrue(role.getType() == RoleType.SECONDARY, "Cannot set the secondary role type to a different type!");
         }
-        data.profession = role;
+        this.data.profession = role;
         this.recalculateMaxHealth();
         return true;
     }
 
     @Override
     public Set<Role> getAdditionalRoles() {
-        return Collections.unmodifiableSet(data.additionalRoles);
+        return Collections.unmodifiableSet(this.data.additionalRoles);
     }
 
     @Override
     public boolean addAdditionalRole(Role role) {
         Validate.notNull(role, "Cannot add a null Additional role!");
         Validate.isTrue(role.getType() == RoleType.ADDITIONAL, "Cannot add a different typed role to the Additional roles!");
-        if (role.equals(data.primary) || role.equals(data.profession)) {
+        if (role.equals(this.data.primary) || role.equals(this.data.profession)) {
             return false;
         }
-        data.additionalRoles.add(role);
+        this.data.additionalRoles.add(role);
         return true;
     }
 
     @Override
     public boolean removeAdditionalRole(Role role) {
         Validate.notNull(role, "Cannot remove a null additional role!");
-        return (data.additionalRoles.contains(role)) && !data.primary.equals(role) && !data.profession.equals(role) && data.additionalRoles.remove(role);
+        return this.data.additionalRoles.contains(role) &&
+                !this.data.primary.equals(role) &&
+                !this.data.profession.equals(role) &&
+                this.data.additionalRoles.remove(role);
     }
 
     @Override
     public List<Role> getAllRoles() {
         ImmutableList.Builder<Role> roleBuilder = ImmutableList.builder();
-        roleBuilder.add(data.primary);
-        roleBuilder.add(data.profession);
-        for (Role role : data.additionalRoles) {
+        roleBuilder.add(this.data.primary);
+        roleBuilder.add(this.data.profession);
+        for (Role role : this.data.additionalRoles) {
             roleBuilder.add(role);
         }
         return roleBuilder.build();
@@ -332,28 +346,32 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean hasParty() {
-        return party != null;
+        this.check();
+        return this.party != null;
     }
 
     @Override
     public Party getParty() {
-        return party;
+        this.check();
+        return this.party;
     }
 
     @Override
     public void setParty(Party party) {
+        this.check();
         Validate.notNull(party, "Cannot set the Party to null!");
         this.party = party;
     }
 
     @Override
     public void leaveParty() {
+        this.check();
         this.party = null;
     }
 
     @Override
     public int getMaxMana() {
-        return ((data.primary.getMaxManaAtLevel(getLevel(data.primary))) + data.profession.getMaxManaAtLevel(getLevel(data.profession)));
+        return ((this.data.primary.getMaxManaAtLevel(getLevel(this.data.primary))) + this.data.profession.getMaxManaAtLevel(getLevel(this.data.profession)));
     }
 
     @Override
@@ -363,67 +381,67 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public double getMaxHealth() {
-        return 0;
+        this.check();
+
+        return this.getEntity().getMaxHealth();
     }
 
     @Override
     public DamageWrapper getDamageWrapper() {
-        return null;
+        return this.damageWrapper;
     }
 
     @Override
     public void setDamageWrapper(DamageWrapper wrapper) {
-
+        this.damageWrapper = wrapper;
     }
 
     @Override
     public int getNoDamageTicks() {
-        return getPlayer().getNoDamageTicks();
+        this.check();
+        return this.getPlayer().getNoDamageTicks();
     }
 
     @Override
     public float getStamina() {
-        if (!this.isEntityValid()) {
-            return 0F;
-        }
-        return getEntity().getFoodLevel() * 4 + getEntity().getSaturation() - getEntity().getExhaustion();
+        this.check();
+
+        return this.getEntity().getFoodLevel() * 4 + this.getEntity().getSaturation() - this.getEntity().getExhaustion();
     }
 
     @Override
     public void modifyStamina(float staminaDiff) {
-        if (!this.isEntityValid()) {
-            return;
-        }
+        this.check();
         if (staminaDiff < 0) {
             // adding to exhaustion when negative
-            getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
+            this.getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
         } else {
-            getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
+            this.getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
         }
     }
 
     @Override
     public ItemStack[] getArmor() {
-        if (!this.isEntityValid()) {
-            return new ItemStack[4];
-        } else {
-            ItemStack[] armor = new ItemStack[4];
-            for (int i = 0; i < getPlayer().getInventory().getArmorContents().length; i++) {
-                armor[i] = new ItemStack(getPlayer().getInventory().getArmorContents()[i]);
-            }
-            return armor;
+        this.check();
+
+        ItemStack[] armor = new ItemStack[4];
+        for (int i = 0; i < getPlayer().getInventory().getArmorContents().length; i++) {
+            armor[i] = new ItemStack(getPlayer().getInventory().getArmorContents()[i]);
         }
+        return armor;
     }
 
     @Override
     public void setArmor(ItemStack item, int armorSlot) throws IllegalArgumentException {
+        this.check();
         Validate.isTrue(armorSlot < getPlayer().getInventory().getArmorContents().length, "Cannot set the armor slot greater than the current armor!");
         getPlayer().getInventory().getArmorContents()[armorSlot] = new ItemStack(item);
     }
 
     @Override
     public boolean canEquipItem(ItemStack itemStack) {
-        return false;
+
+        return true;
     }
 
     @Override
@@ -451,6 +469,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
         return (Player) super.getEntity();
     }
 
+    @Override
     public double recalculateMaxHealth() {
         return 0D;
     }
@@ -462,25 +481,25 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean isDead() {
-        return false;
+        return this.check() && this.getPlayer().isDead();
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void updateInventory() {
-        if (this.isEntityValid()) {
+        if (this.check()) {
             this.getPlayer().updateInventory();
         }
     }
 
     @Override
     public ItemStack getItemInHand() {
-        return this.isEntityValid() ? this.getPlayer().getItemInHand() : null;
+        return this.check() ? this.getPlayer().getItemInHand() : null;
     }
 
     @Override
     public Inventory getInventory() {
-        return this.isEntityValid() ? this.getPlayer().getInventory() : null;
+        return this.check() ? this.getPlayer().getInventory() : null;
     }
 
     @Override
@@ -504,12 +523,18 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public PlayerData getData() {
-        return data;
+        return this.data;
     }
 
     @Override
     public PlayerData getDataClone() {
-        return data.clone();
+        return this.data.clone();
     }
 
+    private boolean check() {
+        if (!this.isEntityValid()) {
+            throw new IllegalStateException("A Champion is not linked to a correct Player!");
+        }
+        return true;
+    }
 }

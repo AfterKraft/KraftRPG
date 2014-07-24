@@ -47,12 +47,12 @@ public class RPGEntity implements IEntity {
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public final boolean isValid() {
-        return lEntity.get() != null;
+        return this.lEntity.get() != null;
     }
 
     @Override
@@ -71,14 +71,14 @@ public class RPGEntity implements IEntity {
     @Override
     public Entity getEntity() {
         if (!isEntityValid()) {
-            return null;
+            throw new IllegalStateException("This RPGEntity is proxying a null entity!");
         }
-        return lEntity.get();
+        return this.lEntity.get();
     }
 
     @Override
     public EntityType getEntityType() {
-        return isEntityValid() ? lEntity.get().getType() : EntityType.UNKNOWN;
+        return isEntityValid() ? this.getEntity().getType() : EntityType.UNKNOWN;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class RPGEntity implements IEntity {
 
     @Override
     public UUID getUniqueID() {
-        return isEntityValid() ? this.getEntity().getUniqueId() : uuid;
+        return isEntityValid() ? this.getEntity().getUniqueId() : this.uuid;
     }
 
     @Override

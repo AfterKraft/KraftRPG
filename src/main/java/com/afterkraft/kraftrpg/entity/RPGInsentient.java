@@ -114,10 +114,10 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         if (this.getEntity().getHealth() < 1) {
             return false;
         }
-        if (healthMap.containsKey(key)) {
+        if (this.healthMap.containsKey(key)) {
             return false;
         }
-        healthMap.put(key, value);
+        this.healthMap.put(key, value);
         this.getEntity().setMaxHealth(this.getEntity().getMaxHealth() + value);
         this.getEntity().setHealth(value + this.getEntity().getHealth());
         return true;
@@ -139,7 +139,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             return false;
         }
         LivingEntity entity = this.getEntity();
-        Double old = healthMap.remove(key);
+        Double old = this.healthMap.remove(key);
         double currentHealth = entity.getHealth();
         if (old != null) {
             double newHealth = entity.getHealth() - old;
@@ -172,7 +172,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             return;
         }
         double current = this.getEntity().getHealth();
-        Iterator<Map.Entry<String, Double>> iter = healthMap.entrySet().iterator();
+        Iterator<Map.Entry<String, Double>> iter = this.healthMap.entrySet().iterator();
         int minus = 0;
         while (iter.hasNext()) {
             Double val = iter.next().getValue();
@@ -227,11 +227,11 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             removeEffect(getEffect(effect.getName()));
         }
 
-        effects.put(effect.getName().toLowerCase(), effect);
+        this.effects.put(effect.getName().toLowerCase(), effect);
         effect.apply(this);
 
         if (effect instanceof Timed) {
-            plugin.getEffectManager().manageEffect(this, (Timed) effect);
+            this.plugin.getEffectManager().manageEffect(this, (Timed) effect);
         }
     }
 
@@ -240,7 +240,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         Validate.notNull(potion, "Cannot add a null PotionEffect!");
 
         if (this.isEntityValid()) {
-            potionEffectQueue.add(new RPGPotionEffect(potion, true));
+            this.potionEffectQueue.add(new RPGPotionEffect(potion, true));
         }
     }
 
@@ -248,7 +248,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public void removePotionEffect(PotionEffectType type) {
         Validate.notNull(type, "Cannot remove a null potion effect type!");
         if (this.isEntityValid()) {
-            potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
+            this.potionEffectQueue.add(new RPGPotionEffect(new PotionEffect(type, 0, 0), false));
         }
     }
 
@@ -280,20 +280,20 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public void removeEffect(IEffect effect) {
         Validate.notNull(effect, "Cannot remove a null effect!");
         effect.remove(this);
-        effects.remove(effect.getName().toLowerCase());
+        this.effects.remove(effect.getName().toLowerCase());
 
         if (effect instanceof Timed) {
-            plugin.getEffectManager().queueRemoval(this, (Timed) effect);
+            this.plugin.getEffectManager().queueRemoval(this, (Timed) effect);
         }
     }
 
     @Override
     public void manualRemoveEffect(IEffect effect) {
         Validate.notNull(effect, "Cannot remove a null effect!");
-        effects.remove(effect.getName().toLowerCase());
+        this.effects.remove(effect.getName().toLowerCase());
 
         if (effect instanceof Timed) {
-            plugin.getEffectManager().queueRemoval(this, (Timed) effect);
+            this.plugin.getEffectManager().queueRemoval(this, (Timed) effect);
         }
     }
 

@@ -58,15 +58,15 @@ public class EntityListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-        if (plugin.getEntityManager().isEntityManaged(event.getEntity())) {
-            IEntity dyingEntity = plugin.getEntityManager().getEntity(event.getEntity());
+        if (this.plugin.getEntityManager().isEntityManaged(event.getEntity())) {
+            IEntity dyingEntity = this.plugin.getEntityManager().getEntity(event.getEntity());
 
             if (!(dyingEntity instanceof Insentient)) {
                 return;
             }
             Insentient insentientDyingEntity = (Insentient) dyingEntity;
             // If the insentient isn't in combat with any other insentient, don't bother
-            if (!plugin.getCombatTracker().isInCombat(insentientDyingEntity)) {
+            if (!this.plugin.getCombatTracker().isInCombat(insentientDyingEntity)) {
                 return;
             }
             // If the damageWrapper is null, we have a problem as well.
@@ -83,19 +83,19 @@ public class EntityListener extends AbstractListener {
             // We must have the sentient lose experience for dying
             if (insentientDyingEntity instanceof Sentient) {
                 final Sentient being = (Sentient) insentientDyingEntity;
-                double multiplier = properties.getExperienceLossMultiplier();
+                double multiplier = this.properties.getExperienceLossMultiplier();
                 if (attacker != null) {
-                    multiplier = properties.getExperienceLossMultiplierForPVP();
+                    multiplier = this.properties.getExperienceLossMultiplierForPVP();
                 }
                 being.loseExperienceFromDeath(multiplier, attacker != null);
             }
 
             // Need to call the InsentientKillEvent before actually processing anything
             if (attacker instanceof Sentient) {
-                if (plugin.getCombatTracker().isInCombatWith(insentientDyingEntity, attacker)) {
-                    Map<Insentient, EnterCombatReason> damageMap = plugin.getCombatTracker().getCombatants(insentientDyingEntity);
+                if (this.plugin.getCombatTracker().isInCombatWith(insentientDyingEntity, attacker)) {
+                    Map<Insentient, EnterCombatReason> damageMap = this.plugin.getCombatTracker().getCombatants(insentientDyingEntity);
                     InsentientKillEvent killEvent = new InsentientKillEvent(attacker, insentientDyingEntity, damageMap.get(attacker));
-                    plugin.getServer().getPluginManager().callEvent(killEvent);
+                    this.plugin.getServer().getPluginManager().callEvent(killEvent);
                     if (insentientDyingEntity instanceof Monster || insentientDyingEntity instanceof Sentient) {
                         grantKillingExperience((Sentient) attacker, insentientDyingEntity);
                     }
@@ -104,9 +104,9 @@ public class EntityListener extends AbstractListener {
             }
             // Handle experience loss and leaving combat
             if (damageWrapper.getModifiedCause() != DamageCause.SUICIDE) {
-                plugin.getCombatTracker().leaveCombat(insentientDyingEntity, LeaveCombatReason.DEATH);
+                this.plugin.getCombatTracker().leaveCombat(insentientDyingEntity, LeaveCombatReason.DEATH);
             } else {
-                plugin.getCombatTracker().leaveCombat(insentientDyingEntity, LeaveCombatReason.SUICIDE);
+                this.plugin.getCombatTracker().leaveCombat(insentientDyingEntity, LeaveCombatReason.SUICIDE);
             }
 
             // Remove any nonpersistent effects
@@ -131,23 +131,23 @@ public class EntityListener extends AbstractListener {
         // We can use the sentient's dying experience
         if (dyingEntity instanceof Sentient) {
             // Don't award XP for Players killing themselves
-            addedExp.add(properties.getPlayerKillingExperience());
+            addedExp.add(this.properties.getPlayerKillingExperience());
             experienceType = ExperienceType.PVP;
 
         } else if (dyingEntity instanceof Monster) { // Otherwise, we have to use the Monster experience
             final Monster monster = (Monster) dyingEntity;
             addedExp = monster.getRewardExperience();
             // If EXP hasn't been assigned for this Entity then we stop here.
-            if ((addedExp.intValue() == -1) && !properties.hasEntityRewardType(dyingEntity.getEntityType())) {
+            if ((addedExp.intValue() == -1) && !this.properties.hasEntityRewardType(dyingEntity.getEntityType())) {
                 return;
             } else if (addedExp.intValue() == -1) {
-                addedExp = properties.getEntityReward(dyingEntity.getEntityType());
+                addedExp = this.properties.getEntityReward(dyingEntity.getEntityType());
             }
             experienceType = ExperienceType.PVE;
 
             // Check if the kill was near a spawner
-            if (properties.allowSpawnCamping() && (monster.getSpawnReason() == SpawnReason.SPAWNER)) {
-                addedExp.mult(properties.getSpawnCampingMultiplier());
+            if (this.properties.allowSpawnCamping() && (monster.getSpawnReason() == SpawnReason.SPAWNER)) {
+                addedExp.mult(this.properties.getSpawnCampingMultiplier());
             }
         }
 
@@ -174,24 +174,24 @@ public class EntityListener extends AbstractListener {
     public void onEntityDamageEarly(EntityDamageEvent event) {
         Entity e = event.getEntity();
         if (e instanceof LivingEntity) {
-            plugin.getEntityManager().getEntity(e);
+            this.plugin.getEntityManager().getEntity(e);
         }
 
         if (event instanceof EntityDamageByEntityEvent) {
             Entity d = ((EntityDamageByEntityEvent) event).getDamager();
             if (d instanceof LivingEntity) {
-                plugin.getEntityManager().getEntity(d);
+                this.plugin.getEntityManager().getEntity(d);
             }
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onCreatureSpawnEvent(CreatureSpawnEvent event) {
-        event.getEntity().setMetadata(SPAWNREASON_META_KEY, new FixedMetadataValue(plugin, event.getSpawnReason()));
-        if (!plugin.getEntityManager().isEntityManaged(event.getEntity())) {
+        event.getEntity().setMetadata(SPAWNREASON_META_KEY, new FixedMetadataValue(this.plugin, event.getSpawnReason()));
+        if (!this.plugin.getEntityManager().isEntityManaged(event.getEntity())) {
             // We just need to make the EntityManager aware of the newly spawned
             // entity in the event another plugin hasn't done so already
-            plugin.getEntityManager().getEntity(event.getEntity());
+            this.plugin.getEntityManager().getEntity(event.getEntity());
         }
     }
 }

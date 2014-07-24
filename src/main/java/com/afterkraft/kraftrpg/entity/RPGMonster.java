@@ -57,7 +57,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
         this.spawnReason = CraftBukkitHandler.getInterface().getSpawnReason(entity, getMetaSpawnReason(entity));
         this.spawnPoint = CraftBukkitHandler.getInterface().getSpawnLocation(entity);
         this.baseDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
-        this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, spawnPoint, baseDamage, spawnReason);
+        this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, this.spawnPoint, this.baseDamage, this.spawnReason);
         this.damage = CraftBukkitHandler.getInterface().getEntityDamage(entity, this.damage);
         this.experience = plugin.getProperties().getMonsterExperience(entity, this.spawnPoint);
         this.experience = CraftBukkitHandler.getInterface().getMonsterExperience(entity, this.experience);
@@ -72,7 +72,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public Location getSpawnLocation() {
-        return spawnPoint;
+        return this.spawnPoint;
     }
 
     @Override
@@ -98,7 +98,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public int getMaxMana() {
-        return maxMana;
+        return this.maxMana;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public DamageWrapper getDamageWrapper() {
-        return wrapper;
+        return this.wrapper;
     }
 
     @Override

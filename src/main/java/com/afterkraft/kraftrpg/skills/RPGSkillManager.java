@@ -66,20 +66,22 @@ public class RPGSkillManager implements SkillManager {
 
     public RPGSkillManager(RPGPlugin plugin) {
         this.plugin = plugin;
-        listener = new SkillManagerListener();
-        skillMap = new HashMap<String, ISkill>();
+        this.listener = new SkillManagerListener();
+        this.skillMap = new HashMap<String, ISkill>();
     }
 
     /**
      * Load all the skills.
      */
+    @Override
     public void initialize() {
         for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
             addSkill(skill);
         }
-        plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), plugin);
+        this.plugin.getServer().getPluginManager().registerEvents(new SkillManagerListener(), this.plugin);
     }
 
+    @Override
     public void addSkill(ISkill skill) {
         if (!checkSkillConfig(skill)) {
             return;
@@ -95,20 +97,22 @@ public class RPGSkillManager implements SkillManager {
         return false;
     }
 
+    @Override
     public ISkill getSkill(String name) {
         if (name == null) {
             return null;
         }
         name = name.toLowerCase();
-        return skillMap.get(name);
+        return this.skillMap.get(name);
     }
 
+    @Override
     public boolean loadPermissionSkill(String name) {
-        if ((name == null) || (skillMap.get(name.toLowerCase()) != null)) {
+        if ((name == null) || (this.skillMap.get(name.toLowerCase()) != null)) {
             return true;
         }
 
-        final PermissionSkill oSkill = new PermissionSkill(plugin, name);
+        final PermissionSkill oSkill = new PermissionSkill(this.plugin, name);
         final ConfigurationSection config = RPGSkillConfigManager.outsourcedSkillConfig.getConfigurationSection(oSkill.getName());
         final Map<String, Boolean> perms = new HashMap<String, Boolean>();
         if (config != null) {
@@ -120,24 +124,27 @@ public class RPGSkillManager implements SkillManager {
 
         }
         if (perms.isEmpty()) {
-            plugin.log(Level.SEVERE, "There are no permissions defined for " + oSkill.getName());
+            this.plugin.log(Level.SEVERE, "There are no permissions defined for " + oSkill.getName());
             return false;
         }
         oSkill.setPermissions(perms);
-        skillMap.put(name.toLowerCase(), oSkill);
+        this.skillMap.put(name.toLowerCase(), oSkill);
         return true;
     }
 
+    @Override
     public Collection<ISkill> getSkills() {
-        return Collections.unmodifiableCollection(skillMap.values());
+        return Collections.unmodifiableCollection(this.skillMap.values());
     }
 
+    @Override
     public boolean isLoaded(String name) {
-        return skillMap.containsKey(name.toLowerCase());
+        return this.skillMap.containsKey(name.toLowerCase());
     }
 
+    @Override
     public void removeSkill(ISkill skill) {
-        skillMap.remove(skill.getName().toLowerCase().replace("skill", ""));
+        this.skillMap.remove(skill.getName().toLowerCase().replace("skill", ""));
     }
 
     @Override
@@ -199,14 +206,15 @@ public class RPGSkillManager implements SkillManager {
         // return allowedKeys.containsAll(section.getKeys(false));
         for (String configKey : section.getKeys(false)) {
             if (!allowedKeys.contains(configKey)) {
-                plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
-                plugin.getLogger().severe("  Extra default configuration value " + configKey + " not declared in getUsedConfigNodes()");
+                this.plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
+                this.plugin.getLogger().severe("  Extra default configuration value " + configKey + " not declared in getUsedConfigNodes()");
                 return false;
             }
         }
         return true;
     }
 
+    @Override
     public void shutdown() {
 
     }
@@ -218,28 +226,28 @@ public class RPGSkillManager implements SkillManager {
 
         protected void addSkill(ISkill skill) {
             if (skill instanceof PassiveSkill) {
-                passiveSkills.add((PassiveSkill) skill);
+                this.passiveSkills.add((PassiveSkill) skill);
             } else if (skill instanceof PermissionSkill) {
-                permissionSkills.add((PermissionSkill) skill);
+                this.permissionSkills.add((PermissionSkill) skill);
             }
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
         public void onClassChangeEvent(RoleChangeEvent event) {
-            for (PermissionSkill skill : permissionSkills) {
+            for (PermissionSkill skill : this.permissionSkills) {
                 skill.tryLearning(event.getSentientBeing());
             }
-            for (PassiveSkill skill : passiveSkills) {
+            for (PassiveSkill skill : this.passiveSkills) {
                 skill.apply((SkillCaster) event.getSentientBeing());
             }
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
         public void onLevelChangeEvent(RoleLevelChangeEvent event) {
-            for (PermissionSkill skill : permissionSkills) {
+            for (PermissionSkill skill : this.permissionSkills) {
                 skill.tryLearning(event.getSentientBeing());
             }
-            for (PassiveSkill skill : passiveSkills) {
+            for (PassiveSkill skill : this.passiveSkills) {
                 skill.apply((SkillCaster) event.getSentientBeing());
             }
         }

@@ -38,27 +38,27 @@ public abstract class RootCommand implements TabExecutor {
     private Map<String, Subcommand> subcommandMap;
     private List<String> helpList = null;
 
-    public RootCommand(RPGPlugin plugin) {
+    protected RootCommand(RPGPlugin plugin) {
         this.plugin = plugin;
-        aliasMap = new HashMap<String, String>();
-        subcommandMap = new HashMap<String, Subcommand>();
+        this.aliasMap = new HashMap<String, String>();
+        this.subcommandMap = new HashMap<String, Subcommand>();
     }
 
     protected void addSubcommand(String name, Subcommand sub) {
-        assert helpList == null;
+        assert this.helpList == null;
         name = name.toLowerCase();
 
-        subcommandMap.put(name, sub);
+        this.subcommandMap.put(name, sub);
     }
 
     protected void addSubcommand(String name, Subcommand sub, String... aliases) {
-        assert helpList == null;
+        assert this.helpList == null;
         name = name.toLowerCase();
 
-        subcommandMap.put(name, sub);
+        this.subcommandMap.put(name, sub);
         for (String alias : aliases) {
-            subcommandMap.put(alias, sub);
-            aliasMap.put(alias, name);
+            this.subcommandMap.put(alias, sub);
+            this.aliasMap.put(alias, name);
         }
     }
 
@@ -74,7 +74,7 @@ public abstract class RootCommand implements TabExecutor {
                 doHelp(sender, label, 1);
             } else {
                 sub = args[1];
-                if (subcommandMap.containsKey(sub)) {
+                if (this.subcommandMap.containsKey(sub)) {
                     doHelp(sender, label, sub);
                 } else {
                     try {
@@ -88,7 +88,7 @@ public abstract class RootCommand implements TabExecutor {
             return true;
         }
 
-        Subcommand subcommand = subcommandMap.get(sub);
+        Subcommand subcommand = this.subcommandMap.get(sub);
         if (subcommand == null) {
             sender.sendMessage(ChatColor.RED + "No such command: " + ChatColor.GREEN + "/rpg " + sub);
             return true;
@@ -111,15 +111,15 @@ public abstract class RootCommand implements TabExecutor {
      * More: /rpg help 2, /rpg help choices
      */
     public void doHelp(CommandSender sender, String label, int page) {
-        if (helpList == null) buildSortedList();
+        if (this.helpList == null) buildSortedList();
 
         if (page < 1) page = 1;
         int startCount = (page - 1) * COMMANDS_PER_PAGE;
         int startIndex = -1, lastPageIndex = 0;
         int totalCount = 0;
 
-        for (int i = 0; i < helpList.size(); i++) {
-            Subcommand cmd = subcommandMap.get(helpList.get(i));
+        for (int i = 0; i < this.helpList.size(); i++) {
+            Subcommand cmd = this.subcommandMap.get(this.helpList.get(i));
             if (sender.hasPermission(cmd.getPermission())) {
                 if (totalCount == startCount) {
                     startIndex = i;
@@ -140,9 +140,9 @@ public abstract class RootCommand implements TabExecutor {
                 ChatColor.YELLOW + "-------- [ " + ChatColor.DARK_BLUE + "Help for " + ChatColor.WHITE + "/%s" + ChatColor.DARK_BLUE + " (page: " + ChatColor.LIGHT_PURPLE + "%d" + ChatColor.DARK_BLUE + "/" + ChatColor.LIGHT_PURPLE + "%d" + ChatColor.DARK_BLUE + ")" + ChatColor.YELLOW + " ] --------",
                 label, page, pageCount));
 
-        for (int i = startIndex; i < helpList.size() && i < startIndex + COMMANDS_PER_PAGE; i++) {
-            String key = helpList.get(i);
-            Subcommand cmd = subcommandMap.get(key);
+        for (int i = startIndex; i < this.helpList.size() && i < startIndex + COMMANDS_PER_PAGE; i++) {
+            String key = this.helpList.get(i);
+            Subcommand cmd = this.subcommandMap.get(key);
             sender.sendMessage(String.format(
                     " " + ChatColor.GREEN + "/%s %s" + ChatColor.RESET + " - " + ChatColor.DARK_GREEN + "%s",
                     label, key, cmd.getShortDescription()));
@@ -157,12 +157,12 @@ public abstract class RootCommand implements TabExecutor {
      * editor Usage: /rpg edit Edit your KraftRPG configuration interactively.
      */
     public void doHelp(CommandSender sender, String label, String subLabel) {
-        Subcommand subcommand = subcommandMap.get(subLabel);
+        Subcommand subcommand = this.subcommandMap.get(subLabel);
 
-        if (aliasMap.containsKey(subLabel)) {
+        if (this.aliasMap.containsKey(subLabel)) {
             sender.sendMessage(String.format(
                     "" + ChatColor.YELLOW + "##### " + ChatColor.DARK_BLUE + "Help for " + ChatColor.AQUA + "/%s %s " + ChatColor.GRAY + "" + ChatColor.ITALIC.toString() + "(Alias for /%s %s)",
-                    label, subLabel, label, aliasMap.get(subLabel)));
+                    label, subLabel, label, this.aliasMap.get(subLabel)));
         } else {
             sender.sendMessage(String.format(
                     "" + ChatColor.YELLOW + "##### " + ChatColor.DARK_BLUE + "Help for " + ChatColor.AQUA + "/%s %s",
@@ -180,15 +180,15 @@ public abstract class RootCommand implements TabExecutor {
     }
 
     private void buildSortedList() {
-        helpList = new ArrayList<String>(subcommandMap.size() - aliasMap.size());
+        this.helpList = new ArrayList<String>(this.subcommandMap.size() - this.aliasMap.size());
 
-        for (String s : subcommandMap.keySet()) {
-            if (!aliasMap.containsKey(s)) {
-                helpList.add(s);
+        for (String s : this.subcommandMap.keySet()) {
+            if (!this.aliasMap.containsKey(s)) {
+                this.helpList.add(s);
             }
         }
 
-        Collections.sort(helpList);
+        Collections.sort(this.helpList);
     }
 
     @Override
@@ -196,13 +196,13 @@ public abstract class RootCommand implements TabExecutor {
         List<String> matches = new ArrayList<String>();
 
         if (args.length == 1) {
-            StringUtil.copyPartialMatches(args[0], subcommandMap.keySet(), matches);
+            StringUtil.copyPartialMatches(args[0], this.subcommandMap.keySet(), matches);
 
             // Remove items sender doesn't have permission for
             ListIterator<String> iter = matches.listIterator();
             while (iter.hasNext()) {
                 String s = iter.next();
-                Subcommand subcommand = subcommandMap.get(s);
+                Subcommand subcommand = this.subcommandMap.get(s);
                 if (!sender.hasPermission(subcommand.getPermission())) {
                     iter.remove();
                 }
@@ -210,7 +210,7 @@ public abstract class RootCommand implements TabExecutor {
 
             return matches;
         } else {
-            Subcommand subcommand = subcommandMap.get(args[0]);
+            Subcommand subcommand = this.subcommandMap.get(args[0]);
             if (subcommand == null) return null;
 
             return subcommand.onTabComplete(sender, args, 1);

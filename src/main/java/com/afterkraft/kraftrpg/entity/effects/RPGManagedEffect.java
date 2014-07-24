@@ -34,10 +34,12 @@ public class RPGManagedEffect implements Managed {
         this.entity = entity;
     }
 
+    @Override
     public IEffect getEffect() {
         return (IEffect) this.effect;
     }
 
+    @Override
     public Insentient getSentientBeing() {
         return this.entity;
     }

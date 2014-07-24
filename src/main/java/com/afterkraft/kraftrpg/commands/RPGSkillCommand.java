@@ -48,7 +48,7 @@ public class RPGSkillCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) return null;
-        Champion champ = plugin.getEntityManager().getChampion((Player) sender);
+        Champion champ = this.plugin.getEntityManager().getChampion((Player) sender);
 
         if (args.length == 0) {
             String lastArg = args[args.length - 1];
@@ -59,14 +59,14 @@ public class RPGSkillCommand implements TabExecutor {
         } else {
             String skillName = args[0];
 
-            ISkill sk = plugin.getSkillManager().getSkill(skillName);
+            ISkill sk = this.plugin.getSkillManager().getSkill(skillName);
             if (!(sk instanceof Active)) return null;
             Active skill = (Active) sk;
 
             try {
                 return skill.tabComplete(champ, args, 1);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(sk, "tab completing", t, new Object[] { sender, label, args });
+                this.plugin.logSkillThrowing(sk, "tab completing", t, new Object[] { sender, label, args });
                 return null;
             }
         }
@@ -84,12 +84,12 @@ public class RPGSkillCommand implements TabExecutor {
         }
 
         String skillName = args[0];
-        ISkill sk = plugin.getSkillManager().getSkill(skillName);
+        ISkill sk = this.plugin.getSkillManager().getSkill(skillName);
         if (sk == null) {
             sender.sendMessage(ChatColor.RED + "Skill " + ChatColor.YELLOW + skillName + ChatColor.RED + " not found.");
             return true;
         }
-        Champion champ = plugin.getEntityManager().getChampion((Player) sender);
+        Champion champ = this.plugin.getEntityManager().getChampion((Player) sender);
 
         if (!champ.canUseSkill(sk)) {
             // Let's make some extra effort for a nice error message
@@ -120,7 +120,7 @@ public class RPGSkillCommand implements TabExecutor {
         String[] cutArgs = Arrays.copyOfRange(args, 1, args.length);
         // TODO do i really want to make a new instance? not really.
         // but it'll do for now
-        SkillCastResult result = new ActiveSkillRunner(plugin).castSkillInitial(champ, (Active) sk, cutArgs);
+        SkillCastResult result = new ActiveSkillRunner(this.plugin).castSkillInitial(champ, (Active) sk, cutArgs);
 
         switch (result) {
             case CUSTOM_NO_MESSAGE_FAILURE:
@@ -139,16 +139,16 @@ public class RPGSkillCommand implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Invalid target.");
                 break;
             case LOW_HEALTH:
-                sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.HEALTH_COST, -1, false) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.HEALTH_COST, -1, false) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
                 break;
             case LOW_MANA:
-                sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.MANA_COST, -1, false) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.MANA_COST, -1, false) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
                 break;
             case LOW_STAMINA:
-                sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.STAMINA_COST, -1, false) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.STAMINA_COST, -1, false) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
                 break;
             case MISSING_REAGENT:
-                ItemStack item = plugin.getSkillConfigManager().getUseSettingItem(champ, sk, SkillSetting.REAGENT, null);
+                ItemStack item = this.plugin.getSkillConfigManager().getUseSettingItem(champ, sk, SkillSetting.REAGENT, null);
                 int invAmount = 0;
                 for (Integer i : champ.getInventory().all(item.getType()).keySet()) {
                     invAmount += i;

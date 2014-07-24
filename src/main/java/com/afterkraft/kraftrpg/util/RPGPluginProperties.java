@@ -57,6 +57,7 @@ public class RPGPluginProperties implements Properties {
         return distanceTierModifier;
     }
 
+    @Override
     public boolean isMobDamageDistanceModified() {
         return isMobDamageDistanceModified;
     }
@@ -69,6 +70,7 @@ public class RPGPluginProperties implements Properties {
         return isMobExpDistanceModified;
     }
 
+    @Override
     public String getStorageType() {
         return storageType.toLowerCase();
     }
@@ -111,9 +113,8 @@ public class RPGPluginProperties implements Properties {
     @Override
     public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
         if (isMobExpDistanceModified) {
-            FixedPoint exp = creatureExperienceDrop.get(entity.getType());
-            Double value = exp.doubleValue();
-            value = Math.ceil(exp != null ? exp.doubleValue() : 0.0D);
+            FixedPoint exp = this.creatureExperienceDrop.get(entity.getType());
+            Double value = Math.ceil(exp != null ? exp.doubleValue() : 0.0D);
             double percent = 1 + mobExpDistanceModified / distanceTierModifier;
             double modifier = Math.pow(percent, MathUtil.getModulatedDistance(entity.getWorld().getSpawnLocation(), spawnPoint) / distanceTierModifier);
             value = Math.ceil(value * modifier);

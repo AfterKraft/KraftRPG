@@ -36,9 +36,9 @@ public class RPGCommandManager implements CommandManager {
         if (commandName == null || command == null) {
             return;
         }
-        if (!commandMap.containsKey(commandName)) {
-            plugin.getCommand(commandName).setExecutor(command);
-            commandMap.put(commandName, command);
+        if (!this.commandMap.containsKey(commandName)) {
+            this.plugin.getCommand(commandName).setExecutor(command);
+            this.commandMap.put(commandName, command);
         }
     }
 
@@ -47,11 +47,11 @@ public class RPGCommandManager implements CommandManager {
         if (commandName == null) {
             return;
         }
-        CommandExecutor command = commandMap.get(commandName);
+        CommandExecutor command = this.commandMap.get(commandName);
         if (command != null) {
-            plugin.getCommand(commandName).setExecutor(null);
+            this.plugin.getCommand(commandName).setExecutor(null);
         }
-        commandMap.remove(commandName);
+        this.commandMap.remove(commandName);
     }
 
     @Override
@@ -61,10 +61,10 @@ public class RPGCommandManager implements CommandManager {
 
     @Override
     public void shutdown() {
-        Iterator<Map.Entry<String, CommandExecutor>> iterator = commandMap.entrySet().iterator();
+        Iterator<Map.Entry<String, CommandExecutor>> iterator = this.commandMap.entrySet().iterator();
         while (iterator.hasNext()) {
             String commandName = iterator.next().getKey();
-            plugin.getCommand(commandName).setExecutor(null);
+            this.plugin.getCommand(commandName).setExecutor(null);
             iterator.remove();
         }
     }

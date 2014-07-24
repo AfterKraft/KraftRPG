@@ -61,15 +61,15 @@ public class RPGEntityManager implements EntityManager {
 
     public final Set<Sentient> getAllSentientBeings() {
         Set<Sentient> sentients = new HashSet<Sentient>();
-        for (Champion champion : champions.values()) {
+        for (Champion champion : this.champions.values()) {
             sentients.add(champion);
         }
-        for (IEntity entity : entities.values()) {
+        for (IEntity entity : this.entities.values()) {
             if (entity instanceof Sentient) {
                 sentients.add((Sentient) entity);
             }
         }
-        for (Monster monster : monsters.values()) {
+        for (Monster monster : this.monsters.values()) {
             if (monster instanceof Sentient) {
                 sentients.add((Sentient) monster);
             }
@@ -77,6 +77,7 @@ public class RPGEntityManager implements EntityManager {
         return sentients;
     }
 
+    @Override
     public final IEntity getEntity(Entity entity) {
         Validate.notNull(entity, "Cannot get an IEntity of a null Entity!");
         if (entity instanceof Player) {
@@ -88,35 +89,37 @@ public class RPGEntityManager implements EntityManager {
         }
     }
 
+    @Override
     public Champion getChampion(Player player) {
         Validate.notNull(player, "Cannot get a Champion of a null Player!");
 
         Champion champion = this.champions.get(player.getUniqueId());
         if (champion != null) {
             if (!champion.isEntityValid() || (champion.getPlayer().getEntityId() != player.getEntityId())) {
-                plugin.log(Level.WARNING, "Duplicate Champion object found! Please make sure Champions are properly removed!");
+                this.plugin.log(Level.WARNING, "Duplicate Champion object found! Please make sure Champions are properly removed!");
                 champion.clearEffects();
                 champion.setPlayer(player);
             }
-            champions.put(player.getUniqueId(), champion);
+            this.champions.put(player.getUniqueId(), champion);
         } else {
             champion = createChampion(player, new PlayerData());
-            champions.put(player.getUniqueId(), champion);
-            storage.saveChampion(champion);
+            this.champions.put(player.getUniqueId(), champion);
+            this.storage.saveChampion(champion);
         }
         return champion;
     }
 
+    @Override
     public Monster getMonster(LivingEntity entity) {
         Validate.notNull(entity, "Cannot get a Monster with a null LivingEntity!");
         final UUID id = entity.getUniqueId();
-        if (monsters.containsKey(id)) {
-            return monsters.get(id);
+        if (this.monsters.containsKey(id)) {
+            return this.monsters.get(id);
         } else {
-            final Monster monster = new RPGMonster(plugin, entity);
-            monsters.put(id, monster);
+            final Monster monster = new RPGMonster(this.plugin, entity);
+            this.monsters.put(id, monster);
 
-            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(monster), 200, 200);
+            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(monster), 200, 200);
 
             return monster;
         }
@@ -128,10 +131,11 @@ public class RPGEntityManager implements EntityManager {
         return this.monsters.containsKey(entity.getUniqueId()) || this.entities.containsKey(entity.getUniqueId()) || this.champions.containsKey(entity.getUniqueId());
     }
 
+    @Override
     public Champion createChampion(Player player, PlayerData data) {
         Validate.notNull(player, "Cannot create a Champion with a null player!");
         Validate.notNull(data, "Cannot create a Champion with a null player data!");
-        return new RPGChampion(plugin, player, data);
+        return new RPGChampion(this.plugin, player, data);
     }
 
     @Override
@@ -154,16 +158,17 @@ public class RPGEntityManager implements EntityManager {
                 throw new IllegalArgumentException("The provided custom entity is already registered with KraftRPG!");
             }
             this.monsters.put(entity.getUniqueID(), (Monster) entity);
-            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(entity), 200, 200);
+            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(entity), 200, 200);
             return true;
         } else if (!this.entities.containsKey(entity.getUniqueID())) {
             this.entities.put(entity.getUniqueID(), entity);
-            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(entity), 200, 200);
+            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(entity), 200, 200);
             return true;
         }
         return false;
     }
 
+    @Override
     public Monster getMonster(UUID uuid) {
         Validate.notNull(uuid, "Cannot get a Monster from a null UUID!");
         return this.monsters.get(uuid);
@@ -178,12 +183,12 @@ public class RPGEntityManager implements EntityManager {
 
     private IEntity getIEntity(Entity entity) {
         final UUID id = entity.getUniqueId();
-        if (entities.containsKey(id)) {
-            return entities.get(id);
+        if (this.entities.containsKey(id)) {
+            return this.entities.get(id);
         } else {
-            final IEntity iEntity = new RPGEntity(plugin, entity, entity.toString());
-            entities.put(id, iEntity);
-            Bukkit.getScheduler().runTaskTimer(plugin, new RPGSingleEntityReaper(iEntity), 200, 200);
+            final IEntity iEntity = new RPGEntity(this.plugin, entity, entity.toString());
+            this.entities.put(id, iEntity);
+            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(iEntity), 200, 200);
             return iEntity;
         }
     }
@@ -192,24 +197,25 @@ public class RPGEntityManager implements EntityManager {
         if (entity instanceof Monster) {
             removeMonster((Monster) entity);
         } else {
-            entities.remove(entity.getUniqueID());
+            this.entities.remove(entity.getUniqueID());
         }
     }
 
     public void removeMonster(Monster monster) {
-        monsters.remove(monster.getUniqueID());
+        this.monsters.remove(monster.getUniqueID());
     }
 
     @Override
     public void initialize() {
-        entityTaskID = Bukkit.getScheduler().runTaskTimer(plugin, new RPGEntityTask(), 100, 1000).getTaskId();
-        potionTaskID = Bukkit.getScheduler().runTaskTimer(plugin, new RPGInsentientPotionEffectTask(), 1, 100).getTaskId();
+        this.entityTaskID = Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGEntityTask(), 100, 1000).getTaskId();
+        this.potionTaskID = Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGInsentientPotionEffectTask(), 1, 100).getTaskId();
 
     }
 
+    @Override
     public void shutdown() {
-        Bukkit.getScheduler().cancelTask(entityTaskID);
-        Bukkit.getScheduler().cancelTask(potionTaskID);
+        Bukkit.getScheduler().cancelTask(this.entityTaskID);
+        Bukkit.getScheduler().cancelTask(this.potionTaskID);
         clearPotionEffects();
     }
 
@@ -309,8 +315,8 @@ public class RPGEntityManager implements EntityManager {
 
         @Override
         public void run() {
-            if (!monster.isEntityValid()) {
-                removeEntity(monster);
+            if (!this.monster.isEntityValid()) {
+                removeEntity(this.monster);
             }
         }
 

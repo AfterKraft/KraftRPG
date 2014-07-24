@@ -58,9 +58,9 @@ public class PlayerListener extends AbstractListener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
         Player p = event.getPlayer();
-        Champion c = plugin.getEntityManager().getChampion(p);
+        Champion c = this.plugin.getEntityManager().getChampion(p);
 
-        plugin.getStorage().saveChampion(c);
+        this.plugin.getStorage().saveChampion(c);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

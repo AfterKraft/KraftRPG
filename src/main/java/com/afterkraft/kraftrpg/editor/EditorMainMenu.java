@@ -24,6 +24,7 @@ import org.bukkit.conversations.ConversationContext;
 
 public class EditorMainMenu extends EditorPrompt {
 
+    @Override
     public String getName(ConversationContext context) {
         return "main";
     }

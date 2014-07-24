@@ -31,17 +31,17 @@ public class RPGStorageManager implements Manager {
 
     @Override
     public void initialize() {
-        String configuredBackend = plugin.getProperties().getStorageType();
+        String configuredBackend = this.plugin.getProperties().getStorageType();
         StorageBackend backend = ExternalProviderRegistration.getStorageBackendMap().get(configuredBackend);
 
         if (backend == null) {
-            plugin.getLogger().severe("ERROR - You specified the '" + configuredBackend + "' storage type, but that storage type is not available.");
+            this.plugin.getLogger().severe("ERROR - You specified the '" + configuredBackend + "' storage type, but that storage type is not available.");
             StringBuilder sb = new StringBuilder("Available storage types are:");
             for (String str : ExternalProviderRegistration.getStorageBackendMap().keySet()) {
                 sb.append(" '").append(str).append("'");
             }
-            plugin.getLogger().severe(sb.toString());
-            plugin.cancelEnable();
+            this.plugin.getLogger().severe(sb.toString());
+            this.plugin.cancelEnable();
             return;
         }
 
@@ -49,22 +49,22 @@ public class RPGStorageManager implements Manager {
             backend.initialize();
         } catch (Throwable e) {
             e.printStackTrace();
-            plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup:");
-            plugin.getLogger().severe(e.getMessage());
-            plugin.cancelEnable();
+            this.plugin.getLogger().severe("The storage backend '" + configuredBackend + "' threw an exception during startup:");
+            this.plugin.getLogger().severe(e.getMessage());
+            this.plugin.cancelEnable();
             return;
         }
 
-        storage = ExternalProviderRegistration.getStorageFrontendOverride().construct(plugin, backend);
-        plugin.getLogger().info("Storage initialized with provider " + storage.getName());
+        this.storage = ExternalProviderRegistration.getStorageFrontendOverride().construct(this.plugin, backend);
+        this.plugin.getLogger().info("Storage initialized with provider " + this.storage.getName());
     }
 
     @Override
     public void shutdown() {
-        storage.shutdown();
+        this.storage.shutdown();
     }
 
     public StorageFrontend getStorage() {
-        return storage;
+        return this.storage;
     }
 }

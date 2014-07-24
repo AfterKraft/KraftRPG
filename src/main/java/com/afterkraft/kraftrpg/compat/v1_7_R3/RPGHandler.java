@@ -105,31 +105,31 @@ public class RPGHandler extends CraftBukkitHandler {
     public RPGHandler(ServerType type) {
         super(type);
         serverType = type;
-        plugin = KraftRPGPlugin.getInstance();
+        this.plugin = KraftRPGPlugin.getInstance();
         try {
             try {
-                ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
-                ldbpt.setAccessible(true);
+                this.ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
+                this.ldbpt.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
             }
             try {
-                conversationTracker = CraftPlayer.class.getDeclaredField("conversationTracker");
-                conversationTracker.setAccessible(true);
+                this.conversationTracker = CraftPlayer.class.getDeclaredField("conversationTracker");
+                this.conversationTracker.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
             }
             try {
-                conversationQueue = ConversationTracker.class.getDeclaredField("conversationQueue");
-                conversationQueue.setAccessible(true);
+                this.conversationQueue = ConversationTracker.class.getDeclaredField("conversationQueue");
+                this.conversationQueue.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
             }
             try {
-                currentPrompt = Conversation.class.getDeclaredField("currentPrompt");
-                currentPrompt.setAccessible(true);
+                this.currentPrompt = Conversation.class.getDeclaredField("currentPrompt");
+                this.currentPrompt.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
             }
             try {
-                modifiersField = Field.class.getDeclaredField("modifiers");
-                modifiersField.setAccessible(true);
+                this.modifiersField = Field.class.getDeclaredField("modifiers");
+                this.modifiersField.setAccessible(true);
             } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
@@ -137,27 +137,28 @@ public class RPGHandler extends CraftBukkitHandler {
             // do nothing
         }
 
-        random = new Random();
+        this.random = new Random();
 
-        iattrMap = new EnumMap<EntityAttributeType, IAttribute>(EntityAttributeType.class);
+        this.iattrMap = new EnumMap<EntityAttributeType, IAttribute>(EntityAttributeType.class);
 
         for (EntityAttributeType eat : EntityAttributeType.values()) {
-            iattrMap.put(eat, new AttributeRanged(eat.getIdentifier(), UNSET_VALUE, eat.getMin(), eat.getMax()));
+            this.iattrMap.put(eat, new AttributeRanged(eat.getIdentifier(), UNSET_VALUE, eat.getMin(), eat.getMax()));
         }
     }
 
     @Override
     public void loadExtraListeners() {
-        if (!listenersLoaded) {
+        if (!this.listenersLoaded) {
             switch (serverType) {
                 case TWEAKKIT:
-                    plugin.getListenerManager().addListener(new TweakkitListener(plugin));
+                    this.plugin.getListenerManager().addListener(new TweakkitListener(this.plugin));
                 case SPIGOT:
-                    plugin.getListenerManager().addListener(new SpigotListener(plugin));
+                    this.plugin.getListenerManager().addListener(new SpigotListener(this.plugin));
                     break;
                 case BUKKIT:
                     break;
             }
+            this.listenersLoaded = true;
         }
     }
 
@@ -174,9 +175,9 @@ public class RPGHandler extends CraftBukkitHandler {
                 spawnz = getOrSetAttribute(entity, EntityAttributeType.SPAWNZ, spawnz);
                 break;
             case TWEAKKIT:
-                spawnx = TweakkitHelper.getEntityData(plugin, entity, SPAWNX_STRING, spawnx);
-                spawny = TweakkitHelper.getEntityData(plugin, entity, SPAWNY_STRING, spawny);
-                spawnz = TweakkitHelper.getEntityData(plugin, entity, SPAWNZ_STRING, spawnz);
+                spawnx = TweakkitHelper.getEntityData(this.plugin, entity, SPAWNX_STRING, spawnx);
+                spawny = TweakkitHelper.getEntityData(this.plugin, entity, SPAWNY_STRING, spawny);
+                spawnz = TweakkitHelper.getEntityData(this.plugin, entity, SPAWNZ_STRING, spawnz);
                 break;
 
         }
@@ -196,7 +197,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 ordinal = (int) getOrSetAttribute(entity, EntityAttributeType.SPAWNREASON, ordinal);
                 break;
             case TWEAKKIT:
-                ordinal = TweakkitHelper.getEntityData(plugin, entity, SPAWNREASON_STRING, ordinal);
+                ordinal = TweakkitHelper.getEntityData(this.plugin, entity, SPAWNREASON_STRING, ordinal);
                 break;
         }
         CreatureSpawnEvent.SpawnReason reason = CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
@@ -204,7 +205,7 @@ public class RPGHandler extends CraftBukkitHandler {
             reason = CreatureSpawnEvent.SpawnReason.values()[ordinal];
         } catch (Exception e) {
             // TODO: surface this better?
-            plugin.debugLog(Level.WARNING, "There was an issue with loading a Monster's spawn reason! Please report this to the developer!");
+            this.plugin.debugLog(Level.WARNING, "There was an issue with loading a Monster's spawn reason! Please report this to the developer!");
         }
         return reason;
     }
@@ -213,7 +214,7 @@ public class RPGHandler extends CraftBukkitHandler {
     public FixedPoint getMonsterExperience(LivingEntity entity, FixedPoint value) {
         switch (serverType) {
             case TWEAKKIT:
-                return FixedPoint.valueOf(TweakkitHelper.getEntityData(plugin, entity, EXPERIENCE_STRING, value.doubleValue()));
+                return FixedPoint.valueOf(TweakkitHelper.getEntityData(this.plugin, entity, EXPERIENCE_STRING, value.doubleValue()));
             default:
             case BUKKIT:
             case SPIGOT:
@@ -232,7 +233,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
                 break;
             case TWEAKKIT:
-                TweakkitHelper.getEntityData(plugin, entity, EXPERIENCE_STRING, experience.doubleValue());
+                TweakkitHelper.getEntityData(this.plugin, entity, EXPERIENCE_STRING, experience.doubleValue());
                 break;
         }
     }
@@ -246,7 +247,7 @@ public class RPGHandler extends CraftBukkitHandler {
                 value = getOrSetAttribute(entity, EntityAttributeType.DAMAGE, calculated);
                 break;
             case TWEAKKIT:
-                value = TweakkitHelper.getEntityData(plugin, entity, DAMAGE_STRING, calculated);
+                value = TweakkitHelper.getEntityData(this.plugin, entity, DAMAGE_STRING, calculated);
                 break;
         }
         return value;
@@ -255,7 +256,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public boolean isAttributeSet(LivingEntity entity, EntityAttributeType type) {
         EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
-        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+        AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         return instance != null && instance.getValue() != UNSET_VALUE;
     }
@@ -263,7 +264,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public double getAttribute(LivingEntity entity, EntityAttributeType type, double defaultValue) {
         EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
-        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+        AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         if (instance == null || instance.getValue() == UNSET_VALUE) {
             return defaultValue;
@@ -275,10 +276,10 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public double setAttribute(LivingEntity entity, EntityAttributeType type, double newValue) {
         EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
-        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+        AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         if (instance == null) {
-            instance = entityLiving.bb().b(iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance = entityLiving.bb().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
             instance.setValue(newValue);
             return UNSET_VALUE;
         } else {
@@ -291,10 +292,10 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public double getOrSetAttribute(LivingEntity entity, EntityAttributeType type, double valueIfEmpty) {
         EntityLiving entityLiving = ((CraftLivingEntity) entity).getHandle();
-        AttributeInstance instance = entityLiving.getAttributeInstance(iattrMap.get(type));
+        AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         if (instance == null) {
-            instance = entityLiving.bb().b(iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance = entityLiving.bb().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
             instance.setValue(valueIfEmpty);
             return valueIfEmpty;
         } else if (instance.getValue() == UNSET_VALUE) {
@@ -383,7 +384,7 @@ public class RPGHandler extends CraftBukkitHandler {
         // Set last damage by player time via reflection.
         if (attacker instanceof Player) {
             try {
-                ldbpt.set(el, 60);
+                this.ldbpt.set(el, 60);
             } catch (final IllegalArgumentException e) {
                 // do nothing
             } catch (final IllegalAccessException e) {
@@ -450,7 +451,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public void refreshLastPlayerDamageTime(LivingEntity entity) {
         try {
-            ldbpt.set(((CraftLivingEntity) entity).getHandle(), 60);
+            this.ldbpt.set(((CraftLivingEntity) entity).getHandle(), 60);
         } catch (final IllegalArgumentException e) {
             // do nothing
         } catch (final IllegalAccessException e) {
@@ -499,7 +500,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     protected float getSoundStrength(LivingEntity entity) {
         EntityLiving el = ((CraftLivingEntity) entity).getHandle();
-        return el.isBaby() ? ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.5F : ((random.nextFloat() - random.nextFloat()) * 0.2F) + 1.0F;
+        return el.isBaby() ? ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F) + 1.5F : ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F) + 1.0F;
     }
 
     @Override
@@ -528,8 +529,8 @@ public class RPGHandler extends CraftBukkitHandler {
         }
 
         try {
-            ConversationTracker tracker = (ConversationTracker) conversationTracker.get(player);
-            LinkedList<?> list = (LinkedList) conversationQueue.get(tracker);
+            ConversationTracker tracker = (ConversationTracker) this.conversationTracker.get(player);
+            LinkedList<?> list = (LinkedList) this.conversationQueue.get(tracker);
             return (Conversation) list.getFirst();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -540,7 +541,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public Prompt getCurrentPrompt(Conversation conversation) {
         try {
-            return (Prompt) currentPrompt.get(conversation);
+            return (Prompt) this.currentPrompt.get(conversation);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -552,7 +553,7 @@ public class RPGHandler extends CraftBukkitHandler {
         try {
             Field f = CraftItemFactory.class.getDeclaredField("KNOWN_NBT_ATTRIBUTE_NAMES");
             f.setAccessible(true);
-            modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+            this.modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
 
             Set<?> oldset = (Set<?>) f.get(null);
             HashSet<Object> newset = new HashSet<Object>(oldset);

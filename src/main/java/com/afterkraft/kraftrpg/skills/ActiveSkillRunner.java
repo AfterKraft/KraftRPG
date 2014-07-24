@@ -92,7 +92,7 @@ public final class ActiveSkillRunner {
         }
 
         // Newly stalled skill
-        double delay = plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.DELAY, 0.0, false);
+        double delay = this.plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.DELAY, 0.0, false);
 
         if (delay > 0) {
             if (caster.getStalledSkill() != null) {
@@ -107,8 +107,8 @@ public final class ActiveSkillRunner {
     }
 
     private SkillCastResult castSkillPart2(SkillCaster caster, Active skill, String[] args) {
-        SkillConfigManager confman = plugin.getSkillConfigManager();
-        if (plugin.getCombatTracker().isInCombat(caster)) {
+        SkillConfigManager confman = this.plugin.getSkillConfigManager();
+        if (this.plugin.getCombatTracker().isInCombat(caster)) {
             if (confman.getUseSetting(caster, skill, SkillSetting.NO_COMBAT_USE, false)) {
                 return SkillCastResult.NO_COMBAT;
             }
@@ -124,7 +124,7 @@ public final class ActiveSkillRunner {
         }
 
         SkillCastEvent skillEvent = new SkillCastEvent(caster, skill, manaCost, healthCost, hungerCost, reagent);
-        plugin.getServer().getPluginManager().callEvent(skillEvent);
+        this.plugin.getServer().getPluginManager().callEvent(skillEvent);
         if (skillEvent.isCancelled()) {
             return SkillCastResult.EVENT_CANCELLED;
         }
@@ -158,14 +158,14 @@ public final class ActiveSkillRunner {
                     return SkillCastResult.SYNTAX_ERROR;
                 }
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[] { caster, args });
+                this.plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[] { caster, args });
                 return SkillCastResult.FAIL;
             }
 
             try {
                 result = skill.checkCustomRestrictions(caster, false);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[] { caster, args });
+                this.plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[] { caster, args });
                 return SkillCastResult.FAIL;
             }
 
@@ -180,13 +180,13 @@ public final class ActiveSkillRunner {
             try {
                 result = skill.useSkill(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "using skill", t, new Object[] { caster, args });
+                this.plugin.logSkillThrowing(skill, "using skill", t, new Object[] { caster, args });
             }
         } finally {
             try {
                 skill.cleanState(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[] { caster, args });
+                this.plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[] { caster, args });
             }
         }
 
@@ -200,7 +200,7 @@ public final class ActiveSkillRunner {
             caster.modifyStamina((float) -hungerCost);
             caster.getInventory().removeItem(reagent);
 
-            double exp = plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.EXP_ON_CAST, 0.0, false);
+            double exp = this.plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.EXP_ON_CAST, 0.0, false);
             if (exp > 0) {
 
                 //                 if (caster.canGainExperience(ExperienceType.SKILL)) {
@@ -210,7 +210,7 @@ public final class ActiveSkillRunner {
             }
 
             long now = System.currentTimeMillis();
-            long globalCD = plugin.getProperties().getDefaultGlobalCooldown();
+            long globalCD = this.plugin.getProperties().getDefaultGlobalCooldown();
             long cooldown = confman.getUseSetting(caster, skill, SkillSetting.COOLDOWN, 0, false);
             caster.setGlobalCooldown(now + globalCD);
             caster.setCooldown(skill.getName(), now + cooldown);

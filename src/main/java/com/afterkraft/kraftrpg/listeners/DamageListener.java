@@ -76,24 +76,24 @@ public class DamageListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity) || !(plugin.getEntityManager().isEntityManaged(event.getEntity())) || !(plugin.getEntityManager().getEntity(event.getEntity()) instanceof Insentient)) {
+        if (!(event.getEntity() instanceof LivingEntity) || !(this.plugin.getEntityManager().isEntityManaged(event.getEntity())) || !(this.plugin.getEntityManager().getEntity(event.getEntity()) instanceof Insentient)) {
             return;
         }
 
         double amount = event.getAmount();
-        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(event.getEntity());
+        final Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(event.getEntity());
         final double maxHealth = being.getMaxHealth();
 
         // Satiated players regenerate % of total HP rather than 1 HP
         double healPercent;
         switch (event.getRegainReason()) {
             case SATIATED:
-                healPercent = plugin.getProperties().getFoodHealPercent();
+                healPercent = this.plugin.getProperties().getFoodHealPercent();
                 amount = Math.ceil(maxHealth * healPercent);
                 break;
             case MAGIC:
                 healPercent = amount / 6.0;
-                amount = Math.ceil(healPercent * plugin.getProperties().getFoodHealthPerTier() * maxHealth);
+                amount = Math.ceil(healPercent * this.plugin.getProperties().getFoodHealthPerTier() * maxHealth);
                 break;
             case CUSTOM:
             case WITHER_SPAWN:
@@ -110,7 +110,7 @@ public class DamageListener extends AbstractListener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamageEvent(EntityDamageEvent event) {
         final Entity defendingEntity = event.getEntity();
-        IEntity defendingIEntity = plugin.getEntityManager().getEntity(defendingEntity);
+        IEntity defendingIEntity = this.plugin.getEntityManager().getEntity(defendingEntity);
         Entity attackingEntity = null;
         IEntity attackingIEntity = null;
         // Initialize the wrapped object for handling this event.
@@ -132,13 +132,13 @@ public class DamageListener extends AbstractListener {
         // We need to check if any exterior plugin added an IEntity to our EntityManager
         // as a SkillCaster or just plain special Monster
         // We use this val for other purposes in the remaining listeners
-        final boolean isManaged = plugin.getEntityManager().isEntityManaged(defendingEntity);
+        final boolean isManaged = this.plugin.getEntityManager().isEntityManaged(defendingEntity);
         boolean alreadyProcessed = false;
         if (event instanceof EntityDamageByEntityEvent) {
             attackingEntity = ((EntityDamageByEntityEvent) event).getDamager();
             // We should try to get the IEntity if it's registered.
-            if (plugin.getEntityManager().isEntityManaged(attackingEntity)) {
-                attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
+            if (this.plugin.getEntityManager().isEntityManaged(attackingEntity)) {
+                attackingIEntity = this.plugin.getEntityManager().getEntity(attackingEntity);
             }
             // Cancel the PVP events if the attacking and defending are players and world pvp is false.
             if ((!defendingEntity.getWorld().getPVP() && !defendingIEntity.getWorld().getPVP()) && (defendingEntity instanceof Player || defendingIEntity instanceof Champion) && (attackingEntity instanceof Player || attackingIEntity instanceof Champion)) {
@@ -191,7 +191,7 @@ public class DamageListener extends AbstractListener {
             // Insentient being shooting the arrow.
             if (attackingEntity instanceof Projectile && ((Projectile) attackingEntity).getShooter() instanceof LivingEntity) {
                 attackingEntity = (LivingEntity) ((Projectile) attackingEntity).getShooter();
-                attackingIEntity = plugin.getEntityManager().getEntity(attackingEntity);
+                attackingIEntity = this.plugin.getEntityManager().getEntity(attackingEntity);
             }
 
             // Cancel the PVP events if the attacking and defending are players and world pvp is false.
@@ -219,15 +219,15 @@ public class DamageListener extends AbstractListener {
 
         // We can only cancel damage events with friendlies if the PartyManager
         // is our own. Then we can continue to process and cancel the event.
-        if (plugin.getPartyManager() instanceof RPGPartyManager && defendingIEntity instanceof PartyMember && attackingIEntity instanceof PartyMember) {
-            if (plugin.getPartyManager().isFriendly((PartyMember) defendingIEntity, (PartyMember) attackingIEntity)) {
+        if (this.plugin.getPartyManager() instanceof RPGPartyManager && defendingIEntity instanceof PartyMember && attackingIEntity instanceof PartyMember) {
+            if (this.plugin.getPartyManager().isFriendly((PartyMember) defendingIEntity, (PartyMember) attackingIEntity)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
         // SkillTarget checks, since we need to see if any skills targeted the defending entity.
-        if (plugin.getSkillManager().isSkillTarget(defendingEntity)) {
+        if (this.plugin.getSkillManager().isSkillTarget(defendingEntity)) {
             alreadyProcessed = true;
             // Need to handle the damage to armor
             damage = onSkillDamage(event, attackingEntity, defendingEntity, damage);
@@ -322,7 +322,7 @@ public class DamageListener extends AbstractListener {
         // the defender is an Insentient.
         if (!alreadyProcessed) {
             if (defendingIEntity instanceof Insentient) {
-                final InsentientDamageEvent insentientDamageEvent = new InsentientDamageEvent((Insentient) defendingIEntity, cloneEvent(event, defendingEntity, damage), damage, plugin.getProperties().isVaryingDamageEnabled());
+                final InsentientDamageEvent insentientDamageEvent = new InsentientDamageEvent((Insentient) defendingIEntity, cloneEvent(event, defendingEntity, damage), damage, this.plugin.getProperties().isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(insentientDamageEvent);
                 if (insentientDamageEvent.isCancelled()) {
                     event.setCancelled(true);
@@ -372,20 +372,20 @@ public class DamageListener extends AbstractListener {
             return 0;
         }
         // Get the skill use object
-        final SkillUseObject skillInfo = plugin.getSkillManager().getSkillTargetInfo(defender);
+        final SkillUseObject skillInfo = this.plugin.getSkillManager().getSkillTargetInfo(defender);
         if (event instanceof EntityDamageByEntityEvent) {
             // We need to get the API interfaced stuffs
-            SkillCaster caster = (SkillCaster) plugin.getEntityManager().getEntity(attacker);
-            Insentient being = (Insentient) plugin.getEntityManager().getEntity(defender);
+            SkillCaster caster = (SkillCaster) this.plugin.getEntityManager().getEntity(attacker);
+            Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(defender);
 
             // Check for possible resistances
             if (resistanceCheck(defender, skillInfo.getSkill())) {
                 // Send the resist messages to all players in the location radius
-                final Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+                final Collection<? extends Player> players = this.plugin.getServer().getOnlinePlayers();
                 ISkill skill = skillInfo.getSkill();
                 for (final Player player : players) {
                     final Location playerLocation = player.getLocation();
-                    final Champion champ = plugin.getEntityManager().getChampion(player);
+                    final Champion champ = this.plugin.getEntityManager().getChampion(player);
                     if (champ.isIgnoringSkill(skill)) {
                         continue;
                     }
@@ -397,8 +397,8 @@ public class DamageListener extends AbstractListener {
                 return 0;
             }
             // Call the API Event
-            final SkillDamageEvent spellDamageEvent = new SkillDamageEvent(caster, being, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), damage, plugin.getProperties().isVaryingDamageEnabled());
-            plugin.getServer().getPluginManager().callEvent(spellDamageEvent);
+            final SkillDamageEvent spellDamageEvent = new SkillDamageEvent(caster, being, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), damage, this.plugin.getProperties().isVaryingDamageEnabled());
+            this.plugin.getServer().getPluginManager().callEvent(spellDamageEvent);
             if (spellDamageEvent.isCancelled()) {
                 event.setCancelled(true);
                 return 0;
@@ -413,7 +413,7 @@ public class DamageListener extends AbstractListener {
             // Reset the wrapper
             being.setDamageWrapper(new SkillDamageWrapper(skillInfo.getCaster(), skillInfo.getSkill(), event.getCause(), event.getDamage(), damage, DamageCause.ENTITY_ATTACK));
 
-            plugin.getSkillManager().removeSkillTarget(defender, caster, skillInfo.getSkill());
+            this.plugin.getSkillManager().removeSkillTarget(defender, caster, skillInfo.getSkill());
         }
 
         return damage;
@@ -424,12 +424,12 @@ public class DamageListener extends AbstractListener {
         // Get the projectile shooter instead of the the arrow.
         if (attacker instanceof Projectile && ((Projectile) attacker).getShooter() instanceof LivingEntity) {
             attacker = (LivingEntity) ((Projectile) attacker).getShooter();
-            attackingIEntity = plugin.getEntityManager().getEntity(attacker);
+            attackingIEntity = this.plugin.getEntityManager().getEntity(attacker);
         }
 
         if (event instanceof EntityDamageByEntityEvent) {
             Insentient attackingInsentient = (Insentient) attackingIEntity;
-            damage = plugin.getDamageManager().getHighestItemDamage(attackingInsentient, (Insentient) defendingIEntity, event.getDamage());
+            damage = this.plugin.getDamageManager().getHighestItemDamage(attackingInsentient, (Insentient) defendingIEntity, event.getDamage());
 
             // Cancel the event if the attackingInsentient can't equip the item
             if (!attackingInsentient.canEquipItem(attackingInsentient.getItemInHand())) {
@@ -438,9 +438,9 @@ public class DamageListener extends AbstractListener {
             }
             // We must check the item in hand and for all possible damages it may have.
             // This needs to be improved later on as we need to handle customized damages
-            if (attackingInsentient.getItemInHand().getType() != Material.AIR && plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
-                damage = plugin.getDamageManager().getDefaultItemDamage(attackingInsentient.getItemInHand().getType(), damage);
-                final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), attackingInsentient.getItemInHand(), initialDamage, plugin.getProperties().isVaryingDamageEnabled());
+            if (attackingInsentient.getItemInHand().getType() != Material.AIR && this.plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
+                damage = this.plugin.getDamageManager().getDefaultItemDamage(attackingInsentient.getItemInHand().getType(), damage);
+                final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), attackingInsentient.getItemInHand(), initialDamage, this.plugin.getProperties().isVaryingDamageEnabled());
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -451,7 +451,7 @@ public class DamageListener extends AbstractListener {
                 }
             } else {
                 // We need to handle for when the defending entity is just being touched by something unidentified
-                final InsentientDamageInsentientEvent insentientEvent = new InsentientDamageInsentientEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent(event, defender, damage), initialDamage, plugin.getProperties().isVaryingDamageEnabled());
+                final InsentientDamageInsentientEvent insentientEvent = new InsentientDamageInsentientEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent(event, defender, damage), initialDamage, this.plugin.getProperties().isVaryingDamageEnabled());
                 if (insentientEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -466,10 +466,10 @@ public class DamageListener extends AbstractListener {
     }
 
     private double onResistDamage(EntityDamageEvent event, Entity damagee, double damage, EffectType... type) {
-        if (!(damagee instanceof LivingEntity) || !(plugin.getEntityManager().getEntity(damagee) instanceof Insentient)) {
+        if (!(damagee instanceof LivingEntity) || !(this.plugin.getEntityManager().getEntity(damagee) instanceof Insentient)) {
             return 0;
         }
-        final Insentient being = (Insentient) plugin.getEntityManager().getEntity(damagee);
+        final Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(damagee);
 
         for (EffectType effectType : type) {
             if (being.hasEffectType(effectType)) {
@@ -478,10 +478,10 @@ public class DamageListener extends AbstractListener {
             }
         }
         if (event.getCause() == DamageCause.FALL) {
-            damage -= plugin.getDamageManager().getFallReduction(being);
+            damage -= this.plugin.getDamageManager().getFallReduction(being);
 
         }
-        final Double damagePercent = plugin.getDamageManager().getEnvironmentalDamage(event.getCause());
+        final Double damagePercent = this.plugin.getDamageManager().getEnvironmentalDamage(event.getCause());
         if (damage <= 0) {
             event.setCancelled(true);
             return 0;
@@ -498,13 +498,13 @@ public class DamageListener extends AbstractListener {
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent entityEvent = (EntityDamageByEntityEvent) event;
             Entity attacking = entityEvent.getDamager();
-            IEntity attackingIEntity = plugin.getEntityManager().getEntity(attacking);
+            IEntity attackingIEntity = this.plugin.getEntityManager().getEntity(attacking);
             if (attackingIEntity instanceof Insentient) {
                 Insentient attackingInsentient = (Insentient) attackingIEntity;
                 ItemStack[] armor = attackingInsentient.getArmor();
                 double tempDamage = 0D;
                 for (ItemStack item : armor) {
-                    tempDamage += plugin.getDamageManager().getItemEnchantmentDamage(attackingInsentient, Enchantment.THORNS, item);
+                    tempDamage += this.plugin.getDamageManager().getItemEnchantmentDamage(attackingInsentient, Enchantment.THORNS, item);
                 }
                 // TODO add considerations for the defending entity with resistances and other effects
                 return tempDamage == 0 ? damage : tempDamage;
@@ -545,7 +545,7 @@ public class DamageListener extends AbstractListener {
 
     private boolean resistanceCheck(Entity defender, ISkill skill) {
         if (defender instanceof LivingEntity) {
-            final Insentient being = (Insentient) plugin.getEntityManager().getEntity(defender);
+            final Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(defender);
             for (EffectType type : EffectType.values()) {
                 if (type.isSkillResisted(being, skill)) {
                     return true;
@@ -591,7 +591,7 @@ public class DamageListener extends AbstractListener {
         ProjectileSource source = arrow.getShooter();
         double damage = 0;
         if (source instanceof BlockProjectileSource) {
-            damage = plugin.getDamageManager().getEnvironmentalDamage(DamageCause.PROJECTILE);
+            damage = this.plugin.getDamageManager().getEnvironmentalDamage(DamageCause.PROJECTILE);
             if (damage < 1) {
                 damage = 1;
             }
@@ -606,7 +606,7 @@ public class DamageListener extends AbstractListener {
                 case SKELETON:
                 case ZOMBIE:
                 case PIG_ZOMBIE:
-                    damage = plugin.getEntityManager().getMonster(shooter).getModifiedDamage();
+                    damage = this.plugin.getEntityManager().getMonster(shooter).getModifiedDamage();
                     break;
                 default:
                     break;
@@ -618,8 +618,8 @@ public class DamageListener extends AbstractListener {
     }
 
     private double getPlayerProjectileDamage(Player attacker, Projectile projectile, double damage) {
-        Champion champion = plugin.getEntityManager().getChampion(attacker);
-        final double tempDamage = plugin.getDamageManager().getHighestProjectileDamage(champion, DamageManager.ProjectileType.valueOf(projectile));
+        Champion champion = this.plugin.getEntityManager().getChampion(attacker);
+        final double tempDamage = this.plugin.getDamageManager().getHighestProjectileDamage(champion, DamageManager.ProjectileType.valueOf(projectile));
         return tempDamage > 0 ? tempDamage : damage;
     }
 
@@ -630,12 +630,12 @@ public class DamageListener extends AbstractListener {
         }
         int amount = 0;
         for (Map.Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
-            Double val = plugin.getDamageManager().getEnchantmentDamage(entry.getKey(), entry.getValue());
+            Double val = this.plugin.getDamageManager().getEnchantmentDamage(entry.getKey(), entry.getValue());
             if (val == null) {
                 continue;
             }
             if (entry.getKey().getId() == Enchantment.ARROW_DAMAGE.getId()) {
-                amount += plugin.getDamageManager().getEnchantmentDamage(entry.getKey(), entry.getValue());
+                amount += this.plugin.getDamageManager().getEnchantmentDamage(entry.getKey(), entry.getValue());
             }
         }
         return amount;

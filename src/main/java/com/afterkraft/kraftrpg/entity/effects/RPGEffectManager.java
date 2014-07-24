@@ -45,51 +45,51 @@ public class RPGEffectManager implements EffectManager {
     @Override
     public void manageEffect(Insentient being, Timed effect) {
         if ((effect instanceof Expirable) || (effect instanceof Periodic)) {
-            pendingAdditions.add(new RPGManagedEffect(being, effect));
+            this.pendingAdditions.add(new RPGManagedEffect(being, effect));
         }
     }
 
     @Override
     public void queueRemoval(Insentient being, Timed effect) {
         final RPGManagedEffect mEffect = new RPGManagedEffect(being, effect);
-        if (managedEffects.contains(mEffect)) {
-            pendingRemovals.add(mEffect);
+        if (this.managedEffects.contains(mEffect)) {
+            this.pendingRemovals.add(mEffect);
         }
     }
 
     @Override
     public void initialize() {
-        this.taskID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new EffectUpdater(), 0, effectInterval);
+        this.taskID = this.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this.plugin, new EffectUpdater(), 0, effectInterval);
     }
 
     @Override
     public void shutdown() {
-        plugin.getServer().getScheduler().cancelTask(this.taskID);
+        this.plugin.getServer().getScheduler().cancelTask(this.taskID);
     }
 
     class EffectUpdater implements Runnable {
 
         @Override
         public void run() {
-            final Set<Managed> removals = new HashSet<Managed>(pendingRemovals);
-            pendingRemovals.clear();
+            final Set<Managed> removals = new HashSet<Managed>(RPGEffectManager.this.pendingRemovals);
+            RPGEffectManager.this.pendingRemovals.clear();
             for (final Managed managed : removals) {
-                managedEffects.remove(managed);
+                RPGEffectManager.this.managedEffects.remove(managed);
             }
 
-            final Set<Managed> additions = new HashSet<Managed>(pendingAdditions);
-            pendingAdditions.clear();
+            final Set<Managed> additions = new HashSet<Managed>(RPGEffectManager.this.pendingAdditions);
+            RPGEffectManager.this.pendingAdditions.clear();
             for (final Managed managed : additions) {
-                managedEffects.add(managed);
+                RPGEffectManager.this.managedEffects.add(managed);
             }
 
-            for (final Managed managed : managedEffects) {
+            for (final Managed managed : RPGEffectManager.this.managedEffects) {
                 if (managed.getEffect() instanceof Expirable) {
                     if (((Expirable) managed.getEffect()).isExpired()) {
                         try {
                             managed.getSentientBeing().removeEffect(managed.getEffect());
                         } catch (final Exception e) {
-                            plugin.log(Level.SEVERE, "There was an error attempting to remove effect: " + managed.getEffect().getName());
+                            RPGEffectManager.this.plugin.log(Level.SEVERE, "There was an error attempting to remove effect: " + managed.getEffect().getName());
                             e.printStackTrace();
                         }
                     }
@@ -101,7 +101,7 @@ public class RPGEffectManager implements EffectManager {
                             periodic.tick(managed.getSentientBeing());
                         }
                     } catch (final Exception e) {
-                        plugin.log(Level.SEVERE, "There was an error attempting to tick effect: " + managed.getEffect().getName());
+                        RPGEffectManager.this.plugin.log(Level.SEVERE, "There was an error attempting to tick effect: " + managed.getEffect().getName());
                         e.printStackTrace();
                     }
                 }

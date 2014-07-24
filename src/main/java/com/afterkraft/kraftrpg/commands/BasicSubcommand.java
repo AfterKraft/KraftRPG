@@ -24,13 +24,13 @@ public abstract class BasicSubcommand implements Subcommand {
     protected String longDescription;
     protected String usage = null;
 
-    public BasicSubcommand(RPGPlugin plugin) {
+    protected BasicSubcommand(RPGPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public String getShortDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
     @Override
@@ -40,7 +40,7 @@ public abstract class BasicSubcommand implements Subcommand {
 
     @Override
     public String getLongDescription() {
-        return longDescription;
+        return this.longDescription;
     }
 
     @Override
@@ -50,7 +50,7 @@ public abstract class BasicSubcommand implements Subcommand {
 
     @Override
     public String getUsage() {
-        return usage;
+        return this.usage;
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class BasicSubcommand implements Subcommand {
 
     @Override
     public String getPermission() {
-        return permission;
+        return this.permission;
     }
 
     @Override

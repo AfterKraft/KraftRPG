@@ -25,15 +25,17 @@ public abstract class PromptGetString extends EditorPrompt {
     private final String prompt;
     private final boolean emptyAllowed;
 
-    public PromptGetString(String prompt, boolean allowEmpty) {
+    protected PromptGetString(String prompt, boolean allowEmpty) {
         this.prompt = prompt;
         this.emptyAllowed = allowEmpty;
     }
 
+    @Override
     public String getName(ConversationContext context) {
         return "input";
     }
 
+    @Override
     public EditorPrompt performCommand(ConversationContext context, String command) {
         if (command.trim().isEmpty()) {
             if (emptyAllowed) {
@@ -58,14 +60,17 @@ public abstract class PromptGetString extends EditorPrompt {
         }
     }
 
+    @Override
     public void printBanner(ConversationContext context) {
         sendMessage(context, "To cancel, type '!cancel'.");
     }
 
+    @Override
     public String getPrompt(ConversationContext context) {
         return prompt;
     }
 
+    @Override
     public List<String> getCompletions(ConversationContext context) {
         return ImmutableList.of();
     }

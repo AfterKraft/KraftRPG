@@ -34,32 +34,32 @@ public class RPGListenerManager implements ListenerManager {
 
     @Override
     public void initialize() {
-        if (listeners.isEmpty()) {
+        if (this.listeners.isEmpty()) {
             loadListeners();
         }
     }
 
     @Override
     public void shutdown() {
-        if (!listeners.isEmpty()) {
-            for (AbstractListener listener : listeners) {
+        if (!this.listeners.isEmpty()) {
+            for (AbstractListener listener : this.listeners) {
                 listener.shutdown();
             }
-            listeners.clear();
+            this.listeners.clear();
         }
     }
 
     private void loadListeners() {
-        addListener(new DamageListener(plugin));
-        addListener(new EntityListener(plugin));
-        addListener(new InventoryListener(plugin));
-        addListener(new PlayerListener(plugin));
+        addListener(new DamageListener(this.plugin));
+        addListener(new EntityListener(this.plugin));
+        addListener(new InventoryListener(this.plugin));
+        addListener(new PlayerListener(this.plugin));
     }
 
     @Override
     public void addListener(AbstractListener listener) {
-        if (listener != null && !listeners.contains(listener)) {
-            listeners.add(listener);
+        if (listener != null && !this.listeners.contains(listener)) {
+            this.listeners.add(listener);
             listener.initialize();
         }
     }

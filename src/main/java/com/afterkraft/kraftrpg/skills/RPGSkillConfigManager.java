@@ -66,6 +66,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         plugin.getConfigurationManager().checkForConfig(outsourcedSkillConfigFile);
     }
 
+    @Override
     public void reload() {
         standardSkillConfig = null;
         outsourcedSkillConfig = null;
@@ -172,6 +173,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         }
     }
 
+    @Override
     public void setClassDefaults() {
         for (final Configuration config : roleSkillConfigurations.values()) {
             config.setDefaults(outsourcedSkillConfig);

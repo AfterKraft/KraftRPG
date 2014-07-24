@@ -24,6 +24,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
@@ -125,6 +126,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        setupVault();
         if (CraftBukkitHandler.getInterface() == null) {
             getLogger().severe("Could not initialize internal handlers - please check for updates!");
             getServer().getPluginManager().disablePlugin(this);
@@ -167,9 +169,18 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         this.commandManager.initialize();
     }
 
+    private void setupVault() {
+        if (this.getServer().getPluginManager().getPlugin("Vault") != null) {
+            RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+            this.permisisons = rsp.getProvider();
+            RegisteredServiceProvider<Economy> esp = this.getServer().getServicesManager().getRegistration(Economy.class);
+            this.economy = esp != null ? esp.getProvider() : null;
+        }
+    }
+
     private void registerCommandExecutors() {
-        commandManager.registerCommand("skill", new RPGSkillCommand(this));
-        commandManager.registerCommand("rpg", new RPGParentCommand(this));
+        this.commandManager.registerCommand("skill", new RPGSkillCommand(this));
+        this.commandManager.registerCommand("rpg", new RPGParentCommand(this));
     }
 
     @Override
@@ -180,12 +191,12 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
     @Override
     public Permission getVaultPermissions() {
-        return permisisons;
+        return this.permisisons;
     }
 
     @Override
     public Economy getVaultEconomy() {
-        return economy;
+        return this.economy;
     }
 
     @Override
@@ -238,6 +249,7 @@ public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
         return this.partyManager;
     }
 
+    @Override
     public Properties getProperties() {
         return this.properties;
     }

@@ -44,9 +44,9 @@ public class YMLStorageBackend implements StorageBackend {
 
     @Override
     public void initialize() throws Throwable {
-        directory = new File(plugin.getDataFolder(), "players");
+        this.directory = new File(this.plugin.getDataFolder(), "players");
         //noinspection ResultOfMethodCallIgnored
-        directory.mkdirs();
+        this.directory.mkdirs();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class YMLStorageBackend implements StorageBackend {
     }
 
     private File getFile(UUID uuid) {
-        return new File(directory, uuid.toString() + ".yml");
+        return new File(this.directory, uuid.toString() + ".yml");
     }
 
     // ASYNC
@@ -128,18 +128,18 @@ public class YMLStorageBackend implements StorageBackend {
         boolean ok = true;
 
         String temp = config.getString("primary");
-        data.primary = plugin.getRoleManager().getRole(temp);
+        data.primary = this.plugin.getRoleManager().getRole(temp);
         if (data.primary == null) {
-            data.primary = plugin.getRoleManager().getDefaultPrimaryRole();
-            plugin.getLogger().warning("Could not find class " + temp + " referenced in data file " + file.getName());
+            data.primary = this.plugin.getRoleManager().getDefaultPrimaryRole();
+            this.plugin.getLogger().warning("Could not find class " + temp + " referenced in data file " + file.getName());
             ok = false;
         }
 
         temp = config.getString("profession");
-        data.profession = plugin.getRoleManager().getRole(temp);
+        data.profession = this.plugin.getRoleManager().getRole(temp);
         if (data.profession == null) {
-            data.profession = plugin.getRoleManager().getDefaultSecondaryRole();
-            plugin.getLogger().warning("Could not find class " + temp + " referenced in data file " + file.getName());
+            data.profession = this.plugin.getRoleManager().getDefaultSecondaryRole();
+            this.plugin.getLogger().warning("Could not find class " + temp + " referenced in data file " + file.getName());
             ok = false;
         }
 
@@ -147,9 +147,9 @@ public class YMLStorageBackend implements StorageBackend {
         list = config.getStringList("additional");
 
         for (String str : list) {
-            Role r = plugin.getRoleManager().getRole(str);
+            Role r = this.plugin.getRoleManager().getRole(str);
             if (r == null) {
-                plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
+                this.plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
                 ok = false;
             } else {
                 data.additionalRoles.add(r);
@@ -159,9 +159,9 @@ public class YMLStorageBackend implements StorageBackend {
         list = config.getStringList("past");
 
         for (String str : list) {
-            Role r = plugin.getRoleManager().getRole(str);
+            Role r = this.plugin.getRoleManager().getRole(str);
             if (r == null) {
-                plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
+                this.plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
                 ok = false;
             } else {
                 data.pastRoles.add(r);
@@ -171,9 +171,9 @@ public class YMLStorageBackend implements StorageBackend {
         ConfigurationSection section;
         section = config.getConfigurationSection("exp");
         for (String str : section.getKeys(false)) {
-            Role r = plugin.getRoleManager().getRole(str);
+            Role r = this.plugin.getRoleManager().getRole(str);
             if (r == null) {
-                plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
+                this.plugin.getLogger().warning("Could not find class " + str + " referenced in data file " + file.getName());
                 ok = false;
             } else {
                 long l = section.getLong(str);
@@ -187,7 +187,7 @@ public class YMLStorageBackend implements StorageBackend {
                 SkillBind bind = (SkillBind) o;
                 data.binds.put(bind.getMaterial(), bind);
             } else {
-                plugin.getLogger().warning("Item in binds that isn't a 'krpg-bind' in data file " + file.getName());
+                this.plugin.getLogger().warning("Item in binds that isn't a 'krpg-bind' in data file " + file.getName());
                 ok = false;
             }
         }
@@ -198,7 +198,7 @@ public class YMLStorageBackend implements StorageBackend {
         }
 
         if (!ok) {
-            plugin.getLogger().warning("Due to the potential for data loss, a backup will be made at `backup-" + file.getName() + "`");
+            this.plugin.getLogger().warning("Due to the potential for data loss, a backup will be made at `backup-" + file.getName() + "`");
 
             if (createBackupFile(uuid)) {
                 data.lastKnownName = config.getString("name");
@@ -212,14 +212,14 @@ public class YMLStorageBackend implements StorageBackend {
     }
 
     private boolean createBackupFile(UUID uuid) {
-        File newFile = new File(directory, "backup-" + uuid.toString() + ".yml");
+        File newFile = new File(this.directory, "backup-" + uuid.toString() + ".yml");
         if (newFile.exists()) {
             long last = newFile.lastModified();
             long duration = System.currentTimeMillis() - last;
 
             // 1 week
             if (duration > 7 * 24 * 60 * 60 * 1000) {
-                plugin.getLogger().warning("Overwriting week-old previous backup file");
+                this.plugin.getLogger().warning("Overwriting week-old previous backup file");
                 newFile.delete();
             } else {
                 return false;
@@ -233,14 +233,14 @@ public class YMLStorageBackend implements StorageBackend {
     // ASYNC
     @Override
     public List<UUID> getAllStoredUsers() {
-        File[] files = directory.listFiles();
+        File[] files = this.directory.listFiles();
         List<UUID> list = new ArrayList<UUID>();
 
         for (File file : files) {
             try {
                 list.add(UUID.fromString(removeExtension(file.getName())));
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Could not parse uuid from filename '" + file.getName() + "'");
+                this.plugin.getLogger().warning("Could not parse uuid from filename '" + file.getName() + "'");
             }
         }
 
