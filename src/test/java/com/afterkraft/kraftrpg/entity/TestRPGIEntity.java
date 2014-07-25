@@ -21,46 +21,46 @@ public class TestRPGIEntity {
 
     @Before
     public void setUp() {
-        creator = new RPGEntityCreator();
-        assertTrue(creator.setupEntity());
-        plugin = creator.getMockPlugin();
+        this.creator = new RPGEntityCreator();
+        assertTrue(this.creator.setupEntity());
+        this.plugin = this.creator.getMockPlugin();
     }
 
     @After
     public void cleanup() {
-        creator.cleanup();
+        this.creator.cleanup();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullPlugin() {
-        new RPGEntity(null, creator.getMockEntity(), null);
+        new RPGEntity(null, this.creator.getMockEntity(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullEntity() {
-        new RPGEntity(plugin, null, null);
+        new RPGEntity(this.plugin, null, null);
     }
 
     @Test
     public void testCorrectEntity() {
-        new RPGEntity(plugin, creator.getMockEntity(), null);
+        new RPGEntity(this.plugin, this.creator.getMockEntity(), null);
     }
 
     @Test
     public void testNamedEntity() {
-        new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+        new RPGEntity(this.plugin, this.creator.getMockEntity(), "TestNamedEntity");
     }
 
     @Test
     public void testValidEntity() {
-        IEntity entity = new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+        IEntity entity = new RPGEntity(this.plugin, this.creator.getMockEntity(), "TestNamedEntity");
         assertTrue(entity.isEntityValid());
         assertTrue(entity.isValid());
     }
 
     @Test
     public void testGetEntityType() {
-        IEntity entity = new RPGEntity(plugin, creator.getMockEntity(), "TestNamedEntity");
+        IEntity entity = new RPGEntity(this.plugin, this.creator.getMockEntity(), "TestNamedEntity");
         assertThat(entity.getEntityType(), is(EntityType.PIG));
     }
 }

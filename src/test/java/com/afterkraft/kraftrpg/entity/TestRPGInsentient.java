@@ -24,59 +24,59 @@ public class TestRPGInsentient {
 
     @Before
     public void setUp() {
-        creator = new RPGEntityCreator();
-        assertTrue(creator.setupLivingEntity());
-        plugin = creator.getMockPlugin();
+        this.creator = new RPGEntityCreator();
+        assertTrue(this.creator.setupLivingEntity());
+        this.plugin = this.creator.getMockPlugin();
     }
 
     @After
     public void cleanup() {
-        creator.cleanup();
+        this.creator.cleanup();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullPlugin() {
-        new RPGMonster(null, creator.getMockLivingEntity(), null);
+        new RPGMonster(null, this.creator.getMockLivingEntity(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullEntity() {
-        new RPGMonster(plugin, null, null);
+        new RPGMonster(this.plugin, null, null);
     }
 
     @Test
     public void testCorrectEntity() {
-        Monster monster = new RPGMonster(plugin, creator.getMockLivingEntity(), null);
-        assertThat(monster.getEntity(), is(creator.getMockLivingEntity()));
+        Monster monster = new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), null);
+        assertThat(monster.getEntity(), is(this.creator.getMockLivingEntity()));
     }
 
     @Test
     public void testNamedEntity() {
-        new RPGMonster(plugin, creator.getMockLivingEntity(), "TestNamedEntity");
+        new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), "TestNamedEntity");
     }
 
     @Test
     public void testValidEntity() {
-        Monster entity = new RPGMonster(plugin, creator.getMockLivingEntity(), "TestNamedEntity");
+        Monster entity = new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), "TestNamedEntity");
         assertTrue(entity.isEntityValid());
         assertTrue(entity.isValid());
     }
 
     @Test
     public void testGetEntityType() {
-        Monster entity = new RPGMonster(plugin, creator.getMockLivingEntity(), "TestNamedEntity");
+        Monster entity = new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), "TestNamedEntity");
         assertThat(entity.getEntityType(), is(EntityType.ZOMBIE));
     }
 
     @Test
     public void testGetEntityMaxHealth() {
-        Monster entity = new RPGMonster(plugin, creator.getMockLivingEntity(), "TestNamedEntity");
-        assertThat(entity.getMaxHealth(), is(creator.getMockLivingEntity().getMaxHealth()));
+        Monster entity = new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), "TestNamedEntity");
+        assertThat(entity.getMaxHealth(), is(this.creator.getMockLivingEntity().getMaxHealth()));
     }
 
     @Test
     public void testGetEntityHealth() {
-        Monster entity = new RPGMonster(plugin, creator.getMockLivingEntity(), "TestNamedEntity");
-        assertThat(entity.getHealth(), is(creator.getMockLivingEntity().getHealth()));
+        Monster entity = new RPGMonster(this.plugin, this.creator.getMockLivingEntity(), "TestNamedEntity");
+        assertThat(entity.getHealth(), is(this.creator.getMockLivingEntity().getHealth()));
     }
 }

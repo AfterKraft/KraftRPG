@@ -57,15 +57,15 @@ public class RPGTestCreator {
     public static final File serverDirectory = new File("bin/test/server");
 
     public RPGPlugin getMockPlugin() {
-        return mockPlugin;
+        return this.mockPlugin;
     }
 
     public CraftBukkitHandler getMockHandler() {
-        return mockHandler;
+        return this.mockHandler;
     }
 
     public ISkill getMockSkill() {
-        return mockSkill;
+        return this.mockSkill;
     }
 
     public boolean setup() {
@@ -74,22 +74,22 @@ public class RPGTestCreator {
 
             assertTrue(pluginDirectory.exists());
 
-            mockPlugin = PowerMockito.mock(RPGPlugin.class);
+            this.mockPlugin = PowerMockito.mock(RPGPlugin.class);
 
-            doReturn(pluginDirectory).when(mockPlugin).getDataFolder();
+            doReturn(pluginDirectory).when(this.mockPlugin).getDataFolder();
 
             PluginDescriptionFile descriptionFile = new PluginDescriptionFile("TestRPG", "1.0.0", "com.afterkraft.kraftrpg.RPGTestCreator");
-            doReturn(descriptionFile).when(mockPlugin).getDescription();
-            doReturn(true).when(mockPlugin).isEnabled();
-            doReturn(Util.logger).when(mockPlugin).getLogger();
+            doReturn(descriptionFile).when(this.mockPlugin).getDescription();
+            doReturn(true).when(this.mockPlugin).isEnabled();
+            doReturn(Util.logger).when(this.mockPlugin).getLogger();
 
             // Add Core to the list of loaded plugins
-            Plugin[] plugins = new RPGPlugin[]{mockPlugin};
+            Plugin[] plugins = new RPGPlugin[]{this.mockPlugin};
 
             // Mock the Plugin Manager
             PluginManager mockPluginManager = PowerMockito.mock(PluginManager.class);
             Mockito.when(mockPluginManager.getPlugins()).thenReturn(plugins);
-            Mockito.when(mockPluginManager.getPlugin("KraftRPG")).thenReturn(mockPlugin);
+            Mockito.when(mockPluginManager.getPlugin("KraftRPG")).thenReturn(this.mockPlugin);
             Mockito.when(mockPluginManager.getPermission(anyString())).thenReturn(null);
 
             // Set up mockServer prep
@@ -100,7 +100,7 @@ public class RPGTestCreator {
             expect(mockServer.getLogger()).andStubReturn(Util.logger);
             expect(mockServer.getPluginManager()).andStubReturn(mockPluginManager);
 
-            doReturn(mockServer).when(mockPlugin).getServer();
+            doReturn(mockServer).when(this.mockPlugin).getServer();
 
             // Set up Scheduler
             BukkitScheduler mockScheduler = mock(BukkitScheduler.class);
@@ -132,27 +132,27 @@ public class RPGTestCreator {
             StorageFrontend mockStorage = createNiceMock(StorageFrontend.class);
             replay(mockStorage);
 
-            doReturn(mockStorage).when(mockPlugin).getStorage();
-            assertThat(mockPlugin.getServer(), is(mockServer));
+            doReturn(mockStorage).when(this.mockPlugin).getStorage();
+            assertThat(this.mockPlugin.getServer(), is(mockServer));
 
             Bukkit.setServer(mockServer);
 
             // We need to mock the CraftBukkitHandler. We shouldn't test NMS implementation
-            mockHandler = mock(CraftBukkitHandler.class);
+            this.mockHandler = mock(CraftBukkitHandler.class);
 
             mockStatic(CraftBukkitHandler.class, new Answer() {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                     if (invocationOnMock.getMethod().getName().equalsIgnoreCase("getInterface")) {
-                        return mockHandler;
+                        return RPGTestCreator.this.mockHandler;
                     } else {
                         return 1;
                     }
                 }
             });
-            when(mockHandler.getSpawnReason(any(LivingEntity.class), any(SpawnReason.class))).thenReturn(SpawnReason.NATURAL);
-            when(mockHandler.getSpawnLocation(any(LivingEntity.class))).thenReturn(mock(Location.class));
-            when(mockHandler.getEntityDamage(any(LivingEntity.class), anyDouble())).thenReturn(10D);
+            when(this.mockHandler.getSpawnReason(any(LivingEntity.class), any(SpawnReason.class))).thenReturn(SpawnReason.NATURAL);
+            when(this.mockHandler.getSpawnLocation(any(LivingEntity.class))).thenReturn(mock(Location.class));
+            when(this.mockHandler.getEntityDamage(any(LivingEntity.class), anyDouble())).thenReturn(10D);
 
             return true;
         } catch (Exception e) {

@@ -43,43 +43,43 @@ public class RPGEntityCreator {
 
 
     public Entity getMockEntity() {
-        return mockEntity;
+        return this.mockEntity;
     }
 
     public LivingEntity getMockLivingEntity() {
-        return mockLivingEntity;
+        return this.mockLivingEntity;
     }
 
     public Player getMockPlayer() {
-        return mockPlayer;
+        return this.mockPlayer;
     }
 
     public RPGPlugin getMockPlugin() {
-        return creator.getMockPlugin();
+        return this.creator.getMockPlugin();
     }
 
     public EntityManager getMockEntityManager() {
-        return mockEntityManager;
+        return this.mockEntityManager;
     }
 
     public boolean setupEntity() {
         try {
-            creator = new RPGTestCreator();
-            assertThat(creator.setup(), is(true));
-            RPGPlugin mockPlugin = creator.getMockPlugin();
+            this.creator = new RPGTestCreator();
+            assertThat(this.creator.setup(), is(true));
+            RPGPlugin mockPlugin = this.creator.getMockPlugin();
 
-            mockEntityManager = spy(new RPGEntityManager(mockPlugin));
-            doReturn(mockEntityManager).when(mockPlugin).getEntityManager();
+            this.mockEntityManager = spy(new RPGEntityManager(mockPlugin));
+            doReturn(this.mockEntityManager).when(mockPlugin).getEntityManager();
 
 
             // Set up mockEntity
-            mockEntity = createNiceMock(Entity.class);
-            expect(mockEntity.getType()).andReturn(EntityType.PIG).anyTimes();
-            expect(mockEntity.getUniqueId()).andReturn(new UUID(10, 4)).atLeastOnce();
-            expect(mockEntity.isValid()).andReturn(true).atLeastOnce();
-            replay(mockEntity);
+            this.mockEntity = createNiceMock(Entity.class);
+            expect(this.mockEntity.getType()).andReturn(EntityType.PIG).anyTimes();
+            expect(this.mockEntity.getUniqueId()).andReturn(new UUID(10, 4)).atLeastOnce();
+            expect(this.mockEntity.isValid()).andReturn(true).atLeastOnce();
+            replay(this.mockEntity);
 
-            assertThat(mockPlugin.getEntityManager(), is(mockEntityManager));
+            assertThat(mockPlugin.getEntityManager(), is(this.mockEntityManager));
 
             return true;
         } catch (Exception e) {
@@ -90,14 +90,14 @@ public class RPGEntityCreator {
 
     public boolean setupLivingEntity() {
         try {
-            creator = new RPGTestCreator();
-            assertThat(creator.setup(), is(true));
-            RPGPlugin mockPlugin = creator.getMockPlugin();
+            this.creator = new RPGTestCreator();
+            assertThat(this.creator.setup(), is(true));
+            RPGPlugin mockPlugin = this.creator.getMockPlugin();
 
-            mockEntityManager = spy(new RPGEntityManager(mockPlugin));
-            doReturn(mockEntityManager).when(mockPlugin).getEntityManager();
+            this.mockEntityManager = spy(new RPGEntityManager(mockPlugin));
+            doReturn(this.mockEntityManager).when(mockPlugin).getEntityManager();
 
-            mockEntityManager.initialize();
+            this.mockEntityManager.initialize();
 
             RPGPluginProperties mockProperties = new RPGPluginProperties();
             RPGPluginProperties.isMobDamageDistanceModified = false;
@@ -105,23 +105,23 @@ public class RPGEntityCreator {
             RPGPluginProperties.isMobHealthDistanceModified = false;
             doReturn(mockProperties).when(mockPlugin).getProperties();
 
-            mockDamageManager = spy(new RPGDamageManager(mockPlugin));
-            doReturn(new Double(10D)).when(mockDamageManager).getEntityDamage(any(EntityType.class));
+            this.mockDamageManager = spy(new RPGDamageManager(mockPlugin));
+            doReturn(10D).when(this.mockDamageManager).getEntityDamage(any(EntityType.class));
 
-            doReturn(mockDamageManager).when(mockPlugin).getDamageManager();
+            doReturn(this.mockDamageManager).when(mockPlugin).getDamageManager();
 
 
             // Set up mockEntity
-            mockLivingEntity = createNiceMock(Zombie.class);
-            expect(mockLivingEntity.getType()).andReturn(EntityType.ZOMBIE).anyTimes();
-            expect(mockLivingEntity.getUniqueId()).andReturn(new UUID(10, 4)).atLeastOnce();
-            expect(mockLivingEntity.isValid()).andReturn(true).atLeastOnce();
-            expect(mockLivingEntity.getHealth()).andReturn(100D).atLeastOnce();
-            expect(mockLivingEntity.getMaxHealth()).andReturn(100D).atLeastOnce();
-            expect(mockLivingEntity.getMetadata(anyString())).andReturn(new ArrayList<MetadataValue>());
-            replay(mockLivingEntity);
+            this.mockLivingEntity = createNiceMock(Zombie.class);
+            expect(this.mockLivingEntity.getType()).andReturn(EntityType.ZOMBIE).anyTimes();
+            expect(this.mockLivingEntity.getUniqueId()).andReturn(new UUID(10, 4)).atLeastOnce();
+            expect(this.mockLivingEntity.isValid()).andReturn(true).atLeastOnce();
+            expect(this.mockLivingEntity.getHealth()).andReturn(100D).atLeastOnce();
+            expect(this.mockLivingEntity.getMaxHealth()).andReturn(100D).atLeastOnce();
+            expect(this.mockLivingEntity.getMetadata(anyString())).andReturn(new ArrayList<MetadataValue>());
+            replay(this.mockLivingEntity);
 
-            assertThat(mockPlugin.getEntityManager(), is(mockEntityManager));
+            assertThat(mockPlugin.getEntityManager(), is(this.mockEntityManager));
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,14 +131,14 @@ public class RPGEntityCreator {
 
     public boolean setupPlayer() {
         try {
-            creator = new RPGTestCreator();
-            assertThat(creator.setup(), is(true));
-            RPGPlugin mockPlugin = creator.getMockPlugin();
+            this.creator = new RPGTestCreator();
+            assertThat(this.creator.setup(), is(true));
+            RPGPlugin mockPlugin = this.creator.getMockPlugin();
 
-            mockEntityManager = spy(new RPGEntityManager(mockPlugin));
-            doReturn(mockEntityManager).when(mockPlugin).getEntityManager();
+            this.mockEntityManager = spy(new RPGEntityManager(mockPlugin));
+            doReturn(this.mockEntityManager).when(mockPlugin).getEntityManager();
 
-            mockEntityManager.initialize();
+            this.mockEntityManager.initialize();
 
             RPGPluginProperties mockProperties = new RPGPluginProperties();
             RPGPluginProperties.isMobDamageDistanceModified = false;
@@ -154,7 +154,7 @@ public class RPGEntityCreator {
     }
 
     public boolean cleanup() {
-        creator.cleanUp();
+        this.creator.cleanUp();
         return true;
     }
 }
