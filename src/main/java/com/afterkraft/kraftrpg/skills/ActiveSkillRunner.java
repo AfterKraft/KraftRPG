@@ -112,13 +112,29 @@ public final class ActiveSkillRunner {
             }
         }
 
-        double healthCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.HEALTH_COST);
-        double manaCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.MANA_COST);
-        double hungerCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.STAMINA_COST);
-        ItemStack reagent = confman.getUsedItemStackSetting(caster, skill, SkillSetting.REAGENT);
-        int reagentQuant = confman.getUsedIntSetting(caster, skill, SkillSetting.REAGENT_QUANTITY);
-        if (reagentQuant != -1 && reagent != null) {
-            reagent.setAmount(reagentQuant);
+        double healthCost = 0;
+        double manaCost = 0;
+        double hungerCost = 0;
+        ItemStack reagent = null;
+        int reagentQuantity = 0;
+
+        if (confman.isSettingConfigured(skill, SkillSetting.HEALTH_COST)) {
+            healthCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.HEALTH_COST);
+        }
+        if (confman.isSettingConfigured(skill, SkillSetting.MANA_COST)) {
+            manaCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.MANA_COST);
+        }
+        if (confman.isSettingConfigured(skill, SkillSetting.STAMINA_COST)) {
+            hungerCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.STAMINA_COST);
+        }
+        if (confman.isSettingConfigured(skill, SkillSetting.REAGENT)) {
+            reagent = confman.getUsedItemStackSetting(caster, skill, SkillSetting.REAGENT);
+        }
+        if (confman.isSettingConfigured(skill, SkillSetting.REAGENT_QUANTITY)) {
+            reagentQuantity = confman.getUsedIntSetting(caster, skill, SkillSetting.REAGENT_QUANTITY);
+        }
+        if (reagentQuantity != -1 && reagent != null) {
+            reagent.setAmount(reagentQuantity);
         }
 
         SkillCastEvent skillEvent = new SkillCastEvent(caster, skill, manaCost, healthCost, hungerCost, reagent);

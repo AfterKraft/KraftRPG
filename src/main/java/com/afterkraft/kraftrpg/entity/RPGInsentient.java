@@ -39,6 +39,8 @@ import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.effects.EffectType;
 import com.afterkraft.kraftrpg.api.effects.IEffect;
 import com.afterkraft.kraftrpg.api.effects.Timed;
+import com.afterkraft.kraftrpg.api.events.entity.effects.EffectAddEvent;
+import com.afterkraft.kraftrpg.api.events.entity.effects.EffectRemoveEvent;
 
 
 public abstract class RPGInsentient extends RPGEntity implements Insentient {
@@ -220,6 +222,12 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             removeEffect(getEffect(effect.getName()));
         }
 
+        EffectAddEvent event = new EffectAddEvent(this, effect);
+        this.plugin.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
         this.effects.put(effect.getName().toLowerCase(), effect);
         effect.apply(this);
 
@@ -281,6 +289,14 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public void removeEffect(IEffect effect) {
         check();
         Validate.notNull(effect, "Cannot remove a null effect!");
+
+        // TODO
+        EffectRemoveEvent event = new EffectRemoveEvent(this, effect);
+        this.plugin.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
         effect.remove(this);
         this.effects.remove(effect.getName().toLowerCase());
 

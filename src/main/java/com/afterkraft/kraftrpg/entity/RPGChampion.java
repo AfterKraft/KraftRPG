@@ -48,6 +48,7 @@ import com.afterkraft.kraftrpg.util.Messaging;
 
 
 public class RPGChampion extends RPGInsentient implements Champion {
+    public static final String GLOBAL_COOLDOWN_KEY = "global";
     private PlayerData data;
     private Stalled stalled;
     private transient Party party;
@@ -66,18 +67,21 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Long getCooldown(String key) {
         Validate.notNull(key, "Cannot get a null cooldown!");
-        Validate.isTrue(key.isEmpty(), "Cannot get an empty keyed cooldown!");
+        Validate.isTrue(!key.isEmpty(), "Cannot get an empty keyed cooldown!");
+        if (this.data.cooldowns.containsKey(key))
             return this.data.cooldowns.get(key);
+        else
+            return 0L;
     }
 
     @Override
     public long getGlobalCooldown() {
-        return this.data.cooldowns.get("global");
+        return getCooldown(GLOBAL_COOLDOWN_KEY);
     }
 
     @Override
     public void setGlobalCooldown(long duration) {
-        this.data.cooldowns.put("global", duration);
+        this.data.cooldowns.put(GLOBAL_COOLDOWN_KEY, duration);
     }
 
     @Override
