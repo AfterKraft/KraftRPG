@@ -16,6 +16,8 @@
 package com.afterkraft.kraftrpg.entity;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
@@ -24,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
@@ -48,6 +51,11 @@ public class RPGEntity implements IEntity {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return this.getEntity() instanceof LivingEntity ? ((LivingEntity) this.getEntity()).getCustomName() : this.name;
     }
 
     @Override
@@ -98,16 +106,33 @@ public class RPGEntity implements IEntity {
 
     @Override
     public Location getLocation() {
+        if (!isValid()) {
+            throw new IllegalStateException("The linked entity is no longer available!");
+        }
         return isEntityValid() ? this.getEntity().getLocation() : null;
     }
 
     @Override
+    public List<Entity> getNearbyEntities(double x, double y, double z) {
+        if (!isValid()) {
+            throw new IllegalStateException("The linked entity is no longer available!");
+        }
+        return isEntityValid() ? this.getEntity().getNearbyEntities(x, y, z) : new ArrayList<Entity>();
+    }
+
+    @Override
     public World getWorld() {
+        if (!isValid()) {
+            throw new IllegalStateException("The linked entity is no longer available!");
+        }
         return isEntityValid() ? this.getEntity().getLocation().getWorld() : null;
     }
 
     @Override
     public boolean isOnGround() {
+        if (!isValid()) {
+            throw new IllegalStateException("The linked entity is no longer available!");
+        }
         return isEntityValid() && this.getEntity().isOnGround();
     }
 

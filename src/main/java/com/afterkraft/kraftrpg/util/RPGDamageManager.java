@@ -38,7 +38,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
@@ -156,7 +155,7 @@ public class RPGDamageManager implements DamageManager {
     }
 
     @Override
-    public double getHighestProjectileDamage(Champion champion, ProjectileType type) {
+    public double getHighestProjectileDamage(Insentient champion, ProjectileType type) {
         return 0;
     }
 

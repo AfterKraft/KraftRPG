@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.entity.effects;
+package com.afterkraft.kraftrpg.effects;
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
-import com.afterkraft.kraftrpg.api.entity.effects.Managed;
-import com.afterkraft.kraftrpg.api.entity.effects.Timed;
+import com.afterkraft.kraftrpg.api.effects.IEffect;
+import com.afterkraft.kraftrpg.api.effects.Managed;
+import com.afterkraft.kraftrpg.api.effects.Timed;
 
 
 public class RPGManagedEffect implements Managed {

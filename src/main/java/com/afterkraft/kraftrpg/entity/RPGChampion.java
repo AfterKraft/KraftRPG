@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.Validate;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -33,6 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
+import com.afterkraft.kraftrpg.api.events.roles.ExperienceChangeEvent;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.roles.ExperienceType;
 import com.afterkraft.kraftrpg.api.roles.Role;
@@ -43,8 +43,8 @@ import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.api.util.SkillRequirement;
-import com.afterkraft.kraftrpg.api.util.Utilities;
 import com.afterkraft.kraftrpg.util.MathUtil;
+import com.afterkraft.kraftrpg.util.Messaging;
 
 
 public class RPGChampion extends RPGInsentient implements Champion {
@@ -248,7 +248,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     public FixedPoint getExperience(Role role) {
         Validate.notNull(role, "Cannot check a null Role!");
         final FixedPoint exp = this.data.exp.get(role);
-        return exp == null ? new FixedPoint() : exp;
+        return exp == null ? new FixedPoint() : exp.clone();
     }
 
     @Override
@@ -262,7 +262,30 @@ public class RPGChampion extends RPGInsentient implements Champion {
         Validate.notNull(exp, "Cannot gain null experience!");
         Validate.notNull(type, "Cannot gain from a null experience type!");
         Validate.notNull(location, "Cannot gain from a null location!");
-        return null;
+        if (this.data.primary.canGainExperience(type)) {
+            FixedPoint currentExp = this.data.exp.get(this.data.primary);
+            ExperienceChangeEvent event = new ExperienceChangeEvent(this, this.getLocation(), this.data.primary, currentExp, exp);
+            if (!event.isCancelled()) {
+                this.data.exp.put(this.data.primary, event.getFinalExperience());
+            }
+        }
+        if (this.data.profession.canGainExperience(type)) {
+            FixedPoint currentExp = this.data.exp.get(this.data.profession);
+            ExperienceChangeEvent event = new ExperienceChangeEvent(this, this.getLocation(), this.data.profession, currentExp, exp);
+            if (!event.isCancelled()) {
+                this.data.exp.put(this.data.profession, event.getFinalExperience());
+            }
+        }
+        for (Role role : this.data.additionalRoles) {
+            if (role.canGainExperience(type)) {
+                FixedPoint currentExp = this.data.exp.get(role);
+                ExperienceChangeEvent event = new ExperienceChangeEvent(this, this.getLocation(), role, currentExp, exp);
+                if (!event.isCancelled()) {
+                    this.data.exp.put(role, event.getFinalExperience());
+                }
+            }
+        }
+        return exp;
     }
 
     @Override
@@ -377,22 +400,24 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public void setMaxMana(int mana) {
         Validate.isTrue(mana > 0, "Cannot set mana to zero or negative!");
+
     }
 
     @Override
     public double getMaxHealth() {
         this.check();
-
         return this.getEntity().getMaxHealth();
     }
 
     @Override
     public DamageWrapper getDamageWrapper() {
+        check();
         return this.damageWrapper;
     }
 
     @Override
     public void setDamageWrapper(DamageWrapper wrapper) {
+        check();
         this.damageWrapper = wrapper;
     }
 
@@ -405,7 +430,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public float getStamina() {
         this.check();
-
         return this.getEntity().getFoodLevel() * 4 + this.getEntity().getSaturation() - this.getEntity().getExhaustion();
     }
 
@@ -465,17 +489,25 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
+    public String getDisplayName() {
+        check();
+        return this.getPlayer().getDisplayName();
+    }
+
+    @Override
     public final Player getEntity() {
         return (Player) super.getEntity();
     }
 
     @Override
     public double recalculateMaxHealth() {
+        check();
         return 0D;
     }
 
     @Override
     public void heal(double amount) {
+        check();
 
     }
 
@@ -504,9 +536,16 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public void sendMessage(String message) {
+        check();
         if (this.isEntityValid()) {
             this.getPlayer().sendMessage(message);
         }
+    }
+
+    @Override
+    public void sendMessage(String message, Object... args) {
+        check();
+        Messaging.send(this.getEntity(), message, args);
     }
 
     @Override
@@ -532,7 +571,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     private boolean check() {
-        if (!this.isEntityValid()) {
+        if (!this.isValid()) {
             throw new IllegalStateException("A Champion is not linked to a correct Player!");
         }
         return true;

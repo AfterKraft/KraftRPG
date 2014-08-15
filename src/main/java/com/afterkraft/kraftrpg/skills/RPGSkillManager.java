@@ -17,12 +17,14 @@ package com.afterkraft.kraftrpg.skills;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+
+import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang.Validate;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -38,8 +40,8 @@ import com.afterkraft.kraftrpg.api.events.roles.RoleLevelChangeEvent;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
 import com.afterkraft.kraftrpg.api.skills.PassiveSkill;
-import com.afterkraft.kraftrpg.api.skills.Permissible;
-import com.afterkraft.kraftrpg.api.skills.PermissionSkill;
+import com.afterkraft.kraftrpg.api.skills.common.Permissible;
+import com.afterkraft.kraftrpg.api.skills.common.PermissionSkill;
 import com.afterkraft.kraftrpg.api.skills.Skill;
 import com.afterkraft.kraftrpg.api.skills.SkillManager;
 import com.afterkraft.kraftrpg.api.skills.SkillSetting;
@@ -48,17 +50,17 @@ import com.afterkraft.kraftrpg.api.skills.Stalled;
 
 
 public class RPGSkillManager implements SkillManager {
-    private static final Set<String> defaultAllowedNodes;
+    private static final Set<String> DEFAULT_ALLOWED_NODES;
     static {
-        defaultAllowedNodes = new HashSet<String>();
+        DEFAULT_ALLOWED_NODES = new HashSet<String>();
         for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
-            defaultAllowedNodes.add(setting.node());
-            defaultAllowedNodes.add(setting.scalingNode());
+            DEFAULT_ALLOWED_NODES.add(setting.node());
+            DEFAULT_ALLOWED_NODES.add(setting.scalingNode());
         }
-        defaultAllowedNodes.remove(null);
+        DEFAULT_ALLOWED_NODES.remove(null);
 
         // Add more auto-applied stuff here
-        defaultAllowedNodes.add("requirements");
+        DEFAULT_ALLOWED_NODES.add("requirements");
     }
     private final Map<String, ISkill> skillMap;
     private final RPGPlugin plugin;
@@ -83,6 +85,7 @@ public class RPGSkillManager implements SkillManager {
 
     @Override
     public void addSkill(ISkill skill) {
+        Validate.notNull(skill, "Cannot add a null skill!");
         if (!checkSkillConfig(skill)) {
             return;
         }
@@ -93,21 +96,22 @@ public class RPGSkillManager implements SkillManager {
     }
 
     @Override
-    public boolean hasSkill(String skillName) throws IllegalArgumentException {
+    public boolean hasSkill(String skillName) {
+        Validate.notNull(skillName, "Cannot check a null skill name!");
+        Validate.isTrue(!skillName.isEmpty(), "Cannot check an empty skill name!");
         return false;
     }
 
     @Override
     public ISkill getSkill(String name) {
-        if (name == null) {
-            return null;
-        }
+        Validate.notNull(name, "Cannot get a null skill name!");
         name = name.toLowerCase();
         return this.skillMap.get(name);
     }
 
     @Override
     public boolean loadPermissionSkill(String name) {
+        Validate.notNull(name, "Cannot load a null permission skill name!");
         if ((name == null) || (this.skillMap.get(name.toLowerCase()) != null)) {
             return true;
         }
@@ -139,62 +143,75 @@ public class RPGSkillManager implements SkillManager {
 
     @Override
     public boolean isLoaded(String name) {
+        Validate.notNull(name, "Cannot check if a null skill name is loaded!");
         return this.skillMap.containsKey(name.toLowerCase());
     }
 
     @Override
     public void removeSkill(ISkill skill) {
+        Validate.notNull(skill, "Cannot remove a null skill!");
         this.skillMap.remove(skill.getName().toLowerCase().replace("skill", ""));
     }
 
     @Override
     public boolean isCasterDelayed(SkillCaster caster) {
+        Validate.notNull(caster, "Cannot check if a null caster is delayed!");
         return false;
     }
 
     @Override
     public Stalled getDelayedSkill(SkillCaster caster) {
+        Validate.notNull(caster, "Cannot get the stalled skill of a null caster!");
         return null;
     }
 
     @Override
     public void setCompletedSkill(SkillCaster caster) {
+        Validate.notNull(caster, "Cannot set a null caster to complete a skill!");
 
     }
 
     @Override
     public void addSkillTarget(Entity o, SkillCaster caster, ISkill skill) {
+        Validate.notNull(o, "Cannot add a null entity as a skill target!");
+        Validate.notNull(caster, "Cannot add a null caster!");
+        Validate.notNull(skill, "Cannot add a skill target to a null skill!");
 
     }
 
     @Override
     public SkillUseObject getSkillTargetInfo(Entity o) {
+        Validate.notNull(o, "Cannot get the skill target info on a null entity!");
         return null;
     }
 
     @Override
     public boolean isSkillTarget(Entity o) {
+        Validate.notNull(o, "Cannot check a null skill target!");
         return false;
     }
 
     @Override
     public void removeSkillTarget(Entity entity, SkillCaster caster, ISkill skill) {
+        Validate.notNull(entity, "Cannot remove a null entity skill target!");
+        Validate.notNull(caster, "Cannot remove a null caster skill target!");
+        Validate.notNull(skill, "Cannot remove a null skill from a skill target!");
 
     }
 
     private boolean checkSkillConfig(ISkill skill) {
-        if (skill.getUsedConfigNodes() == null) {
+        if (skill.getUsedConfigNodes() == null || skill.getUsedConfigNodes().isEmpty()) {
             return true;
         }
-        EnumSet<SkillSetting> settings = EnumSet.copyOf(skill.getUsedConfigNodes());
+        Set<SkillSetting> settings = ImmutableSet.copyOf(skill.getUsedConfigNodes());
         ConfigurationSection section = skill.getDefaultConfig();
 
-        Set<String> allowedKeys = new HashSet<String>(defaultAllowedNodes);
+        Set<String> allowedKeys = new HashSet<String>(DEFAULT_ALLOWED_NODES);
         // Build the allowedKeys set
         for (SkillSetting setting : settings) {
             if (setting == SkillSetting.CUSTOM) {
                 return true;
-            } else if (setting == SkillSetting.CUSTOM_PER_CHAMPION) {
+            } else if (setting == SkillSetting.CUSTOM_PER_CASTER) {
                 continue;
             }
             allowedKeys.add(setting.node());
@@ -219,7 +236,7 @@ public class RPGSkillManager implements SkillManager {
 
     }
 
-    protected class SkillManagerListener implements Listener {
+    private class SkillManagerListener implements Listener {
 
         private final Set<PassiveSkill> passiveSkills = new HashSet<PassiveSkill>();
         private final Set<PermissionSkill> permissionSkills = new HashSet<PermissionSkill>();

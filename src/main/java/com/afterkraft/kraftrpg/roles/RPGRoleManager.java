@@ -44,7 +44,7 @@ import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
-import com.afterkraft.kraftrpg.api.skills.Permissible;
+import com.afterkraft.kraftrpg.api.skills.common.Permissible;
 import com.afterkraft.kraftrpg.api.util.DirectedGraph;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 
@@ -383,7 +383,7 @@ public class RPGRoleManager implements RoleManager {
                     skillSettings = configuration.createSection("skills." + skillName);
                 }
                 roleBuilder.addRoleSkill(skill, skillSettings);
-                plugin.getSkillConfigManager().addClassSkillSettings(configuration.getString("name"), skillName, skillSettings);
+                plugin.getSkillConfigManager().addRoleSkillSettings(configuration.getString("name"), skillName, skillSettings);
             }
 
             if (allowAllSkills) {

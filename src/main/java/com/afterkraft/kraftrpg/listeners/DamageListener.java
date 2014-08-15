@@ -50,12 +50,15 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
+import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.PartyMember;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
-import com.afterkraft.kraftrpg.api.entity.effects.EffectType;
-import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
+import com.afterkraft.kraftrpg.api.effects.EffectType;
+import com.afterkraft.kraftrpg.api.effects.IEffect;
+import com.afterkraft.kraftrpg.api.entity.Summon;
 import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageEvent;
 import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageInsentientEvent;
+import com.afterkraft.kraftrpg.api.events.entity.damage.ProjectileDamageEvent;
 import com.afterkraft.kraftrpg.api.events.entity.damage.SkillDamageEvent;
 import com.afterkraft.kraftrpg.api.events.entity.damage.WeaponDamageEvent;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
@@ -65,6 +68,7 @@ import com.afterkraft.kraftrpg.api.listeners.SkillDamageWrapper;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
+import com.afterkraft.kraftrpg.api.util.DamageManager.ProjectileType;
 import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
 import com.afterkraft.kraftrpg.util.Messaging;
 
@@ -107,7 +111,7 @@ public class DamageListener extends AbstractListener {
         event.setAmount(amount);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityDamageEvent(EntityDamageEvent event) {
         final Entity defendingEntity = event.getEntity();
         IEntity defendingIEntity = this.plugin.getEntityManager().getEntity(defendingEntity);
@@ -117,6 +121,7 @@ public class DamageListener extends AbstractListener {
         DamageWrapper wrapper = new DamageWrapper(event.getCause(), event.getDamage(), event.getFinalDamage(), event.getCause());
 
         // TODO Somewhere... write some armor/item damage handling that may ignore some of these damages
+        // TODO Somehow, we should create and apply our own functions for these new DamageModifiers.
         final double initialDamage = event.getOriginalDamage(DamageModifier.BASE);
         final double initialArmor = event.getOriginalDamage(DamageModifier.ARMOR);
         final double initialAbsorbtion = event.getOriginalDamage(DamageModifier.ABSORPTION);
@@ -438,9 +443,23 @@ public class DamageListener extends AbstractListener {
             }
             // We must check the item in hand and for all possible damages it may have.
             // This needs to be improved later on as we need to handle customized damages
-            if (attackingInsentient.getItemInHand().getType() != Material.AIR && this.plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
+            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+            if (event.getCause() == DamageCause.PROJECTILE && damager instanceof Projectile) {
+                damage = this.plugin.getDamageManager().getHighestProjectileDamage(attackingInsentient, (ProjectileType.valueOf(damager)));
+                final ProjectileDamageEvent projectileDamageEvent = new ProjectileDamageEvent(attackingInsentient, (Insentient) defendingIEntity, (Projectile) damager, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), attackingInsentient.getItemInHand(), initialDamage, this.plugin.getProperties().isVaryingDamageEnabled());
+                Bukkit.getPluginManager().callEvent(projectileDamageEvent);
+                if (projectileDamageEvent.isCancelled()) {
+                    damage = 0D;
+                    event.setCancelled(true);
+                    event.setDamage(0D);
+                    return damage;
+                } else {
+                    damage = projectileDamageEvent.getFinalDamage();
+                }
+            } else if (attackingInsentient.getItemInHand().getType() != Material.AIR && this.plugin.getDamageManager().isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
                 damage = this.plugin.getDamageManager().getDefaultItemDamage(attackingInsentient.getItemInHand().getType(), damage);
                 final WeaponDamageEvent weaponEvent = new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent((EntityDamageByEntityEvent) event, attacker, defender, damage), attackingInsentient.getItemInHand(), initialDamage, this.plugin.getProperties().isVaryingDamageEnabled());
+                Bukkit.getPluginManager().callEvent(weaponEvent);
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -452,6 +471,7 @@ public class DamageListener extends AbstractListener {
             } else {
                 // We need to handle for when the defending entity is just being touched by something unidentified
                 final InsentientDamageInsentientEvent insentientEvent = new InsentientDamageInsentientEvent(attackingInsentient, (Insentient) defendingIEntity, cloneEvent(event, defender, damage), initialDamage, this.plugin.getProperties().isVaryingDamageEnabled());
+                Bukkit.getPluginManager().callEvent(insentientEvent);
                 if (insentientEvent.isCancelled()) {
                     damage = 0D;
                     event.setCancelled(true);
@@ -535,7 +555,7 @@ public class DamageListener extends AbstractListener {
     }
 
     private void setEventDamage(EntityDamageEvent event, double damage, double absorbtion, double armor, double blocking, double magic, double resistance) {
-        event.setDamage(damage);
+        event.setDamage(DamageModifier.BASE, damage);
         event.setDamage(DamageModifier.ABSORPTION, absorbtion * damage);
         event.setDamage(DamageModifier.ARMOR, armor * damage);
         event.setDamage(DamageModifier.BLOCKING, blocking * damage);
@@ -602,14 +622,19 @@ public class DamageListener extends AbstractListener {
             }
         } else if (source instanceof LivingEntity) {
             LivingEntity shooter = (LivingEntity) source;
-            switch (shooter.getType()) {
-                case SKELETON:
-                case ZOMBIE:
-                case PIG_ZOMBIE:
-                    damage = this.plugin.getEntityManager().getMonster(shooter).getModifiedDamage();
-                    break;
-                default:
-                    break;
+            IEntity iEntity = this.plugin.getEntityManager().getEntity((LivingEntity) source);
+            if (iEntity instanceof Summon) {
+                // TODO handle summon damages
+            } else if (iEntity instanceof Monster) {
+                switch (shooter.getType()) {
+                    case SKELETON:
+                    case ZOMBIE:
+                    case PIG_ZOMBIE:
+                        damage = this.plugin.getEntityManager().getMonster(shooter).getModifiedDamage();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (damage > 0) {

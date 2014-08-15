@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.entity.effects;
+package com.afterkraft.kraftrpg.effects;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,21 +22,20 @@ import java.util.logging.Level;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.api.entity.effects.EffectManager;
-import com.afterkraft.kraftrpg.api.entity.effects.Expirable;
-import com.afterkraft.kraftrpg.api.entity.effects.Managed;
-import com.afterkraft.kraftrpg.api.entity.effects.Periodic;
-import com.afterkraft.kraftrpg.api.entity.effects.Timed;
+import com.afterkraft.kraftrpg.api.effects.EffectManager;
+import com.afterkraft.kraftrpg.api.effects.Expirable;
+import com.afterkraft.kraftrpg.api.effects.Managed;
+import com.afterkraft.kraftrpg.api.effects.Periodic;
+import com.afterkraft.kraftrpg.api.effects.Timed;
 
 public class RPGEffectManager implements EffectManager {
 
-    private final static int effectInterval = 2;
+    private final static int EFFECT_INTERVAL = 2;
     private final Set<Managed> managedEffects = new HashSet<Managed>();
     private final Set<Managed> pendingRemovals = new HashSet<Managed>();
     private final Set<Managed> pendingAdditions = new HashSet<Managed>();
     private final RPGPlugin plugin;
-    private DelayQueue<Managed> queue = new DelayQueue<Managed>();
-    private int taskID;
+    private int taskID = 0;
 
     public RPGEffectManager(RPGPlugin plugin) {
         this.plugin = plugin;
@@ -59,12 +58,16 @@ public class RPGEffectManager implements EffectManager {
 
     @Override
     public void initialize() {
-        this.taskID = this.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this.plugin, new EffectUpdater(), 0, effectInterval);
+        if (this.taskID != 0) {
+            throw new IllegalStateException("RPGEffectManager is already initalized!");
+        }
+        this.taskID = this.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this.plugin, new EffectUpdater(), 0, EFFECT_INTERVAL);
     }
 
     @Override
     public void shutdown() {
         this.plugin.getServer().getScheduler().cancelTask(this.taskID);
+        this.taskID = 0;
     }
 
     class EffectUpdater implements Runnable {

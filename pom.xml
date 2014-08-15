@@ -4,7 +4,7 @@
     <groupId>com.afterkraft.kraftrpg</groupId>
     <artifactId>KraftRPG-Parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>parent</version>
     <name>KraftRPG-Parent</name>
     <url>http://git.afterkraft.com/AfterKraft/KraftRPG</url>
 
@@ -88,38 +88,9 @@
             <groupId>com.afterkraft.kraftrpg</groupId>
             <artifactId>KraftRPG-API</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.milkbowl.vault</groupId>
-                    <artifactId>VaultAPI</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.afterkraft.storage</groupId>
-                    <artifactId>KraftStorage</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.afterkraft.storage</groupId>
-            <artifactId>KraftStorage</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <optional>false</optional>
+            <type>jar</type>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.milkbowl.vault</groupId>
-                    <artifactId>VaultAPI</artifactId>
-                </exclusion>
-            </exclusions>
+            <optional>false</optional>
         </dependency>
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
@@ -150,19 +121,19 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.4.9</version>
+            <version>1.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-easymock</artifactId>
-            <version>1.4.9</version>
+            <version>1.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
-            <version>1.4.9</version>
+            <version>1.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>

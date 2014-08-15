@@ -15,84 +15,27 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
-import java.util.List;
-
 import org.apache.commons.lang.Validate;
 
-import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.MetadataValue;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.entity.Monster;
-import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
+import com.afterkraft.kraftrpg.api.entity.SkillCaster;
+import com.afterkraft.kraftrpg.api.entity.Summon;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.listeners.EntityListener;
 
-
-public class RPGMonster extends RPGInsentient implements Monster {
-
-    private FixedPoint experience = new FixedPoint();
-    private double baseDamage = 0;
-    private double damage = 0;
-    private SpawnReason spawnReason = null;
+public class RPGSummon extends RPGInsentient implements Summon {
+    protected final SkillCaster owner;
     private int maxMana;
+    private FixedPoint experience;
     private DamageWrapper wrapper;
 
-    private Location spawnPoint;
-
-    public RPGMonster(RPGPlugin plugin, LivingEntity entity) {
-        this(plugin, entity, entity.getCustomName());
-    }
-
-    protected RPGMonster(RPGPlugin plugin, LivingEntity entity, String name) {
-        super(plugin, entity, name);
-        this.spawnReason = CraftBukkitHandler.getInterface().getSpawnReason(entity, getMetaSpawnReason(entity));
-        this.spawnPoint = CraftBukkitHandler.getInterface().getSpawnLocation(entity);
-        this.baseDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
-        this.damage = plugin.getDamageManager().getModifiedEntityDamage(this, this.spawnPoint, this.baseDamage, this.spawnReason);
-        this.damage = CraftBukkitHandler.getInterface().getEntityDamage(entity, this.damage);
-        this.experience = plugin.getProperties().getMonsterExperience(entity, this.spawnPoint);
-        this.experience = CraftBukkitHandler.getInterface().getMonsterExperience(entity, this.experience);
-    }
-
-    private static SpawnReason getMetaSpawnReason(LivingEntity entity) {
-        List<MetadataValue> values = entity.getMetadata(EntityListener.SPAWNREASON_META_KEY);
-        if (values.isEmpty()) return null;
-
-        return (SpawnReason) values.get(0).value();
-    }
-
-    @Override
-    public Location getSpawnLocation() {
-        return this.spawnPoint;
-    }
-
-    @Override
-    public double getBaseDamage() {
-        return this.baseDamage;
-    }
-
-    @Override
-    public double getModifiedDamage() {
-        return this.damage;
-    }
-
-    @Override
-    public void setModifiedDamage(double damage) {
-        Validate.isTrue(damage > 0, "Cannot set the attacking damage to zero or less than zero!");
-        this.damage = damage > 0 ? damage : 1;
-    }
-
-    @Override
-    public SpawnReason getSpawnReason() {
-        return this.spawnReason;
+    public RPGSummon(RPGPlugin plugin, SkillCaster owner, LivingEntity lEntity, String name) {
+        super(plugin, lEntity, name);
+        this.owner = owner;
     }
 
     @Override
@@ -119,6 +62,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
     @Override
     public void setDamageWrapper(DamageWrapper wrapper) {
         this.wrapper = wrapper;
+
     }
 
     @Override
@@ -133,7 +77,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public void modifyStamina(float staminaDiff) {
-        // Nope! stamina doesn't exist for the Monster
+        // #Nope! We don't need to modify stamina for a summon
     }
 
     @Override
@@ -167,11 +111,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public void setRewardExperience(FixedPoint experience) {
-        if (!isEntityValid()) {
-            return;
-        }
         this.experience = experience;
-        CraftBukkitHandler.getInterface().setMonsterExperience(getEntity(), experience);
     }
 
     @Override
@@ -181,21 +121,17 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public boolean isIgnoringSkill(ISkill skill) {
-        return true;
+        return true; // We don't need to trigger any skill messages this way
     }
 
     @Override
-    public void updateInventory() {
-        // Nope! no updating inventories
+    public long getTimeLeftAlive() {
+        return 0;
     }
 
     @Override
-    public ItemStack getItemInHand() {
-        return this.isEntityValid() ? this.getEntity().getEquipment().getItemInHand() : null;
+    public SkillCaster getSummoner() {
+        return this.owner;
     }
 
-    @Override
-    public Inventory getInventory() {
-        return this.isEntityValid() ? (this.getEntity() instanceof InventoryHolder) ? ((InventoryHolder) this.getEntity()).getInventory() : null : null;
-    }
 }

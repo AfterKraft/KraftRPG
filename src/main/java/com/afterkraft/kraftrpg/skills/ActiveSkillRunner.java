@@ -40,9 +40,7 @@ public final class ActiveSkillRunner {
         if (caster.isDead()) {
             return SkillCastResult.DEAD;
         }
-        if (caster != null) {
-            return skill.useSkill(caster);
-        }
+
         if (!caster.canUseSkill(skill)) {
             return SkillCastResult.NOT_AVAILABLE;
         }
@@ -92,7 +90,7 @@ public final class ActiveSkillRunner {
         }
 
         // Newly stalled skill
-        double delay = this.plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.DELAY, 0.0, false);
+        double delay = this.plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.DELAY);
 
         if (delay > 0) {
             if (caster.getStalledSkill() != null) {
@@ -109,16 +107,16 @@ public final class ActiveSkillRunner {
     private SkillCastResult castSkillPart2(SkillCaster caster, Active skill, String[] args) {
         SkillConfigManager confman = this.plugin.getSkillConfigManager();
         if (this.plugin.getCombatTracker().isInCombat(caster)) {
-            if (confman.getUseSetting(caster, skill, SkillSetting.NO_COMBAT_USE, false)) {
+            if (confman.getUsedBooleanSetting(caster, skill, SkillSetting.NO_COMBAT_USE)) {
                 return SkillCastResult.NO_COMBAT;
             }
         }
 
-        double healthCost = confman.getUseSetting(caster, skill, SkillSetting.HEALTH_COST, 0.0, false);
-        double manaCost = confman.getUseSetting(caster, skill, SkillSetting.MANA_COST, 0.0, false);
-        double hungerCost = confman.getUseSetting(caster, skill, SkillSetting.STAMINA_COST, 0.0, false);
-        ItemStack reagent = confman.getUseSettingItem(caster, skill, SkillSetting.REAGENT, null);
-        int reagentQuant = confman.getUseSetting(caster, skill, SkillSetting.REAGENT_QUANTITY, -1, false);
+        double healthCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.HEALTH_COST);
+        double manaCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.MANA_COST);
+        double hungerCost = confman.getUsedDoubleSetting(caster, skill, SkillSetting.STAMINA_COST);
+        ItemStack reagent = confman.getUsedItemStackSetting(caster, skill, SkillSetting.REAGENT);
+        int reagentQuant = confman.getUsedIntSetting(caster, skill, SkillSetting.REAGENT_QUANTITY);
         if (reagentQuant != -1 && reagent != null) {
             reagent.setAmount(reagentQuant);
         }
@@ -200,18 +198,18 @@ public final class ActiveSkillRunner {
             caster.modifyStamina((float) -hungerCost);
             caster.getInventory().removeItem(reagent);
 
-            double exp = this.plugin.getSkillConfigManager().getUseSetting(caster, skill, SkillSetting.EXP_ON_CAST, 0.0, false);
+            double exp = this.plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST);
             if (exp > 0) {
 
                 //                 if (caster.canGainExperience(ExperienceType.SKILL)) {
-                //                     caster.gainExperience(FixedPoint.valueOf(plugin.getSkillConfigManager().getUseSetting(caster, this, SkillSetting.EXP, 0,false)), ExperienceType.SKILL, caster.getLocation());
+                //                     caster.gainExperience(FixedPoint.valueOf(plugin.getSkillConfigManager().getUsedIntSetting(caster, this, SkillSetting.EXP, 0,false)), ExperienceType.SKILL, caster.getLocation());
                 //                 }
                 // TODO caster.get
             }
 
             long now = System.currentTimeMillis();
             long globalCD = this.plugin.getProperties().getDefaultGlobalCooldown();
-            long cooldown = confman.getUseSetting(caster, skill, SkillSetting.COOLDOWN, 0, false);
+            long cooldown = confman.getUsedIntSetting(caster, skill, SkillSetting.COOLDOWN);
             caster.setGlobalCooldown(now + globalCD);
             caster.setCooldown(skill.getName(), now + cooldown);
         }

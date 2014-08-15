@@ -120,7 +120,8 @@ public class RPGSkillCommand implements TabExecutor {
         String[] cutArgs = Arrays.copyOfRange(args, 1, args.length);
         // TODO do i really want to make a new instance? not really.
         // but it'll do for now
-        SkillCastResult result = new ActiveSkillRunner(this.plugin).castSkillInitial(champ, (Active) sk, cutArgs);
+        SkillCastResult result;
+        result = new ActiveSkillRunner(this.plugin).castSkillInitial(champ, (Active) sk, cutArgs);
 
         switch (result) {
             case CUSTOM_NO_MESSAGE_FAILURE:
@@ -139,16 +140,16 @@ public class RPGSkillCommand implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Invalid target.");
                 break;
             case LOW_HEALTH:
-                sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.HEALTH_COST, -1, false) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough health! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUsedIntSetting(champ, sk, SkillSetting.HEALTH_COST) + ChatColor.RED + " HP (you have " + champ.getHealth() + ").");
                 break;
             case LOW_MANA:
-                sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.MANA_COST, -1, false) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough mana! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUsedIntSetting(champ, sk, SkillSetting.MANA_COST) + ChatColor.RED + " mana (you have " + champ.getMana() + ").");
                 break;
             case LOW_STAMINA:
-                sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUseSetting(champ, sk, SkillSetting.STAMINA_COST, -1, false) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
+                sender.sendMessage(ChatColor.RED + "Not enough hunger! You need at least " + ChatColor.YELLOW + this.plugin.getSkillConfigManager().getUsedIntSetting(champ, sk, SkillSetting.STAMINA_COST) + ChatColor.RED + " quarter-food bars (you have " + champ.getStamina() + ").");
                 break;
             case MISSING_REAGENT:
-                ItemStack item = this.plugin.getSkillConfigManager().getUseSettingItem(champ, sk, SkillSetting.REAGENT, null);
+                ItemStack item = this.plugin.getSkillConfigManager().getUsedItemStackSetting(champ, sk, SkillSetting.REAGENT);
                 int invAmount = 0;
                 for (Integer i : champ.getInventory().all(item.getType()).keySet()) {
                     invAmount += i;
@@ -187,7 +188,7 @@ public class RPGSkillCommand implements TabExecutor {
             case SYNTAX_ERROR:
                 sender.sendMessage(ChatColor.RED + "You have a syntax error in your command. Try " + ChatColor.LIGHT_PURPLE + "/skill ? " + skillName + ChatColor.RED + " .");
                 break;
-            case UNTARGETTABLE_TARGET:
+            case UNTARGETABLE_TARGET:
                 sender.sendMessage(ChatColor.RED + "You may not target that.");
                 break;
             default:

@@ -38,7 +38,7 @@ import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.PartyMember;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
-import com.afterkraft.kraftrpg.api.entity.effects.IEffect;
+import com.afterkraft.kraftrpg.api.effects.IEffect;
 import com.afterkraft.kraftrpg.api.events.entity.InsentientKillEvent;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 import com.afterkraft.kraftrpg.api.listeners.AttackDamageWrapper;
@@ -131,7 +131,7 @@ public class EntityListener extends AbstractListener {
         // We can use the sentient's dying experience
         if (dyingEntity instanceof Sentient) {
             // Don't award XP for Players killing themselves
-            addedExp.add(this.properties.getPlayerKillingExperience());
+            addedExp = addedExp.add(this.properties.getPlayerKillingExperience());
             experienceType = ExperienceType.PVP;
 
         } else if (dyingEntity instanceof Monster) { // Otherwise, we have to use the Monster experience
@@ -147,7 +147,7 @@ public class EntityListener extends AbstractListener {
 
             // Check if the kill was near a spawner
             if (this.properties.allowSpawnCamping() && (monster.getSpawnReason() == SpawnReason.SPAWNER)) {
-                addedExp.mult(this.properties.getSpawnCampingMultiplier());
+                addedExp = addedExp.mult(this.properties.getSpawnCampingMultiplier());
             }
         }
 

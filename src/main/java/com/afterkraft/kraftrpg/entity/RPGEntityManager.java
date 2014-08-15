@@ -28,6 +28,7 @@ import org.apache.commons.lang.Validate;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -37,6 +38,8 @@ import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
+import com.afterkraft.kraftrpg.api.entity.SkillCaster;
+import com.afterkraft.kraftrpg.api.entity.Summon;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
@@ -46,6 +49,7 @@ public class RPGEntityManager implements EntityManager {
     private final Map<UUID, Champion> champions;
     private final Map<UUID, Monster> monsters;
     private final Map<UUID, IEntity> entities;
+    private final Map<UUID, Summon> summons;
     private int entityTaskID;
     private int potionTaskID;
 
@@ -56,6 +60,7 @@ public class RPGEntityManager implements EntityManager {
         this.champions = new HashMap<UUID, Champion>();
         this.monsters = new ConcurrentHashMap<UUID, Monster>();
         this.entities = new ConcurrentHashMap<UUID, IEntity>();
+        this.summons = new ConcurrentHashMap<UUID, Summon>();
         this.storage = this.plugin.getStorage();
     }
 
@@ -74,6 +79,11 @@ public class RPGEntityManager implements EntityManager {
                 sentients.add((Sentient) monster);
             }
         }
+        for (Summon summon : this.summons.values()) {
+            if (summon instanceof Sentient) {
+                sentients.add((Sentient) summon);
+            }
+        }
         return sentients;
     }
 
@@ -82,7 +92,10 @@ public class RPGEntityManager implements EntityManager {
         Validate.notNull(entity, "Cannot get an IEntity of a null Entity!");
         if (entity instanceof Player) {
             return this.getChampion((Player) entity);
-        } else if (entity instanceof LivingEntity && this.monsters.containsKey(entity.getUniqueId())) {
+        } else if (entity instanceof LivingEntity) {
+            if (this.summons.containsKey(entity.getUniqueId())) {
+                return this.summons.get(entity.getUniqueId());
+            }
             return getMonster((LivingEntity) entity);
         } else {
             return this.getIEntity(entity);
@@ -118,9 +131,6 @@ public class RPGEntityManager implements EntityManager {
         } else {
             final Monster monster = new RPGMonster(this.plugin, entity);
             this.monsters.put(id, monster);
-
-            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(monster), 200, 200);
-
             return monster;
         }
     }
@@ -158,20 +168,35 @@ public class RPGEntityManager implements EntityManager {
                 throw new IllegalArgumentException("The provided custom entity is already registered with KraftRPG!");
             }
             this.monsters.put(entity.getUniqueID(), (Monster) entity);
-            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(entity), 200, 200);
+            return true;
+        } else if (entity instanceof Summon) {
+            if (this.summons.containsKey(entity.getUniqueID())) {
+                throw new IllegalArgumentException("The provided custom entity is alraedy registered with KraftRPG!");
+            }
+            this.summons.put(entity.getUniqueID(), (Summon) entity);
             return true;
         } else if (!this.entities.containsKey(entity.getUniqueID())) {
             this.entities.put(entity.getUniqueID(), entity);
-            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(entity), 200, 200);
             return true;
         }
         return false;
     }
 
     @Override
-    public Monster getMonster(UUID uuid) {
-        Validate.notNull(uuid, "Cannot get a Monster from a null UUID!");
-        return this.monsters.get(uuid);
+    public Summon createSummon(SkillCaster owner, EntityType type) {
+        Validate.notNull(type, "Cannot create a null summon!");
+        Validate.notNull(owner, "Cannot create a summon for a null owner!");
+        Validate.isTrue(owner.isValid(), "Cannot create a summon for an invalid owner!");
+        Validate.isTrue(type.isAlive(), "Cannot create a summon that isn't living!");
+        LivingEntity entity = (LivingEntity) owner.getWorld().spawnEntity(owner.getLocation(), type);
+        Summon summon = new RPGSummon(this.plugin, owner, entity, entity.getCustomName());
+        this.summons.put(summon.getUniqueID(), summon);
+        return summon;
+    }
+
+    @Override
+    public Set<Summon> getSummons(SkillCaster owner) {
+        return null;
     }
 
     @Override
@@ -188,21 +213,8 @@ public class RPGEntityManager implements EntityManager {
         } else {
             final IEntity iEntity = new RPGEntity(this.plugin, entity, entity.toString());
             this.entities.put(id, iEntity);
-            Bukkit.getScheduler().runTaskTimer(this.plugin, new RPGSingleEntityReaper(iEntity), 200, 200);
             return iEntity;
         }
-    }
-
-    private void removeEntity(IEntity entity) {
-        if (entity instanceof Monster) {
-            removeMonster((Monster) entity);
-        } else {
-            this.entities.remove(entity.getUniqueID());
-        }
-    }
-
-    public void removeMonster(Monster monster) {
-        this.monsters.remove(monster.getUniqueID());
     }
 
     @Override
@@ -226,16 +238,41 @@ public class RPGEntityManager implements EntityManager {
     private void clearPotionEffects() {
         Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
         Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
+        Map<UUID, Summon> summonMap = RPGEntityManager.this.summons;
+        Map<UUID, IEntity> entityMap = RPGEntityManager.this.entities;
 
         Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
         Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Summon>> summonIterator = summonMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, IEntity>> entityIterator = entityMap.entrySet().iterator();
+
         while (playerIterator.hasNext()) {
-            RPGChampion tempPlayer = (RPGChampion) playerIterator.next().getValue();
-            tempPlayer.potionEffectQueue.clear();
+            Champion champion = playerIterator.next().getValue();
+            if (champion instanceof RPGChampion) {
+                RPGChampion tempPlayer = (RPGChampion) playerIterator.next().getValue();
+                tempPlayer.potionEffectQueue.clear();
+            }
         }
         while (monsterIterator.hasNext()) {
-            RPGInsentient tempEntity = (RPGInsentient) monsterIterator.next().getValue();
-            tempEntity.potionEffectQueue.clear();
+            Monster monster = monsterIterator.next().getValue();
+            if (monster instanceof RPGInsentient) {
+                RPGInsentient tempEntity = (RPGInsentient) monster;
+                tempEntity.potionEffectQueue.clear();
+            }
+        }
+        while (summonIterator.hasNext()) {
+            Summon summon = summonIterator.next().getValue();
+            if (summon instanceof RPGInsentient) {
+                RPGInsentient tempEntity = (RPGInsentient) summon;
+                tempEntity.potionEffectQueue.clear();
+            }
+        }
+        while (entityIterator.hasNext()) {
+            IEntity entity = entityIterator.next().getValue();
+            if (entity instanceof RPGInsentient) {
+                RPGInsentient tempEntity = (RPGInsentient) entity;
+                tempEntity.potionEffectQueue.clear();
+            }
         }
     }
 
@@ -249,9 +286,14 @@ public class RPGEntityManager implements EntityManager {
         public void run() {
             Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
             Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
+            Map<UUID, IEntity> entityMap = RPGEntityManager.this.entities;
+            Map<UUID, Summon> summonMap = RPGEntityManager.this.summons;
 
             Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
             Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();
+            Iterator<Map.Entry<UUID, IEntity>> entityIterator = entityMap.entrySet().iterator();
+            Iterator<Map.Entry<UUID, Summon>> summonIterator = summonMap.entrySet().iterator();
+
 
             while (playerIterator.hasNext()) {
                 Champion tempPlayer = playerIterator.next().getValue();
@@ -267,6 +309,20 @@ public class RPGEntityManager implements EntityManager {
                 }
             }
 
+            while (entityIterator.hasNext()) {
+                IEntity tempEntity = entityIterator.next().getValue();
+                if (!tempEntity.isEntityValid()) {
+                    entityIterator.remove();
+                }
+            }
+
+            while (summonIterator.hasNext()) {
+                IEntity tempEntity = summonIterator.next().getValue();
+                if (!tempEntity.isEntityValid()) {
+                    summonIterator.remove();
+                }
+            }
+
         }
     }
 
@@ -275,9 +331,14 @@ public class RPGEntityManager implements EntityManager {
         public void run() {
             Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
             Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
+            Map<UUID, IEntity> entityMap = RPGEntityManager.this.entities;
+            Map<UUID, Summon> summonMap = RPGEntityManager.this.summons;
 
             Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
             Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();
+            Iterator<Map.Entry<UUID, IEntity>> entityIterator = entityMap.entrySet().iterator();
+            Iterator<Map.Entry<UUID, Summon>> summonIterator = summonMap.entrySet().iterator();
+
             while (playerIterator.hasNext()) {
                 RPGChampion tempPlayer = (RPGChampion) playerIterator.next().getValue();
                 if (tempPlayer.potionEffectQueue.poll() != null && tempPlayer.isEntityValid()) {
@@ -302,23 +363,36 @@ public class RPGEntityManager implements EntityManager {
                     }
                 }
             }
-        }
-    }
-
-    private class RPGSingleEntityReaper implements Runnable {
-
-        private IEntity monster;
-
-        public RPGSingleEntityReaper(IEntity m) {
-            this.monster = m;
-        }
-
-        @Override
-        public void run() {
-            if (!this.monster.isEntityValid()) {
-                removeEntity(this.monster);
+            while (entityIterator.hasNext()) {
+                IEntity tempEntity = entityIterator.next().getValue();
+                if (tempEntity instanceof RPGInsentient) {
+                    RPGInsentient rpgEntity = (RPGInsentient) tempEntity;
+                    if (rpgEntity.potionEffectQueue.poll() != null && rpgEntity.isEntityValid()) {
+                        LivingEntity entity = rpgEntity.getEntity();
+                        RPGPotionEffect effect = rpgEntity.potionEffectQueue.remove();
+                        if (effect.adding) {
+                            entity.addPotionEffect(effect.potion);
+                        } else {
+                            entity.removePotionEffect(effect.potion.getType());
+                        }
+                    }
+                }
+            }
+            while (summonIterator.hasNext()) {
+                Summon summon = summonIterator.next().getValue();
+                if (summon instanceof RPGInsentient) {
+                    RPGInsentient rpgInsentient = (RPGInsentient) summon;
+                    if (rpgInsentient.potionEffectQueue.poll() != null && rpgInsentient.isEntityValid()) {
+                        LivingEntity entity = rpgInsentient.getEntity();
+                        RPGPotionEffect effect = rpgInsentient.potionEffectQueue.remove();
+                        if (effect.adding) {
+                            entity.addPotionEffect(effect.potion);
+                        } else {
+                            entity.removePotionEffect(effect.potion.getType());
+                        }
+                    }
+                }
             }
         }
-
     }
 }

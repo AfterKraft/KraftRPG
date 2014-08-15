@@ -1,21 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.afterkraft.kraftrpg</groupId>
+
+    <name>KraftRPG-v1_7_R3</name>
     <artifactId>KraftRPG-v1_7_R3</artifactId>
     <packaging>jar</packaging>
-    <name>KraftRPG-v1_7_R3</name>
-    <url>http://git.afterkraft.com/AfterKraft/KraftRPG</url>
     <version>v1_7_R3</version>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <parent>
         <groupId>com.afterkraft.kraftrpg</groupId>
         <artifactId>KraftRPG-Parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>parent</version>
         <relativePath>../../</relativePath>
     </parent>
 
@@ -32,14 +27,6 @@
             <groupId>com.afterkraft</groupId>
             <artifactId>tweakkit</artifactId>
             <version>1.7.9-R0.3-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.afterkraft.kraftrpg</groupId>
-            <artifactId>KraftRPG-API</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
             <optional>true</optional>
