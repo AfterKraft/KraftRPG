@@ -121,7 +121,7 @@ public class RPGSkillCommand implements TabExecutor {
         // TODO do i really want to make a new instance? not really.
         // but it'll do for now
         SkillCastResult result;
-        result = new ActiveSkillRunner(this.plugin).castSkillInitial(champ, (Active) sk, cutArgs);
+        result = ActiveSkillRunner.castSkillInitial(champ, (Active) sk, cutArgs);
 
         switch (result) {
             case CUSTOM_NO_MESSAGE_FAILURE:

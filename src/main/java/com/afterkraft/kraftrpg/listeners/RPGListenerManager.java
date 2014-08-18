@@ -54,6 +54,7 @@ public class RPGListenerManager implements ListenerManager {
         addListener(new EntityListener(this.plugin));
         addListener(new InventoryListener(this.plugin));
         addListener(new PlayerListener(this.plugin));
+        addListener(new EffectsListener(this.plugin));
     }
 
     @Override

@@ -18,6 +18,7 @@ package com.afterkraft.kraftrpg.skills;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.events.skills.SkillCastEvent;
@@ -30,13 +31,11 @@ import com.afterkraft.kraftrpg.api.skills.StalledSkill;
 
 
 public final class ActiveSkillRunner {
-    private RPGPlugin plugin;
 
-    public ActiveSkillRunner(RPGPlugin plugin) {
-        this.plugin = plugin;
+    private ActiveSkillRunner() {
     }
 
-    public SkillCastResult castSkillInitial(SkillCaster caster, Active skill, String[] args) {
+    public static SkillCastResult castSkillInitial(SkillCaster caster, Active skill, String[] args) {
         if (caster.isDead()) {
             return SkillCastResult.DEAD;
         }
@@ -89,24 +88,27 @@ public final class ActiveSkillRunner {
             return SkillCastResult.ON_COOLDOWN;
         }
 
-        // Newly stalled skill
-        double delay = this.plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.DELAY);
+        RPGPlugin plugin = KraftRPGPlugin.getInstance();
+        if (plugin.getSkillConfigManager().isSettingConfigured(skill, SkillSetting.DELAY)) {
+            // Newly stalled skill
+            double delay = plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.DELAY);
 
-        if (delay > 0) {
-            if (caster.getStalledSkill() != null) {
-                return SkillCastResult.STALLING_FAILURE;
+            if (delay > 0) {
+                if (caster.getStalledSkill() != null) {
+                    return SkillCastResult.STALLING_FAILURE;
+                }
+                StalledSkill stalled = new StalledSkill(skill, args, caster, (long) delay);
+                caster.setStalledSkill(stalled);
+                return SkillCastResult.START_DELAY;
             }
-            StalledSkill stalled = new StalledSkill(skill, args, caster, (long) delay);
-            caster.setStalledSkill(stalled);
-            return SkillCastResult.START_DELAY;
         }
-
         return castSkillPart2(caster, skill, args);
     }
 
-    private SkillCastResult castSkillPart2(SkillCaster caster, Active skill, String[] args) {
-        SkillConfigManager confman = this.plugin.getSkillConfigManager();
-        if (this.plugin.getCombatTracker().isInCombat(caster)) {
+    private static SkillCastResult castSkillPart2(SkillCaster caster, Active skill, String[] args) {
+        RPGPlugin plugin = KraftRPGPlugin.getInstance();
+        SkillConfigManager confman = plugin.getSkillConfigManager();
+        if (plugin.getCombatTracker().isInCombat(caster)) {
             if (confman.getUsedBooleanSetting(caster, skill, SkillSetting.NO_COMBAT_USE)) {
                 return SkillCastResult.NO_COMBAT;
             }
@@ -138,7 +140,7 @@ public final class ActiveSkillRunner {
         }
 
         SkillCastEvent skillEvent = new SkillCastEvent(caster, skill, manaCost, healthCost, hungerCost, reagent);
-        this.plugin.getServer().getPluginManager().callEvent(skillEvent);
+        plugin.getServer().getPluginManager().callEvent(skillEvent);
         if (skillEvent.isCancelled()) {
             return SkillCastResult.EVENT_CANCELLED;
         }
@@ -161,7 +163,7 @@ public final class ActiveSkillRunner {
                 return SkillCastResult.LOW_STAMINA;
             }
         }
-        if (!caster.getInventory().containsAtLeast(reagent, reagent.getAmount())) {
+        if (reagent != null && !caster.getInventory().containsAtLeast(reagent, reagent.getAmount())) {
             return SkillCastResult.MISSING_REAGENT;
         }
 
@@ -172,14 +174,16 @@ public final class ActiveSkillRunner {
                     return SkillCastResult.SYNTAX_ERROR;
                 }
             } catch (Throwable t) {
-                this.plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[] { caster, args });
+                plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[]{caster, args});
+                t.printStackTrace();
                 return SkillCastResult.FAIL;
             }
 
             try {
                 result = skill.checkCustomRestrictions(caster, false);
             } catch (Throwable t) {
-                this.plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[] { caster, args });
+                plugin.logSkillThrowing(skill, "checking restrictions", t, new Object[]{caster, args});
+                t.printStackTrace();
                 return SkillCastResult.FAIL;
             }
 
@@ -194,13 +198,13 @@ public final class ActiveSkillRunner {
             try {
                 result = skill.useSkill(caster);
             } catch (Throwable t) {
-                this.plugin.logSkillThrowing(skill, "using skill", t, new Object[] { caster, args });
+                plugin.logSkillThrowing(skill, "using skill", t, new Object[]{caster, args});
             }
         } finally {
             try {
                 skill.cleanState(caster);
             } catch (Throwable t) {
-                this.plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[] { caster, args });
+                plugin.logSkillThrowing(skill, "cleaning skill state", t, new Object[]{caster, args});
             }
         }
 
@@ -214,7 +218,7 @@ public final class ActiveSkillRunner {
             caster.modifyStamina((float) -hungerCost);
             caster.getInventory().removeItem(reagent);
 
-            double exp = this.plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST);
+            double exp = plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST);
             if (exp > 0) {
 
                 //                 if (caster.canGainExperience(ExperienceType.SKILL)) {
@@ -224,7 +228,7 @@ public final class ActiveSkillRunner {
             }
 
             long now = System.currentTimeMillis();
-            long globalCD = this.plugin.getProperties().getDefaultGlobalCooldown();
+            long globalCD = plugin.getProperties().getDefaultGlobalCooldown();
             long cooldown = confman.getUsedIntSetting(caster, skill, SkillSetting.COOLDOWN);
             caster.setGlobalCooldown(now + globalCD);
             caster.setCooldown(skill.getName(), now + cooldown);
