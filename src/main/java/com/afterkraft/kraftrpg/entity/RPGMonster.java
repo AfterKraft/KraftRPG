@@ -127,12 +127,22 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
-    public float getStamina() {
+    public int getStamina() {
         return 20 * 4;
     }
 
     @Override
-    public void modifyStamina(float staminaDiff) {
+    public int getMaxStamina() {
+        return 0;
+    }
+
+    @Override
+    public void setStamina(int stamina) {
+
+    }
+
+    @Override
+    public void modifyStamina(int staminaDiff) {
         // Nope! stamina doesn't exist for the Monster
     }
 

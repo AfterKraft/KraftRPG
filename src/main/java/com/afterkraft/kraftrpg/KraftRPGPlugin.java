@@ -63,6 +63,7 @@ import com.afterkraft.kraftrpg.util.RPGPluginProperties;
 
 public final class KraftRPGPlugin extends JavaPlugin implements RPGPlugin {
 
+    public static final String ADMIN_INVENTORY_BYPASS_PERMISSION = "kraftrpg.admin.bypass.inventory";
     private static KraftRPGPlugin instance;
     private static boolean cancel = false;
 

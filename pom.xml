@@ -9,7 +9,7 @@
     <url>http://git.afterkraft.com/AfterKraft/KraftRPG</url>
 
     <modules>
-        <module>modules/v1_7_R3</module>
+        <module>modules/v1_7_R4</module>
         <module>modules/KraftRPG</module>
     </modules>
 
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.7.9-R0.3-SNAPSHOT</version>
+            <version>1.7.10-R0.1-SNAPSHOT</version>
         </dependency>
         <!-- API Dependency -->
         <dependency>
@@ -109,7 +109,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.7.9-R0.3-SNAPSHOT</version>
+            <version>1.7.10-R0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

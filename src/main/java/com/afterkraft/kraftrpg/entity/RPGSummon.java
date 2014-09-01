@@ -71,12 +71,22 @@ public class RPGSummon extends RPGInsentient implements Summon {
     }
 
     @Override
-    public float getStamina() {
+    public int getStamina() {
         return 20 * 4;
     }
 
     @Override
-    public void modifyStamina(float staminaDiff) {
+    public int getMaxStamina() {
+        return 0;
+    }
+
+    @Override
+    public void setStamina(int stamina) {
+
+    }
+
+    @Override
+    public void modifyStamina(int staminaDiff) {
         // #Nope! We don't need to modify stamina for a summon
     }
 
@@ -132,6 +142,11 @@ public class RPGSummon extends RPGInsentient implements Summon {
     @Override
     public SkillCaster getSummoner() {
         return this.owner;
+    }
+
+    @Override
+    public void remove() {
+        this.getEntity().remove();
     }
 
 }

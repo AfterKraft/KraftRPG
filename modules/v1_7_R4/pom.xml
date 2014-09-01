@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>KraftRPG-v1_7_R3</name>
-    <artifactId>KraftRPG-v1_7_R3</artifactId>
+    <name>KraftRPG-v1_7_R4</name>
+    <artifactId>KraftRPG-v1_7_R4</artifactId>
     <packaging>jar</packaging>
-    <version>v1_7_R3</version>
+    <version>v1_7_R4</version>
 
     <parent>
         <groupId>com.afterkraft.kraftrpg</groupId>
@@ -18,18 +18,30 @@
         <dependency>
             <groupId>com.afterkraft</groupId>
             <artifactId>tweakkit-api</artifactId>
-            <version>1.7.9-R0.3-SNAPSHOT</version>
+            <version>1.7.10-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>sneaky-throw</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.afterkraft</groupId>
             <artifactId>tweakkit</artifactId>
-            <version>1.7.9-R0.3-SNAPSHOT</version>
+            <version>1.7.10-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>sneaky-throw</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -50,7 +62,7 @@
                 <version>3.0</version>
                 <configuration>
                     <includes>
-                        <include>com/afterkraft/kraftrpg/compat/v1_7_R3/**</include>
+                        <include>com/afterkraft/kraftrpg/compat/v1_7_R4/**</include>
                     </includes>
                 </configuration>
             </plugin>
@@ -60,7 +72,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>com/afterkraft/kraftrpg/compat/v1_7_R3/**</include>
+                        <include>com/afterkraft/kraftrpg/compat/v1_7_R4/**</include>
                     </includes>
                 </configuration>
             </plugin>

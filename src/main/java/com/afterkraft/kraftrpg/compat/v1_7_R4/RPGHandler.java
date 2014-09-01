@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afterkraft.kraftrpg.compat.v1_7_R3;
+package com.afterkraft.kraftrpg.compat.v1_7_R4;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -26,27 +27,20 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang.Validate;
 
-import net.minecraft.server.v1_7_R3.AttributeInstance;
-import net.minecraft.server.v1_7_R3.AttributeRanged;
-import net.minecraft.server.v1_7_R3.DamageSource;
-import net.minecraft.server.v1_7_R3.EntityGolem;
-import net.minecraft.server.v1_7_R3.EntityLiving;
-import net.minecraft.server.v1_7_R3.EntityMonster;
-import net.minecraft.server.v1_7_R3.EntityPlayer;
-import net.minecraft.server.v1_7_R3.IAttribute;
-import net.minecraft.server.v1_7_R3.MobEffect;
-import net.minecraft.server.v1_7_R3.PacketPlayOutEntityEffect;
-import net.minecraft.server.v1_7_R3.PacketPlayOutRemoveEntityEffect;
-import net.minecraft.server.v1_7_R3.PacketPlayOutWorldParticles;
-import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R3.conversations.ConversationTracker;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftArrow;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R3.event.CraftEventFactory;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
+import net.minecraft.server.v1_7_R4.*;
+
+import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R4.conversations.ConversationTracker;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftArrow;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R4.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemFactory;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -75,9 +69,14 @@ import org.bukkit.util.Vector;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
+import com.afterkraft.kraftrpg.api.entity.SkillCaster;
+import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageEvent;
+import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageInsentientEvent;
+import com.afterkraft.kraftrpg.api.events.entity.damage.SkillDamageEvent;
 import com.afterkraft.kraftrpg.api.handler.CraftBukkitHandler;
 import com.afterkraft.kraftrpg.api.handler.EntityAttributeType;
 import com.afterkraft.kraftrpg.api.handler.ItemAttributeType;
+import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 
 
@@ -279,7 +278,7 @@ public class RPGHandler extends CraftBukkitHandler {
         AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         if (instance == null) {
-            instance = entityLiving.bb().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance = entityLiving.getAttributeMap().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
             instance.setValue(newValue);
             return UNSET_VALUE;
         } else {
@@ -295,7 +294,7 @@ public class RPGHandler extends CraftBukkitHandler {
         AttributeInstance instance = entityLiving.getAttributeInstance(this.iattrMap.get(type));
 
         if (instance == null) {
-            instance = entityLiving.bb().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
+            instance = entityLiving.getAttributeMap().b(this.iattrMap.get(type)); // should be getAttributeMap().setup()
             instance.setValue(valueIfEmpty);
             return valueIfEmpty;
         } else if (instance.getValue() == UNSET_VALUE) {
@@ -308,7 +307,7 @@ public class RPGHandler extends CraftBukkitHandler {
 
     @Override
     public final double getPostArmorDamage(LivingEntity defender, double damage) {
-        int i = 25 - ((CraftLivingEntity) defender).getHandle().aU();
+        int i = 25 - ((CraftLivingEntity) defender).getHandle().aV();
         float f1 = (float) damage * (float) i;
         return f1 / 25;
     }
@@ -316,7 +315,7 @@ public class RPGHandler extends CraftBukkitHandler {
     @Override
     public final double getPostArmorDamage(Insentient being, EntityDamageEvent event, double damage) {
         if (being.getEntity() instanceof CraftLivingEntity) {
-            int i = 25 - ((CraftLivingEntity) being.getEntity()).getHandle().aU();
+            int i = 25 - ((CraftLivingEntity) being.getEntity()).getHandle().aV();
             float f1 = (float) damage * (float) i;
             return f1 / 25;
         }
@@ -345,44 +344,60 @@ public class RPGHandler extends CraftBukkitHandler {
     }
 
     @Override
-    public boolean damageEntity(LivingEntity target, LivingEntity attacker, double damage, DamageCause cause, boolean knockback) {
-        if (target == null || attacker == null) { // We have to consider that Insentient.getEntity() may return null
-            return false;
-        }
-        if (target.isDead() || (target.getHealth() <= 0)) {
-            return false;
-        }
-        //Do it ourselves cause bukkit is stubborn
+    public boolean damageEntity(LivingEntity target, Insentient attacker, ISkill skill, double damage, DamageCause cause, boolean knockback) {
+        Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(target);
+        return damageEntity(being, attacker, skill, damage, cause, knockback);
+    }
+
+    @Override
+    public boolean damageEntity(final Insentient target, final Insentient attacker, final ISkill skill, double damage, final DamageCause cause, final boolean knockback) {
+        Map<InsentientDamageEvent.DamageType, Double> modifiers = new EnumMap<InsentientDamageEvent.DamageType, Double>(ImmutableMap.of(InsentientDamageEvent.DamageType.PHYSICAL, damage));
+        return damageEntity(target, attacker, skill, modifiers, cause, knockback);
+    }
+
+    @Override
+    public boolean damageEntity(final Insentient target, final Insentient attacker, final ISkill skill, final Map<InsentientDamageEvent.DamageType, Double> modifiers, final DamageCause cause, final boolean knockback) {
+        Validate.notNull(target, "Cannot attack a null target!");
+        Validate.notNull(attacker, "Cannot attack with a null attacker!");
+        Validate.notNull(modifiers, "Cannot attack with null modifiers!");
+        Validate.noNullElements(modifiers.values(), "Cannot have null values in the modifiers");
+        Validate.notNull(cause, "Cannot apply a null DamageCause!");
+        LivingEntity targetLivingEntity = target.getEntity();
+        LivingEntity casterLivingEntity = attacker.getEntity();
         int originalNoDamageTicks = target.getNoDamageTicks();
-        target.setNoDamageTicks(0);
+        targetLivingEntity.setNoDamageTicks(0);
 
-
-        final EntityDamageByEntityEvent edbe = new EntityDamageByEntityEvent(attacker, target, cause, damage);
-        Bukkit.getServer().getPluginManager().callEvent(edbe);
-        if (edbe.isCancelled()) {
+        EntityDamageByEntityEvent event = createEntityDamageEvent(targetLivingEntity, casterLivingEntity, modifiers, cause);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
             return false;
         }
-
-        target.setLastDamageCause(edbe);
+        InsentientDamageInsentientEvent skillEvent = new InsentientDamageInsentientEvent(attacker, target, event, modifiers, false);
+        Bukkit.getPluginManager().callEvent(skillEvent);
+        if (event.isCancelled()) {
+            return false;
+        }
+        final double finalSkillDamage = skillEvent.getFinalDamage();
+        targetLivingEntity.setLastDamageCause(event);
         final double oldHealth = target.getHealth();
-        double newHealth = oldHealth - edbe.getDamage();
+        double newHealth = oldHealth - finalSkillDamage;
         if (newHealth < 0) {
             newHealth = 0;
         }
         final EntityLiving el = ((CraftLivingEntity) target).getHandle();
-        el.lastDamage = (float) edbe.getDamage();
+        el.lastDamage = (float) finalSkillDamage;
         el.aw = (float) oldHealth;
         el.hurtTicks = el.ay = 10;
         el.az = 0.0F;
         if (knockback) {
-            knockBack(target, attacker, edbe.getDamage());
+            knockBack(targetLivingEntity, casterLivingEntity, finalSkillDamage);
         }
         el.world.broadcastEntityEffect(el, (byte) 2);
 
-        el.lastDamager = ((CraftLivingEntity) attacker).getHandle();
+        el.lastDamager = ((CraftLivingEntity) casterLivingEntity).getHandle();
 
         // Set last damage by player time via reflection.
-        if (attacker instanceof Player) {
+        if (casterLivingEntity instanceof Player) {
             try {
                 this.ldbpt.set(el, 60);
             } catch (final IllegalArgumentException e) {
@@ -394,42 +409,143 @@ public class RPGHandler extends CraftBukkitHandler {
         el.setHealth((float) newHealth);
         //If the target would die, kill it!
         if (newHealth <= 0) {
-            el.world.makeSound(el, getSoundName(target.getType()), 1.0f, getSoundStrength(target));
+            el.world.makeSound(el, getSoundName(targetLivingEntity.getType()), 1.0f, getSoundStrength(targetLivingEntity));
 
-            if (attacker instanceof Player) {
-                final EntityPlayer p = ((CraftPlayer) attacker).getHandle();
+            if (casterLivingEntity instanceof Player) {
+                final EntityPlayer p = ((CraftPlayer) casterLivingEntity).getHandle();
                 el.killer = p;
                 el.die(DamageSource.playerAttack(p));
             } else {
-                final EntityLiving att = ((CraftLivingEntity) attacker).getHandle();
+                final EntityLiving att = ((CraftLivingEntity) casterLivingEntity).getHandle();
                 el.die(DamageSource.mobAttack(att));
             }
         } else {
-            target.setNoDamageTicks(originalNoDamageTicks);
+            targetLivingEntity.setNoDamageTicks(originalNoDamageTicks);
 
-            final EntityLiving attackEntity = ((CraftLivingEntity) attacker).getHandle();
-            if (target instanceof org.bukkit.entity.Monster) {
-                if ((target instanceof Blaze) || (target instanceof Enderman) || (target instanceof Spider) || (target instanceof Giant) || (target instanceof Silverfish)) {
+            final EntityLiving attackEntity = ((CraftLivingEntity) casterLivingEntity).getHandle();
+            if (targetLivingEntity instanceof org.bukkit.entity.Monster) {
+                if ((targetLivingEntity instanceof Blaze) || (targetLivingEntity instanceof Enderman) || (targetLivingEntity instanceof Spider) || (targetLivingEntity instanceof Giant) || (targetLivingEntity instanceof Silverfish)) {
                     final EntityMonster em = (EntityMonster) el;
-                    final EntityTargetEvent event = CraftEventFactory.callEntityTargetEvent(em, attackEntity, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY);
-                    if (!event.isCancelled()) {
+                    final EntityTargetEvent targetEvent = CraftEventFactory.callEntityTargetEvent(em, attackEntity, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY);
+                    if (!targetEvent.isCancelled()) {
                         em.setTarget(attackEntity);
                     }
                 }
-            } else if (target instanceof IronGolem) {
+            } else if (targetLivingEntity instanceof IronGolem) {
                 final EntityGolem eg = (EntityGolem) el;
                 eg.setTarget(((CraftLivingEntity) attacker).getHandle());
-            } else if ((target instanceof Wolf) && (((Wolf) target).getTarget() == null)) {
-                final Wolf wolf = (Wolf) target;
+            } else if ((targetLivingEntity instanceof Wolf) && (((Wolf) targetLivingEntity).getTarget() == null)) {
+                final Wolf wolf = (Wolf) targetLivingEntity;
                 wolf.setAngry(true);
-                wolf.setTarget(attacker);
+                wolf.setTarget(casterLivingEntity);
             }
-            if (target instanceof PigZombie) {
+            if (targetLivingEntity instanceof PigZombie) {
                 ((PigZombie) target).setAngry(true);
             }
 
         }
         return true;
+    }
+
+    private EntityDamageByEntityEvent createEntityDamageEvent(LivingEntity defender, LivingEntity attacker, Map<InsentientDamageEvent.DamageType, Double> modifiers, DamageCause cause) {
+        double damage = 0;
+        for (InsentientDamageEvent.DamageType damageType : InsentientDamageEvent.DamageType.values()) {
+            damage += modifiers.get(damageType);
+        }
+        if (defender instanceof CraftLivingEntity) {
+            CraftLivingEntity craftEntity = (CraftLivingEntity) defender;
+            final EntityLiving entityLiving = craftEntity.getHandle();
+
+            final boolean human = entityLiving instanceof EntityHuman;
+            Function<Double, Double> blocking = new Function<Double, Double>() {
+                @Override
+                public Double apply(Double f) {
+                    if (human) {
+                        if (((EntityHuman) entityLiving).isBlocking() && f > 0.0F) {
+                            return -(f - ((1.0F + f) * 0.5F));
+                        }
+                    }
+                    return -0.0;
+                }
+            };
+            float blockingModifier = blocking.apply(damage).floatValue();
+            damage += blockingModifier;
+
+            Function<Double, Double> armor = new Function<Double, Double>() {
+                @Override
+                public Double apply(Double f) {
+                    try {
+                        Method applyArmorModifier = entityLiving.getClass().getDeclaredMethod("applyArmorModifier", DamageSource.class, Float.TYPE);
+                        applyArmorModifier.setAccessible(true);
+
+                        return -(f - (Double) applyArmorModifier.invoke(DamageSource.GENERIC, f.floatValue()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return 0D;
+                }
+            };
+            float armorModifier = armor.apply(damage).floatValue();
+            damage += armorModifier;
+
+            Function<Double, Double> resistance = new Function<Double, Double>() {
+                @Override
+                public Double apply(Double f) {
+                    if (entityLiving.hasEffect(MobEffectList.RESISTANCE)) {
+                        int i = (entityLiving.getEffect(MobEffectList.RESISTANCE).getAmplifier() + 1) * 5;
+                        int j = 25 - i;
+                        float f1 = f.floatValue() * (float) j;
+                        return -(f - (f1 / 25.0F));
+                    }
+                    return -0.0;
+                }
+            };
+            float resistanceModifier = resistance.apply(damage).floatValue();
+            damage += resistanceModifier;
+
+            Function<Double, Double> magic = new Function<Double, Double>() {
+                @Override
+                public Double apply(Double f) {
+                    try {
+                        Method applyMagicModifier = entityLiving.getClass().getDeclaredMethod("applyMagicModifier", DamageSource.class, Float.TYPE);
+                        applyMagicModifier.setAccessible(true);
+
+                        return -(f - (Double) applyMagicModifier.invoke(DamageSource.GENERIC, f));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return 0D;
+                    }
+                }
+            };
+            float magicModifier = magic.apply(damage).floatValue();
+            damage += magicModifier;
+
+            Function<Double, Double> absorption = new Function<Double, Double>() {
+                @Override
+                public Double apply(Double f) {
+                    return -(Math.max(f - Math.max(f - entityLiving.getAbsorptionHearts(), 0.0F), 0.0F));
+                }
+            };
+            float absorptionModifier = absorption.apply(damage).floatValue();
+            Map<EntityDamageEvent.DamageModifier, Double> damageModifierDoubleEnumMap = new EnumMap<EntityDamageEvent.DamageModifier, Double>(EntityDamageEvent.DamageModifier.class);
+            Map<EntityDamageEvent.DamageModifier, Function<? super Double, Double>> modifierFunctions = new EnumMap<EntityDamageEvent.DamageModifier, Function<? super Double, Double>>(EntityDamageEvent.DamageModifier.class);
+            damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.BASE, damage);
+            modifierFunctions.put(EntityDamageEvent.DamageModifier.BASE, Functions.constant(-0.0));
+            if (entityLiving instanceof EntityHuman) {
+                damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.BLOCKING, (double) blockingModifier);
+                modifierFunctions.put(EntityDamageEvent.DamageModifier.BLOCKING, blocking);
+            }
+            damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.ARMOR, (double) armorModifier);
+            modifierFunctions.put(EntityDamageEvent.DamageModifier.ARMOR, armor);
+            damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.RESISTANCE, (double) resistanceModifier);
+            modifierFunctions.put(EntityDamageEvent.DamageModifier.RESISTANCE, resistance);
+            damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.MAGIC, (double) magicModifier);
+            modifierFunctions.put(EntityDamageEvent.DamageModifier.MAGIC, magic);
+            damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.ABSORPTION, (double) absorptionModifier);
+            modifierFunctions.put(EntityDamageEvent.DamageModifier.ABSORPTION, absorption);
+            return new EntityDamageByEntityEvent(attacker, defender, cause, damageModifierDoubleEnumMap, modifierFunctions);
+        }
+        return new EntityDamageByEntityEvent(attacker, defender, cause, damage);
     }
 
     @Override

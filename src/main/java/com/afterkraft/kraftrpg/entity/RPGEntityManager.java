@@ -36,10 +36,14 @@ import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.IEntity;
+import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
 import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.Sentient;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.entity.Summon;
+import com.afterkraft.kraftrpg.api.skills.ISkill;
+import com.afterkraft.kraftrpg.api.skills.Passive;
+import com.afterkraft.kraftrpg.api.skills.common.Permissible;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
 
@@ -107,19 +111,30 @@ public class RPGEntityManager implements EntityManager {
         Validate.notNull(player, "Cannot get a Champion of a null Player!");
 
         Champion champion = this.champions.get(player.getUniqueId());
-        if (champion != null) {
+        if (champion != null) { // We already have this champion
             if (!champion.isEntityValid() || (champion.getPlayer().getEntityId() != player.getEntityId())) {
                 this.plugin.log(Level.WARNING, "Duplicate Champion object found! Please make sure Champions are properly removed!");
                 champion.clearEffects();
                 champion.setPlayer(player);
             }
             this.champions.put(player.getUniqueId(), champion);
-        } else {
-            champion = createChampion(player, new PlayerData());
+        } else { // We haven't loaded the champion yet from database.
+            champion = this.storage.loadChampion(player, true);
             this.champions.put(player.getUniqueId(), champion);
+            performSkillChecks(champion);
             this.storage.saveChampion(champion);
         }
         return champion;
+    }
+
+    private void performSkillChecks(Champion champion) {
+        for (final ISkill skill : this.plugin.getSkillManager().getSkills()) {
+            if (skill instanceof Permissible) {
+                ((Permissible) skill).tryLearning(champion);
+            } else if (skill instanceof Passive) {
+                ((Passive) skill).apply(champion);
+            }
+        }
     }
 
     @Override
@@ -142,10 +157,14 @@ public class RPGEntityManager implements EntityManager {
     }
 
     @Override
-    public Champion createChampion(Player player, PlayerData data) {
+    public Champion createChampionWithData(Player player, PlayerData data) {
         Validate.notNull(player, "Cannot create a Champion with a null player!");
         Validate.notNull(data, "Cannot create a Champion with a null player data!");
-        return new RPGChampion(this.plugin, player, data);
+        Champion champion = new RPGChampion(this.plugin, player, data);
+        champion.recalculateMaxHealth();
+        champion.setMana(data.currentMana);
+        champion.setStamina(data.currentStamina);
+        return champion;
     }
 
     @Override
@@ -200,6 +219,11 @@ public class RPGEntityManager implements EntityManager {
     }
 
     @Override
+    public void removeChampion(Champion c) {
+
+    }
+
+    @Override
     public Champion getChampion(UUID uuid, boolean ignoreOffline) {
         Validate.notNull(uuid, "Cannot get a Champion from a null UUID!");
 
@@ -226,6 +250,18 @@ public class RPGEntityManager implements EntityManager {
 
     @Override
     public void shutdown() {
+        for (Summon summon : this.summons.values()) {
+            summon.clearEffects();
+            summon.remove();
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Champion champion = getChampion(player);
+            champion.cancelStalledSkill(false);
+            champion.clearEffects();
+            champion.leaveParty();
+            this.plugin.getCombatTracker().leaveCombat(champion, LeaveCombatReason.LOGOUT);
+            this.storage.saveChampion(champion);
+        }
         Bukkit.getScheduler().cancelTask(this.entityTaskID);
         Bukkit.getScheduler().cancelTask(this.potionTaskID);
         clearPotionEffects();
@@ -236,10 +272,10 @@ public class RPGEntityManager implements EntityManager {
      * Insentient Entity.
      */
     private void clearPotionEffects() {
-        Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;
-        Map<UUID, Monster> monsterMap = RPGEntityManager.this.monsters;
-        Map<UUID, Summon> summonMap = RPGEntityManager.this.summons;
-        Map<UUID, IEntity> entityMap = RPGEntityManager.this.entities;
+        Map<UUID, Champion> rpgPlayerMap = this.champions;
+        Map<UUID, Monster> monsterMap = this.monsters;
+        Map<UUID, Summon> summonMap = this.summons;
+        Map<UUID, IEntity> entityMap = this.entities;
 
         Iterator<Map.Entry<UUID, Champion>> playerIterator = rpgPlayerMap.entrySet().iterator();
         Iterator<Map.Entry<UUID, Monster>> monsterIterator = monsterMap.entrySet().iterator();

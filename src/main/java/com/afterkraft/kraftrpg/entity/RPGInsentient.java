@@ -39,8 +39,8 @@ import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.effects.EffectType;
 import com.afterkraft.kraftrpg.api.effects.IEffect;
 import com.afterkraft.kraftrpg.api.effects.Timed;
-import com.afterkraft.kraftrpg.api.events.entity.effects.EffectAddEvent;
-import com.afterkraft.kraftrpg.api.events.entity.effects.EffectRemoveEvent;
+import com.afterkraft.kraftrpg.api.events.effects.EffectAddEvent;
+import com.afterkraft.kraftrpg.api.events.effects.EffectRemoveEvent;
 
 
 public abstract class RPGInsentient extends RPGEntity implements Insentient {
@@ -111,14 +111,6 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         return true;
     }
 
-    /**
-     * Thread-Safe Removes a maximum health addition on the character. This
-     * will also remove current health from the character, down to a minimum
-     * of 1.
-     *
-     * @param key to remove
-     * @return true if health was removed.
-     */
     @Override
     public boolean removeMaxHealth(String key) {
         check();
@@ -148,12 +140,14 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     @Override
     public double recalculateMaxHealth() {
         check();
+        // TODO
         return 0;
     }
 
     @Override
     public void heal(double amount) {
         check();
+        // TODO
 
     }
 

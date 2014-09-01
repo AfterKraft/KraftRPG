@@ -93,7 +93,7 @@ public class RPGSkillCommand implements TabExecutor {
 
         if (!champ.canUseSkill(sk)) {
             // Let's make some extra effort for a nice error message
-            for (Role r : champ.getData().allRoles()) {
+            for (Role r : champ.getData().getAllRoles()) {
                 int i = r.getLevelRequired(sk);
                 if (i != 0) {
                     sender.sendMessage(ChatColor.RED + "You cannot use the skill " + ChatColor.YELLOW + skillName + ChatColor.RED + " until you are a " + ChatColor.BLUE + "Lv " + i + " " + r.getName() + ChatColor.RED + ".");
@@ -118,8 +118,6 @@ public class RPGSkillCommand implements TabExecutor {
         }
 
         String[] cutArgs = Arrays.copyOfRange(args, 1, args.length);
-        // TODO do i really want to make a new instance? not really.
-        // but it'll do for now
         SkillCastResult result;
         result = ActiveSkillRunner.castSkillInitial(champ, (Active) sk, cutArgs);
 

@@ -24,8 +24,8 @@
         </dependency>
         <dependency>
             <groupId>com.afterkraft.kraftrpg</groupId>
-            <artifactId>KraftRPG-v1_7_R3</artifactId>
-            <version>v1_7_R3</version>
+            <artifactId>KraftRPG-v1_7_R4</artifactId>
+            <version>v1_7_R4</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -102,7 +102,7 @@
                     <excludePackageNames>com.afterkraft.kraftrpg.compat:com.afterkraft.kraftrpg.compat.*</excludePackageNames>
                     <includeDependencySources>true</includeDependencySources>
                     <dependencySourceExcludes>
-                        <dependencySourceExclude>com.afterkraft.kraftrpg:KraftRPG-v1_7_R3</dependencySourceExclude>
+                        <dependencySourceExclude>com.afterkraft.kraftrpg:KraftRPG-v1_7_R4</dependencySourceExclude>
                     </dependencySourceExcludes>
                     <dependencySourceIncludes>
                         <dependencySourceInclude>com.afterkraft.kraftrpg:KraftRPG-API</dependencySourceInclude>

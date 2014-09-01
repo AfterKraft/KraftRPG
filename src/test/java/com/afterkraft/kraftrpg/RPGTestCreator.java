@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftItemFactory;
+import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemFactory;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

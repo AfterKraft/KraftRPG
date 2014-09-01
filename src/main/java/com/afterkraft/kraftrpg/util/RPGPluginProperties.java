@@ -19,6 +19,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
@@ -92,6 +93,21 @@ public class RPGPluginProperties implements Properties {
 
     @Override
     public int getCombatTime() {
+        return 0;
+    }
+
+    @Override
+    public int getDefaultMaxStamina() {
+        return 0;
+    }
+
+    @Override
+    public int getDefaultStaminaRegeneration() {
+        return 0;
+    }
+
+    @Override
+    public int getStaminaIncreaseForFood(Material foodMaterial) {
         return 0;
     }
 

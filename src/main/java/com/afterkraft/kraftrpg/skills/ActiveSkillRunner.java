@@ -215,7 +215,7 @@ public final class ActiveSkillRunner {
         if (result == SkillCastResult.NORMAL) {
             caster.setHealth(caster.getHealth() - healthCost);
             caster.setMana(caster.getMana() - (int) manaCost);
-            caster.modifyStamina((float) -hungerCost);
+            caster.modifyStamina((int) -hungerCost);
             caster.getInventory().removeItem(reagent);
 
             double exp = plugin.getSkillConfigManager().getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST);

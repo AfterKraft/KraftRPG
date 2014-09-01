@@ -46,6 +46,7 @@ import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
 import com.afterkraft.kraftrpg.api.skills.common.Permissible;
 import com.afterkraft.kraftrpg.api.util.DirectedGraph;
+import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
 
 
@@ -57,12 +58,22 @@ public class RPGRoleManager implements RoleManager {
     private Role defaultPrimaryRole;
     private Role defaultSecondaryRole;
     private DirectedGraph<Role> roleGraph = new DirectedGraph<Role>();
+    private Map<Role, FixedPoint[]> roleLevels = new HashMap<Role, FixedPoint[]>();
 
     public RPGRoleManager(RPGPlugin plugin) {
         this.plugin = plugin;
         this.roleMap = new HashMap<String, Role>();
         rolesDirectory = new File(plugin.getDataFolder() + File.separator + "roles");
 
+    }
+
+    @Override
+    public FixedPoint getRoleLevelExperience(Role role, int level) {
+        Validate.notNull(role, "Cannot calculate the experience for a null role!");
+        Validate.isTrue(this.roleLevels.containsKey(role), "Cannot return the experience requirement for a role that isn't registered with the system!");
+        Validate.isTrue(level <= role.getMaxLevel(), "Cannot return the experience requirement for a level above the max level for the role!");
+        Validate.isTrue(level > 0, "Cannot get the experience requirement for a negative level!");
+        return this.roleLevels.get(role)[level -1];
     }
 
     @Override
@@ -92,7 +103,7 @@ public class RPGRoleManager implements RoleManager {
 
     @Override
     public Role getRole(String roleName) {
-        return roleMap.get(roleName);
+        return this.roleMap.get(roleName);
     }
 
     @Override
@@ -101,38 +112,39 @@ public class RPGRoleManager implements RoleManager {
             return false;
         }
         this.roleMap.put(role.getName(), role);
-        roleGraph.addVertex(role);
+        this.roleGraph.addVertex(role);
         if (!role.getChildren().isEmpty() || !role.getParents().isEmpty()) {
             for (Role child : role.getChildren()) {
-                roleGraph.addEdge(child, role);
+                this.roleGraph.addEdge(child, role);
             }
             for (Role parent : role.getParents()) {
-                roleGraph.addEdge(role, parent);
+                this.roleGraph.addEdge(role, parent);
             }
         }
         return true;
     }
 
     @Override
-    public boolean removeRole(Role role) throws IllegalArgumentException {
+    public boolean removeRole(Role role) {
+
         if (role == null || !this.roleMap.containsKey(role.getName())) {
             return true;
         }
-        roleGraph.removeVertex(role);
+        this.roleGraph.removeVertex(role);
         this.roleMap.remove(role.getName());
         return false;
     }
 
     @Override
     public Map<String, Role> getRoles() {
-        return ImmutableMap.copyOf(roleMap);
+        return ImmutableMap.copyOf(this.roleMap);
     }
 
     @Override
     public Map<String, Role> getRolesByType(Role.RoleType type) {
         Validate.notNull(type, "Cannot get Roles by type of a null RoleType!");
         ImmutableMap.Builder<String, Role> builder = ImmutableMap.builder();
-        for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
+        for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             if (entry.getValue().getType() == type)
                 builder.put(entry.getKey(), entry.getValue());
         }
@@ -144,7 +156,7 @@ public class RPGRoleManager implements RoleManager {
         Validate.notNull(parent, "Cannot add a null Role Parent dependency!");
         Validate.notNull(child, "Cannot add a null Role child dependency!");
         reconstructRoleGraph();
-        roleGraph.addEdge(parent, child);
+        this.roleGraph.addEdge(parent, child);
         Role newParent = Role.copyOf(parent).addChild(child).build();
         Role newChild = Role.copyOf(child).addParent(newParent).build();
         this.roleMap.remove(parent.getName());
@@ -161,7 +173,7 @@ public class RPGRoleManager implements RoleManager {
         Validate.notNull(parent, "Cannot remove a null Role Parent dependency!");
         Validate.notNull(child, "Cannot remove a null Role child dependency!");
         reconstructRoleGraph();
-        roleGraph.removeEdge(parent, child);
+        this.roleGraph.removeEdge(parent, child);
         Role newParent = Role.copyOf(parent).removeChild(child).build();
         Role newChild = Role.copyOf(child).removeParent(newParent).build();
         this.roleMap.remove(parent.getName());
@@ -172,22 +184,22 @@ public class RPGRoleManager implements RoleManager {
     }
 
     private void reconstructRoleGraph() {
-        roleGraph = new DirectedGraph<Role>();
-        for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
+        this.roleGraph = new DirectedGraph<Role>();
+        for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
                 try {
-                    roleGraph.addEdge(parent, role);
+                    this.roleGraph.addEdge(parent, role);
                 } catch (CircularDependencyException e) {
-                    plugin.getLogger().severe("Could not add a Role dependency from parent: " + parent.getName() + " to child: " + role.getName());
+                    this.plugin.getLogger().severe("Could not add a Role dependency from parent: " + parent.getName() + " to child: " + role.getName());
                     e.printStackTrace();
                 }
             }
             for (Role child : role.getChildren()) {
                 try {
-                    roleGraph.addEdge(role, child);
+                    this.roleGraph.addEdge(role, child);
                 } catch (CircularDependencyException e) {
-                    plugin.getLogger().severe("Could not add a Role dependency from parent: " + role.getName() + " to child: " + child.getName());
+                    this.plugin.getLogger().severe("Could not add a Role dependency from parent: " + role.getName() + " to child: " + child.getName());
                     e.printStackTrace();
                 }
             }
@@ -197,13 +209,13 @@ public class RPGRoleManager implements RoleManager {
     @Override
     public boolean areRoleDependenciesCyclic() {
         DirectedGraph<Role> tempGraph = new DirectedGraph<Role>();
-        for (Map.Entry<String, Role> entry : roleMap.entrySet()) {
+        for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
                 try {
                     tempGraph.addEdge(parent, role);
                 } catch (CircularDependencyException e) {
-                    plugin.getLogger().severe("Could not add a Role dependency from parent: " + parent.getName() + " to child: " + role.getName());
+                    this.plugin.getLogger().severe("Could not add a Role dependency from parent: " + parent.getName() + " to child: " + role.getName());
                     e.printStackTrace();
                     return false;
                 }
@@ -212,7 +224,7 @@ public class RPGRoleManager implements RoleManager {
                 try {
                     tempGraph.addEdge(role, child);
                 } catch (CircularDependencyException e) {
-                    plugin.getLogger().severe("Could not add a Role dependency from parent: " + role.getName() + " to child: " + child.getName());
+                    this.plugin.getLogger().severe("Could not add a Role dependency from parent: " + role.getName() + " to child: " + child.getName());
                     e.printStackTrace();
                     return false;
                 }
@@ -225,17 +237,17 @@ public class RPGRoleManager implements RoleManager {
     public void initialize() {
         if (!rolesDirectory.exists()) {
             rolesDirectory.mkdirs();
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "admin.yml"));
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "weakling.yml"));
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "swordsman.yml"));
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "healer.yml"));
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "mage.yml"));
-            plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "archer.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "admin.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "weakling.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "swordsman.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "healer.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "mage.yml"));
+            this.plugin.getConfigurationManager().checkForConfig(new File(rolesDirectory, "archer.yml"));
         }
         File[] roleFiles = rolesDirectory.listFiles();
         List<Role> wildCarded = new ArrayList<Role>();
         if (roleFiles == null) {
-            plugin.debugLog(Level.SEVERE, "KraftRPG is unable to find the roles directory!");
+            this.plugin.debugLog(Level.SEVERE, "KraftRPG is unable to find the roles directory!");
         } else {
             List<Configuration> roleConfigurations = new ArrayList<Configuration>();
             for (final File roleFile : roleFiles) {
@@ -243,27 +255,27 @@ public class RPGRoleManager implements RoleManager {
                     YamlConfiguration roleYmlConfig = YamlConfiguration.loadConfiguration(roleFile);
                     Role role = loadRoleWithoutDependencies(roleYmlConfig);
                     if (role == null) {
-                        plugin.debugLog(Level.WARNING, "Could not load the role: " + roleFile.getName() + "! Skipping!");
+                        this.plugin.debugLog(Level.WARNING, "Could not load the role: " + roleFile.getName() + "! Skipping!");
                         continue;
                     }
                     if (!addRole(role)) {
-                        plugin.debugLog(Level.WARNING, "A Role: " + role.getName() + " could not be added to the RoleManager!");
+                        this.plugin.debugLog(Level.WARNING, "A Role: " + role.getName() + " could not be added to the RoleManager!");
                     }
                     if (hasNoDependencies(roleYmlConfig)) {
 
                         // By virtue of Roles, a default Role can not have any dependencies
                         if (roleYmlConfig.getBoolean("default-primary") && role.getType() == RoleType.PRIMARY) {
-                            if (defaultPrimaryRole == null) {
-                                defaultPrimaryRole = role;
+                            if (this.defaultPrimaryRole == null) {
+                                this.defaultPrimaryRole = role;
                             } else {
-                                plugin.debugLog(Level.WARNING, "Cannot have multiple default Primary Roles!");
+                                this.plugin.debugLog(Level.WARNING, "Cannot have multiple default Primary Roles!");
                             }
                         }
                         if (roleYmlConfig.getBoolean("default-secondary") && role.getType() == RoleType.SECONDARY) {
-                            if (defaultSecondaryRole == null) {
-                                defaultSecondaryRole = role;
+                            if (this.defaultSecondaryRole == null) {
+                                this.defaultSecondaryRole = role;
                             } else {
-                                plugin.debugLog(Level.WARNING, "Cannot have multiple default Primary Roles!");
+                                this.plugin.debugLog(Level.WARNING, "Cannot have multiple default Primary Roles!");
                             }
                         }
                     } else {
@@ -277,23 +289,38 @@ public class RPGRoleManager implements RoleManager {
             }
             if (!roleConfigurations.isEmpty()) {
                 for (Configuration roleConfig : roleConfigurations) {
-                    Role role = getRole(roleConfig.getString("name"));
                     if (roleConfig.getStringList("parents") != null && !roleConfig.getShortList("parents").isEmpty()) {
                         for (String parentName : roleConfig.getStringList("parents")) {
                             Role parent = getRole(parentName);
                             if (parent != null) {
-                                addRoleDependency(parent, role);
+                                addRoleDependency(parent, getRole(roleConfig.getString("name")));
                             }
                         }
                     }
                 }
             }
             setupRolePermissions(wildCarded);
+            setupRoleLevels();
+        }
+    }
+
+    private void setupRoleLevels() {
+        for (Role role : this.roleMap.values()) {
+            final int maxLevel = role.getMaxLevel();
+            FixedPoint[] levels = new FixedPoint[maxLevel + 1];
+            final double timePerLevelModulo = 100;
+            final double expPerTime = 10;
+            for (int i = 0; i < (maxLevel + 1); i++) {
+                double timePerLevel = Math.pow(i, timePerLevelModulo);
+                double expPerMinute = Math.pow(i, expPerTime);
+                levels[i] = FixedPoint.valueOf(timePerLevel * expPerMinute);
+            }
+            this.roleLevels.put(role, levels);
         }
     }
 
     private Role loadRoleWithoutDependencies(Configuration configuration) {
-        Role.Builder roleBuilder = Role.builder(plugin);
+        Role.Builder roleBuilder = Role.builder(this.plugin);
         // Get the basics
         roleBuilder.setName(configuration.getString("name"));
         roleBuilder.setDescription(configuration.getString("description", ""));
@@ -361,7 +388,7 @@ public class RPGRoleManager implements RoleManager {
         List<String> restrictedSkills = configuration.getStringList("restricted-skills");
         if (restrictedSkills != null && !restrictedSkills.isEmpty()) {
             for (String skillName : restrictedSkills) {
-                roleBuilder.addRestirctedSkill(plugin.getSkillManager().getSkill(skillName));
+                roleBuilder.addRestirctedSkill(this.plugin.getSkillManager().getSkill(skillName));
             }
         }
 
@@ -373,9 +400,9 @@ public class RPGRoleManager implements RoleManager {
                     allowAllSkills = true;
                     continue;
                 }
-                final ISkill skill = plugin.getSkillManager().getSkill(skillName);
+                final ISkill skill = this.plugin.getSkillManager().getSkill(skillName);
                 if (skill == null) {
-                    plugin.debugLog(Level.WARNING, "A Skill:" + skillName + " configured for the Role: " + configuration.getString("name") + " does not exist!");
+                    this.plugin.debugLog(Level.WARNING, "A Skill:" + skillName + " configured for the Role: " + configuration.getString("name") + " does not exist!");
                     continue;
                 }
                 ConfigurationSection skillSettings = configuration.getConfigurationSection("allowed-skills." + skillName);
@@ -383,11 +410,11 @@ public class RPGRoleManager implements RoleManager {
                     skillSettings = configuration.createSection("skills." + skillName);
                 }
                 roleBuilder.addRoleSkill(skill, skillSettings);
-                plugin.getSkillConfigManager().addRoleSkillSettings(configuration.getString("name"), skillName, skillSettings);
+                this.plugin.getSkillConfigManager().addRoleSkillSettings(configuration.getString("name"), skillName, skillSettings);
             }
 
             if (allowAllSkills) {
-                for (final ISkill skill : plugin.getSkillManager().getSkills()) {
+                for (final ISkill skill : this.plugin.getSkillManager().getSkills()) {
                     if (skill instanceof Permissible) {
                         continue;
                     }
@@ -419,14 +446,14 @@ public class RPGRoleManager implements RoleManager {
             wildcardRolePermissions.put("kraftrpg.roles." + wildcardedRole.getName().toLowerCase(), true);
         }
         final Permission wildcardClassPermission = new Permission("kraftrpg.roles.*", "Grants access to all roles.", PermissionDefault.OP, wildcardRolePermissions);
-        plugin.getServer().getPluginManager().addPermission(wildcardClassPermission);
+        this.plugin.getServer().getPluginManager().addPermission(wildcardClassPermission);
 
     }
 
     public void swapRoles(Role oldRole, Role newRole) {
         boolean skillChanged = oldRole.getAllSkills().size() == newRole.getAllSkills().size();
-        if (plugin.getEntityManager() instanceof RPGEntityManager) {
-            RPGEntityManager entityManager = (RPGEntityManager) plugin.getEntityManager();
+        if (this.plugin.getEntityManager() instanceof RPGEntityManager) {
+            RPGEntityManager entityManager = (RPGEntityManager) this.plugin.getEntityManager();
             for (Sentient being : entityManager.getAllSentientBeings()) {
                 boolean hasChanged = false;
                 if (being.getPrimaryRole().equals(oldRole)) {

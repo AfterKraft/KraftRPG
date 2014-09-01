@@ -24,11 +24,13 @@ import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.Validate;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.Champion;
 import com.afterkraft.kraftrpg.api.entity.party.Party;
@@ -42,9 +44,10 @@ import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.storage.PlayerData;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.api.util.SkillRequirement;
+import com.afterkraft.kraftrpg.util.ItemUtil;
 import com.afterkraft.kraftrpg.util.MathUtil;
 import com.afterkraft.kraftrpg.util.Messaging;
+import com.afterkraft.kraftrpg.util.PlayerUtil;
 
 
 public class RPGChampion extends RPGInsentient implements Champion {
@@ -60,11 +63,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public void removeSkillRequirement(SkillRequirement skillRequirement) {
-
-    }
-
-    @Override
     public Long getCooldown(String key) {
         Validate.notNull(key, "Cannot get a null cooldown!");
         Validate.isTrue(!key.isEmpty(), "Cannot get an empty keyed cooldown!");
@@ -76,19 +74,21 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public long getGlobalCooldown() {
-        return getCooldown(GLOBAL_COOLDOWN_KEY);
+        return getCooldown(RPGChampion.GLOBAL_COOLDOWN_KEY);
     }
 
     @Override
     public void setGlobalCooldown(long duration) {
-        this.data.cooldowns.put(GLOBAL_COOLDOWN_KEY, duration);
+        Validate.isTrue(duration < Long.MAX_VALUE - System.currentTimeMillis(), "Cannot set the duration longer than the maximum time of the system!");
+        this.data.cooldowns.put(RPGChampion.GLOBAL_COOLDOWN_KEY, duration);
     }
 
     @Override
     public void setCooldown(String key, long duration) {
-        if (key != null) {
-            this.data.cooldowns.put(key, duration);
-        }
+        Validate.notNull(key, "Cannot set the cooldown of a null key!");
+        Validate.notEmpty(key, "Cannot set the cooldown of an empty key!");
+        Validate.isTrue(duration < Long.MAX_VALUE - System.currentTimeMillis(), "Cannot set the duration longer than the maximum time of the system!");
+        this.data.cooldowns.put(key, duration);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
         Validate.notNull(skill, "Cannot get the highest null skill level!");
         int level = 0;
 
-        for (Role r : this.data.allRoles()) {
+        for (Role r : this.data.getAllRoles()) {
             int roleLevel = getLevel(r);
             if (r.hasSkillAtLevel(skill, roleLevel)) {
                 if (roleLevel > level) {
@@ -110,7 +110,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean canUseSkill(ISkill skill) {
         Validate.notNull(skill, "Cannot check whether Champion can use null skill!");
-        for (Role r : this.data.allRoles()) {
+        for (Role r : this.data.getAllRoles()) {
             if (r.hasSkillAtLevel(skill, getLevel(r))) {
                 return true;
             }
@@ -121,7 +121,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Collection<ISkill> getAvailableSkills() {
         Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : this.data.allRoles()) {
+        for (Role r : this.data.getAllRoles()) {
             skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
         }
         return skills;
@@ -133,7 +133,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
         // this is basically /only/ for tab-completion
 
         Set<String> skillNames = new HashSet<String>();
-        for (Role r : this.data.allRoles()) {
+        for (Role r : this.data.getAllRoles()) {
             for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
                 if (skill instanceof Active) {
                     skillNames.add(skill.getName());
@@ -146,7 +146,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public Collection<ISkill> getPossibleSkillsInRoles() {
         Set<ISkill> skills = new HashSet<ISkill>();
-        for (Role r : this.data.allRoles()) {
+        for (Role r : this.data.getAllRoles()) {
             for (ISkill skill : r.getAllSkills()) {
                 skills.add(skill);
             }
@@ -258,7 +258,18 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public boolean canGainExperience(ExperienceType type) {
         Validate.notNull(type, "Cannot check on a null experience type!");
-        return false;
+        if (!this.data.primary.canGainExperience(type)) {
+            return false;
+        } else if (this.data.profession != null && !this.data.profession.canGainExperience(type)) {
+            return false;
+        } else if (!this.data.additionalRoles.isEmpty()) {
+            for (Role additional : this.data.additionalRoles) {
+                if (!additional.canGainExperience(type)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
@@ -289,12 +300,15 @@ public class RPGChampion extends RPGInsentient implements Champion {
                 }
             }
         }
+        PlayerUtil.syncronizeExperienceBar(this);
         return exp;
     }
 
     @Override
     public void loseExperienceFromDeath(double multiplier, boolean byPVP) {
         Validate.isTrue(multiplier < 0, "Cannot use a negative multiplier!");
+        // TODO implement
+        PlayerUtil.syncronizeExperienceBar(this);
 
     }
 
@@ -398,11 +412,12 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public int getMaxMana() {
-        return ((this.data.primary.getMaxManaAtLevel(getLevel(this.data.primary))) + this.data.profession.getMaxManaAtLevel(getLevel(this.data.profession)));
+        return (this.data.primary.getMaxManaAtLevel(getLevel(this.data.primary)) + this.data.profession.getMaxManaAtLevel(getLevel(this.data.profession)));
     }
 
     @Override
     public void setMaxMana(int mana) {
+        // Implement
         Validate.isTrue(mana > 0, "Cannot set mana to zero or negative!");
 
     }
@@ -432,20 +447,42 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public float getStamina() {
+    public int getStamina() {
         this.check();
-        return this.getEntity().getFoodLevel() * 4 + this.getEntity().getSaturation() - this.getEntity().getExhaustion();
+        return this.data.currentStamina;
     }
 
     @Override
-    public void modifyStamina(float staminaDiff) {
+    public int getMaxStamina() {
         this.check();
-        if (staminaDiff < 0) {
-            // adding to exhaustion when negative
-            this.getEntity().setExhaustion(getEntity().getExhaustion() - staminaDiff);
-        } else {
-            this.getEntity().setSaturation(getEntity().getSaturation() + staminaDiff);
+        return this.data.maxStamina;
+    }
+
+    @Override
+    public void setStamina(int stamina) {
+        Validate.isTrue(stamina >= 0, "Cannot set stamina to a negative value!");
+        final int currentMax = getMaxStamina();
+        if (stamina > currentMax) {
+            stamina = currentMax;
         }
+        this.data.currentStamina = stamina;
+        updateFoodLevel();
+    }
+
+    @Override
+    public void modifyStamina(int staminaDiff) {
+        this.check();
+        this.data.currentStamina += staminaDiff;
+        updateFoodLevel();
+    }
+
+    private void updateFoodLevel() {
+        final double foodPercentage = (this.data.currentStamina / this.data.maxStamina);
+        int foodLevel = new Double(20 * foodPercentage).intValue();
+        if (foodLevel > 19) { // We cannot allow food to heal players
+            foodLevel = 19;
+        }
+        this.getPlayer().setFoodLevel(foodLevel);
     }
 
     @Override
@@ -468,7 +505,18 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean canEquipItem(ItemStack itemStack) {
+        return itemStack == null ||
+                !ItemUtil.isWeapon(itemStack.getType()) ||
+                this.data.primary.isWeaponAllowed(itemStack.getType()) ||
+                (this.data.profession != null && this.data.profession.isWeaponAllowed(itemStack.getType()));
+    }
 
+    public boolean canEquipItem(int itemSlot) {
+        ItemStack item = getInventory().getItem(itemSlot);
+        if (!canEquipItem(item)) {
+            PlayerUtil.moveItem(this, itemSlot, item);
+            return false;
+        }
         return true;
     }
 
@@ -484,7 +532,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public boolean isIgnoringSkill(ISkill skill) {
-        return false;
+        return this.data.isSkillVerbose || this.data.ignoredSkills.contains(skill.getName());
     }
 
     @Override
@@ -506,12 +554,14 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @Override
     public double recalculateMaxHealth() {
         check();
+        // TODO implement
         return 0D;
     }
 
     @Override
     public void heal(double amount) {
         check();
+        // TODO Implement
 
     }
 
@@ -524,6 +574,20 @@ public class RPGChampion extends RPGInsentient implements Champion {
     @SuppressWarnings("deprecation")
     public void updateInventory() {
         if (this.check()) {
+            if (getPlayer().getGameMode() == GameMode.CREATIVE || getPlayer().hasPermission(KraftRPGPlugin.ADMIN_INVENTORY_BYPASS_PERMISSION)) {
+                return;
+            }
+            int removed = PlayerUtil.checkArmor(this, getPlayer());
+            for (int i = 0; i < 9; i++) {
+                if (canEquipItem(i)) {
+                    continue;
+                }
+
+                removed++;
+            }
+            if (removed > 0) {
+                sendMessage(Messaging.getMessage("inventory_role_item_restriction_moved"), removed);
+            }
             this.getPlayer().updateInventory();
         }
     }
@@ -560,7 +624,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public boolean setEntity(Player player) {
+    public final boolean setEntity(Player player) {
         return super.setEntity(player);
     }
 
@@ -576,7 +640,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     private boolean check() {
         if (!this.isValid()) {
-            throw new IllegalStateException("A Champion is not linked to a correct Player!");
+            throw new IllegalStateException("A Champion is not linked to a valid Player!");
         }
         return true;
     }
