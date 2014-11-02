@@ -1,0 +1,13 @@
+
+dependencies {
+    compile 'com.google.guava:guava:18.0'
+    compile 'com.afterkraft:tweakkit-api:1.7.10-R0.1-SNAPSHOT'
+    compile 'com.afterkraft:tweakkit:1.7.10-R0.1-SNAPSHOT'
+    compile 'com.afterkraft.kraftrpg:KraftRPG-API:0.0.1-SNAPSHOT'
+}
+
+
+artifacts {
+    archives jar
+    archives sourceJar
+}

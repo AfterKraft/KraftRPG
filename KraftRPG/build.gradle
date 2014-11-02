@@ -1,0 +1,106 @@
+// Plugins
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'signing'
+
+defaultTasks 'clean', 'licenseFormat', 'check', 'build'
+
+group 'com.afterkraft.kraftrpg'
+archivesBaseName = 'KraftRPG'
+version '0.0.1-SNAPSHOT'
+
+dependencies {
+    compile 'com.google.guava:guava:18.0'
+    compile 'org.bukkit:bukkit:1.7.10-R0.1-SNAPSHOT'
+    compile 'com.afterkraft.kraftrpg:KraftRPG-API:0.0.1-SNAPSHOT'
+    compile 'net.milkbowl.vault:VaultAPI:1.4'
+    compile project(':v1_7_R4')
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.powermock:powermock-module-junit4:1.5.2'
+    testCompile 'org.powermock:powermock-api-easymock:1.5.2'
+    testCompile 'org.powermock:powermock-api-mockito:1.5.2'
+    testCompile 'org.easymock:easymock:3.2'
+    testCompile 'commons-io:commons-io:2.4'
+    testCompile 'org.bukkit:craftbukkit:1.7.10-R0.1-SNAPSHOT'
+}
+
+// Generates javadoc.jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+configurations {
+    pom
+}
+
+artifacts {
+    archives jar
+    archives sourceJar
+    archives javadocJar
+}
+
+signing {
+    required {
+        gradle.taskGraph.hasTask("uploadArchives")
+    }
+    sign configurations.archives
+}
+
+def sonatypeUser = hasProperty('afterkraftUser') ? sonatypeUser : System.getenv('afterkraftUser')
+def sonatypePassword = hasProperty('afterkraftPassword') ? sonatypePassword : System.getenv('afterkraftPassword')
+
+uploadArchives {
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment ->
+            signing.signPom(deployment)
+        }
+        repository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/releases") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
+
+        }
+        snapshotRepository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/snapshots") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
+        }
+        pom {
+            groupId = project.group
+            version = project.version
+            artifactId = project.archivesBaseName
+            project {
+                name project.archivesBaseName
+                packaging 'jar'
+                description 'Common API for KraftRPG.'
+                url 'http://afterkraft.com/'
+                scm {
+                    url 'https://github.com/AfterKraft/KraftRPG-API'
+                    connection 'git'
+                    developerConnection 'git@github.com:AfterKraft/KraftRPG-API.git'
+                }
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'http://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'gabizou'
+                        name 'Gabriel Harris-Rouquette'
+                        email 'gabizou@me.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+shadowJar {
+    dependencies {
+        include(project(':v1_7_R4'))
+        include(dependency('com.afterkraft.kraftrpg:KraftRPG-API:0.0.1-SNAPSHOT'))
+    }
+}
+
+build.dependsOn shadowJar

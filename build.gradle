@@ -1,0 +1,123 @@
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "http://repository.jboss.org/nexus/content/groups/public/"
+        }
+
+    }
+    dependencies {
+        classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.1.1'
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
+}
+
+defaultTasks 'clean', 'license', 'check', 'build'
+
+//tasks.build.dependsOn fatJar
+//tasks.assemble.dependsOn fatJar
+
+group 'com.afterkraft.kraftrpg'
+version 'parent'
+
+allprojects {
+
+    // Plugins
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'checkstyle'
+    apply plugin: 'maven'
+    apply plugin: 'license'
+    apply plugin: 'maven-publish-auth'
+
+    // Minimum version of Java required
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+
+    // Project dependencies
+    repositories {
+        mavenCentral()
+        maven {
+            url "http://nexus.afterkraft.com/content/groups/public/"
+        }
+    }
+
+}
+
+ext {
+
+    organization = "AfterKraft Dev Team"
+    inceptionYear = '2014'
+    url = 'http://afterkraft.com/'
+    description = "Common API for KraftRPG."
+    pomFile = file("${project.projectDir}/pom.xml")
+    buildNumber = rootProject.hasProperty("buildNumber") ? buildNumber : '0'
+    ciSystem = rootProject.hasProperty("ciSystem") ? ciSystem : 'unknown'
+    commit = rootProject.hasProperty("commit") ? commit : 'unknown'
+}
+
+subprojects {
+    archivesBaseName = project.name
+
+    task sourceJar(type: Jar) {
+        classifier 'sources'
+        from sourceSets.main.allSource
+    }
+
+    configure([compileJava, compileTestJava]) {
+        options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+        options.deprecation = true
+        options.encoding = 'utf8'
+    }
+
+    checkstyle {
+        configProperties = [
+                "name"        : project.name,
+                "organization": project.organization,
+                "url"         : project.url,
+                "year"        : project.inceptionYear
+        ]
+        configFile = file(rootProject.file("checkstyle.xml"))
+    }
+
+    processResources {
+        from 'KRAFTRPG-LICENSE'
+    }
+
+
+    jar {
+        manifest {
+            attributes(
+                    "Implementation-Title": project.name,
+                    "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+                    "Built-By": System.properties['user.name'],
+                    "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+                    "Implementation-Vendor": url
+            )
+        }
+        from ("${rootProject}") {
+            include('KRAFTRPG-LICENSE', 'README.md')
+        }
+
+    }
+
+    license {
+        ext.name = project.name
+        ext.organization = project.organization
+        ext.url = project.url
+        ext.year = project.inceptionYear
+        exclude "**/*.info"
+        exclude "assets/**"
+        header rootProject.file("KRAFTRPG-LICENSE")
+        sourceSets = project.sourceSets
+        ignoreFailures false
+        strictCheck true
+        mapping {
+            java = 'SLASHSTAR_STYLE'
+        }
+    }
+}

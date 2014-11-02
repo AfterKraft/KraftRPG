@@ -1,0 +1,42 @@
+name: ${project.name}
+main: KraftRPGPlugin
+version: ${project.version}-b${BUILD_NUMBER}
+website: ${project.url}
+
+authors: [gabizou, riking]
+
+commands:
+  skill:
+    permission: kraftrpg.cmds.skill
+  rpg:
+    description: "Commands for KraftRPG"
+    aliases: [kraftrpg]
+    permission: kraftrpg.cmds.rpg
+
+permissions:
+  kraftrpg.*:
+    children:
+      kraftrpg.kits.admin: true
+
+  kraftrpg.kits.player:
+    description: "Standard permissions for players"
+    default: true
+    children:
+      kraftrpg.cmds.skill: true
+      kraftrpg.cmds.rpg: true
+      kraftrpg.skill.use: true
+
+  kraftrpg.kits.admin:
+    description: "Standard permissions for admins"
+    default: op
+    children:
+      kraftrpg.kits.player: true
+      kraftrpg.admin.edit: true
+
+  kraftrpg.cmds.skill:
+    description: "/skill"
+  kraftrpg.cmds.rpg:
+    description: "/rpg"
+
+  kraftrpg.admin.edit:
+    description: "Edit configuration"
