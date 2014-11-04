@@ -168,13 +168,13 @@ public class RPGTestCreator {
             // We need to mock the CraftBukkitHandler. We shouldn't test NMS implementation
             this.mockHandler = mock(ServerInternals.class);
 
-            mockStatic(ServerInternals.class, new Answer() {
+            mockStatic(ServerInternals.class, new Answer<ServerInternals>() {
                 @Override
-                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                public ServerInternals answer(InvocationOnMock invocationOnMock) throws Throwable {
                     if (invocationOnMock.getMethod().getName().equalsIgnoreCase("getInterface")) {
                         return RPGTestCreator.this.mockHandler;
                     } else {
-                        return 1;
+                        return null;
                     }
                 }
             });

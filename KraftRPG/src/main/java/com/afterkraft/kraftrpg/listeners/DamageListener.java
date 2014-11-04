@@ -310,10 +310,10 @@ public class DamageListener extends AbstractListener {
                                 ((EntityDamageByEntityEvent) livingEntity.getLastDamageCause())
                                         .getDamager();
                         Map<DamageModifier, Double> modifiers =
-                                new HashMap<DamageModifier, Double>();
+                                new HashMap<>();
                         modifiers.put(DamageModifier.BASE, 1000D);
                         Map<DamageModifier, Function<? super Double, Double>> uselessMap =
-                                new HashMap<DamageModifier, Function<? super Double, Double>>();
+                                new HashMap<>();
                         livingEntity.setLastDamageCause(
                                 new EntityDamageByEntityEvent(tempDamager, livingEntity,
                                                               DamageCause.ENTITY_ATTACK, modifiers,
@@ -379,7 +379,7 @@ public class DamageListener extends AbstractListener {
         // the defender is an Insentient.
         if (!alreadyProcessed) {
             if (defendingIEntity instanceof Insentient) {
-                Map<DamageType, Double> modifiers = new EnumMap<DamageType, Double>(
+                Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final InsentientDamageEvent insentientDamageEvent =
                         new InsentientDamageEvent((Insentient) defendingIEntity, event, modifiers,
@@ -515,7 +515,7 @@ public class DamageListener extends AbstractListener {
             if (event.getCause() == DamageCause.PROJECTILE && damager instanceof Projectile) {
                 damage = this.plugin.getDamageManager().getHighestProjectileDamage(
                         attackingInsentient, (ProjectileType.valueOf(damager.getType().name())));
-                Map<DamageType, Double> modifiers = new EnumMap<DamageType, Double>(
+                Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final ProjectileDamageEvent projectileDamageEvent =
                         new ProjectileDamageEvent(attackingInsentient,
@@ -540,7 +540,7 @@ public class DamageListener extends AbstractListener {
                 damage = this.plugin.getDamageManager()
                         .getDefaultItemDamage(attackingInsentient.getItemInHand().getType(),
                                               damage);
-                Map<DamageType, Double> modifiers = new EnumMap<DamageType, Double>(
+                Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final WeaponDamageEvent weaponEvent =
                         new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity,
@@ -559,7 +559,7 @@ public class DamageListener extends AbstractListener {
             } else {
                 // We need to handle for when the defending entity is just being
                 // touched by something unidentified
-                Map<DamageType, Double> modifiers = new EnumMap<DamageType, Double>(
+                Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final InsentientDamageInsentientEvent insentientEvent =
                         new InsentientDamageInsentientEvent(attackingInsentient,

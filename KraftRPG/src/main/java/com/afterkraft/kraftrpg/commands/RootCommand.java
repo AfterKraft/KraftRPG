@@ -51,8 +51,8 @@ public abstract class RootCommand implements TabExecutor {
 
     protected RootCommand(RPGPlugin plugin) {
         this.plugin = plugin;
-        this.aliasMap = new HashMap<String, String>();
-        this.subcommandMap = new HashMap<String, Subcommand>();
+        this.aliasMap = new HashMap<>();
+        this.subcommandMap = new HashMap<>();
     }
 
     protected void addSubcommand(String name, Subcommand sub) {
@@ -211,7 +211,7 @@ public abstract class RootCommand implements TabExecutor {
     }
 
     private void buildSortedList() {
-        this.helpList = new ArrayList<String>(this.subcommandMap.size() - this.aliasMap.size());
+        this.helpList = new ArrayList<>(this.subcommandMap.size() - this.aliasMap.size());
 
         for (String s : this.subcommandMap.keySet()) {
             if (!this.aliasMap.containsKey(s)) {
@@ -225,7 +225,7 @@ public abstract class RootCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label,
                                       String[] args) {
-        List<String> matches = new ArrayList<String>();
+        List<String> matches = new ArrayList<>();
 
         if (args.length == 1) {
             StringUtil.copyPartialMatches(args[0], this.subcommandMap.keySet(), matches);

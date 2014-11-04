@@ -48,7 +48,7 @@ public final class EditorState {
     private static final StrTokenizer tokenizer = new StrTokenizer("", StrMatcher.charMatcher(';'));
 
     public static Map<Object, Object> getStableDefaultState() {
-        Map<Object, Object> map = new HashMap<Object, Object>();
+        Map<Object, Object> map = new HashMap<>();
         map.put("dirty", false);
         map.put("banner", true);
         map.put("role", null);

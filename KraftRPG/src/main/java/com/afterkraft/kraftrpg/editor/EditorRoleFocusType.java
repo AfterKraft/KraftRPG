@@ -41,7 +41,7 @@ public class EditorRoleFocusType extends EditorPrompt {
     private static final Map<String, Role.RoleType> roleNameMap;
 
     static {
-        roleNameMap = new HashMap<String, Role.RoleType>();
+        roleNameMap = new HashMap<>();
         for (Role.RoleType elem : RoleType.values()) {
             roleNameMap.put(elem.toString().toLowerCase(), elem);
         }

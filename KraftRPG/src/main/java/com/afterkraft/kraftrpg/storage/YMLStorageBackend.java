@@ -130,19 +130,19 @@ public class YMLStorageBackend implements StorageBackend {
         config.set("primary", data.primary.getName());
         config.set("profession", data.profession.getName());
 
-        list = new ArrayList<String>();
+        list = new ArrayList<>();
         for (Role r : data.additionalRoles) {
             list.add(r.getName());
         }
         config.set("additional", list);
 
-        list = new ArrayList<String>();
+        list = new ArrayList<>();
         for (Role r : data.pastRoles) {
             list.add(r.getName());
         }
         config.set("past", list);
 
-        map = new HashMap<String, Object>();
+        map = new HashMap<>();
         for (Map.Entry<Role, FixedPoint> entry : data.exp.entrySet()) {
             map.put(entry.getKey().getName(), entry.getValue().rawValue());
         }
@@ -152,7 +152,7 @@ public class YMLStorageBackend implements StorageBackend {
                 new ArrayList<ConfigurationSerializable>(data.binds.values());
         config.set("binds", list2);
 
-        map = new HashMap<String, Object>();
+        map = new HashMap<>();
         map.putAll(data.cooldowns);
         config.set("cooldowns", map);
 
@@ -320,9 +320,9 @@ public class YMLStorageBackend implements StorageBackend {
     public List<UUID> getAllStoredUsers() {
         File[] files = this.directory.listFiles();
         if (files == null) {
-            return new ArrayList<UUID>();
+            return new ArrayList<>();
         }
-        List<UUID> list = new ArrayList<UUID>();
+        List<UUID> list = new ArrayList<>();
 
         for (File file : files) {
             try {

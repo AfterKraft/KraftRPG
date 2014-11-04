@@ -60,7 +60,7 @@ import com.afterkraft.kraftrpg.api.util.Utilities;
 public class RPGDamageManager implements DamageManager {
 
     private final RPGPlugin plugin;
-    private final Map<UUID, SkillUseObject> skillTargets = new HashMap<UUID, SkillUseObject>();
+    private final Map<UUID, SkillUseObject> skillTargets = new HashMap<>();
     private Map<Material, Double> defaultItemDamage;
     private Map<ProjectileType, Double> defaultProjectileDamage;
     private Map<EntityType, Double> defaultCreatureHealth;
@@ -295,7 +295,7 @@ public class RPGDamageManager implements DamageManager {
     public void load(Configuration config) {
         Set<String> keys;
 
-        this.defaultCreatureHealth = new EnumMap<EntityType, Double>(EntityType.class);
+        this.defaultCreatureHealth = new EnumMap<>(EntityType.class);
         ConfigurationSection section = config.getConfigurationSection("creature-health");
         boolean error = false;
         if (section != null) {
@@ -324,7 +324,7 @@ public class RPGDamageManager implements DamageManager {
             }
         }
 
-        this.defaultCreatureDamage = new EnumMap<EntityType, Double>(EntityType.class);
+        this.defaultCreatureDamage = new EnumMap<>(EntityType.class);
         section = config.getConfigurationSection("creature-damage");
         if (section != null) {
             keys = section.getKeys(false);
@@ -352,7 +352,7 @@ public class RPGDamageManager implements DamageManager {
                                     + "exactly the same as found in the defaults!");
         }
 
-        this.defaultItemDamage = new EnumMap<Material, Double>(Material.class);
+        this.defaultItemDamage = new EnumMap<>(Material.class);
         section = config.getConfigurationSection("item-damage");
         if (section != null) {
             keys = section.getKeys(false);
@@ -373,7 +373,7 @@ public class RPGDamageManager implements DamageManager {
             }
         }
 
-        this.defaultEnvironmentDamage = new EnumMap<EntityDamageEvent.DamageCause, Double>(
+        this.defaultEnvironmentDamage = new EnumMap<>(
                 EntityDamageEvent.DamageCause.class);
         section = config.getConfigurationSection("environmental-damage");
         if (section != null) {
@@ -396,7 +396,7 @@ public class RPGDamageManager implements DamageManager {
             }
         }
 
-        this.defaultProjectileDamage = new EnumMap<ProjectileType, Double>(ProjectileType.class);
+        this.defaultProjectileDamage = new EnumMap<>(ProjectileType.class);
         section = config.getConfigurationSection("projectile-damage");
         if (section != null) {
             keys = section.getKeys(false);
@@ -411,7 +411,7 @@ public class RPGDamageManager implements DamageManager {
             }
         }
 
-        this.defaultEnchantmentDamage = new HashMap<Enchantment, Double>();
+        this.defaultEnchantmentDamage = new HashMap<>();
         section = config.getConfigurationSection("enchantment-damage");
         if (section != null) {
             keys = section.getKeys(false);

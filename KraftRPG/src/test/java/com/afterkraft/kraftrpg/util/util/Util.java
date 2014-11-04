@@ -36,6 +36,7 @@ public class Util {
 
 
     public static final Logger logger = Logger.getLogger("RPG-Test");
+
     static {
         logger.setUseParentHandlers(false);
 

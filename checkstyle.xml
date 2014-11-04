@@ -59,7 +59,7 @@
 
             <property name="severity" value="warning"/>
             <property name="groups"
-                      value="java,javax,org,/^(?!.*com\.afterkraft)/,com.afterkraft.kraftrpg"/>
+                      value="java,javax,org,/^(?!.*com\.afterkraft\.kraftrpg)/,com.afterkraft.kraftrpg"/>
             <!-- This ensures that static imports go first. -->
             <property name="option" value="top"/>
             <property name="separated" value="true"/>

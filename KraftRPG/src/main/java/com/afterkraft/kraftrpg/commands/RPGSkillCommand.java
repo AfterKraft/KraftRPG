@@ -65,7 +65,7 @@ public class RPGSkillCommand implements TabExecutor {
 
         if (args.length == 0) {
             String lastArg = args[args.length - 1];
-            List<String> temp = new ArrayList<String>();
+            List<String> temp = new ArrayList<>();
 
             StringUtil.copyPartialMatches(lastArg, champ.getActiveSkillNames(), temp);
             return temp;

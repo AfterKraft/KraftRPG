@@ -57,11 +57,11 @@ import com.afterkraft.kraftrpg.api.events.effects.EffectRemoveEvent;
  */
 public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
-    protected final Map<String, IEffect> effects = new HashMap<String, IEffect>();
+    protected final Map<String, IEffect> effects = new HashMap<>();
     protected final ArrayDeque<RPGPotionEffect> potionEffectQueue =
-            new ArrayDeque<RPGPotionEffect>();
+            new ArrayDeque<>();
     protected MutableInt mana = new MutableInt(0);
-    protected Map<String, Double> healthMap = new ConcurrentHashMap<String, Double>();
+    protected Map<String, Double> healthMap = new ConcurrentHashMap<>();
 
     protected RPGInsentient(RPGPlugin plugin, LivingEntity livingEntity, String name) {
         super(plugin, livingEntity, name);

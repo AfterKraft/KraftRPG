@@ -81,9 +81,7 @@ public class MathUtil {
 
         try {
             return Integer.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -95,9 +93,7 @@ public class MathUtil {
 
         try {
             return Float.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -109,9 +105,7 @@ public class MathUtil {
 
         try {
             return Double.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -123,9 +117,7 @@ public class MathUtil {
 
         try {
             return Long.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -137,9 +129,7 @@ public class MathUtil {
 
         try {
             return Short.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -151,9 +141,7 @@ public class MathUtil {
 
         try {
             return Byte.valueOf(object.toString());
-        } catch (NumberFormatException ignored) {
-            return 0;
-        } catch (NullPointerException ignored) {
+        } catch (NumberFormatException | NullPointerException ignored) {
             return 0;
         }
     }

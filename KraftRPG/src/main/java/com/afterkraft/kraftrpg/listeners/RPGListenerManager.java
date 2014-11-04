@@ -37,7 +37,7 @@ public class RPGListenerManager implements ListenerManager {
 
     private KraftRPGPlugin plugin;
 
-    private List<AbstractListener> listeners = new ArrayList<AbstractListener>();
+    private List<AbstractListener> listeners = new ArrayList<>();
 
     public RPGListenerManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;

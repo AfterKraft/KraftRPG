@@ -130,7 +130,7 @@ public class EditorRoleMenu extends EditorPrompt {
 
     @Override
     public List<String> getCompletions(ConversationContext context) {
-        return new ArrayList<String>(
+        return new ArrayList<>(
                 KraftRPGPlugin.getInstance().getRoleManager().getRoles().keySet());
     }
 

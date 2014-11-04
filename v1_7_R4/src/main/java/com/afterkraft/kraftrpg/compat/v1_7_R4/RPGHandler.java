@@ -61,12 +61,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Wolf;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -107,7 +107,7 @@ import com.afterkraft.kraftrpg.api.util.FixedPoint;
  */
 public class RPGHandler extends ServerInternals {
     private static final Map<String, PotionEffectType> otherPotionEffectNames =
-            new HashMap<String, PotionEffectType>();
+            new HashMap<>();
 
     static {
         otherPotionEffectNames.put("nausea", PotionEffectType.CONFUSION);
@@ -123,7 +123,9 @@ public class RPGHandler extends ServerInternals {
     }
 
     private Field ldbpt;
-    private Field conversationTracker, conversationQueue, currentPrompt;
+    private Field conversationTracker;
+    private Field conversationQueue;
+    private Field currentPrompt;
     private Field modifiersField;
     private Random random;
     private boolean listenersLoaded = false;
@@ -138,23 +140,27 @@ public class RPGHandler extends ServerInternals {
                 this.ldbpt = EntityLiving.class.getDeclaredField("lastDamageByPlayerTime");
                 this.ldbpt.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
+                // do nothing
             }
             try {
                 this.conversationTracker =
                         CraftPlayer.class.getDeclaredField("conversationTracker");
                 this.conversationTracker.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
+                // do nothing
             }
             try {
                 this.conversationQueue =
                         ConversationTracker.class.getDeclaredField("conversationQueue");
                 this.conversationQueue.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
+                // do nothing
             }
             try {
                 this.currentPrompt = Conversation.class.getDeclaredField("currentPrompt");
                 this.currentPrompt.setAccessible(true);
             } catch (NoSuchFieldException ignored) {
+                // do nothing
             }
             try {
                 this.modifiersField = Field.class.getDeclaredField("modifiers");
@@ -168,7 +174,7 @@ public class RPGHandler extends ServerInternals {
 
         this.random = new Random();
 
-        this.iattrMap = new EnumMap<EntityAttributeType, IAttribute>(EntityAttributeType.class);
+        this.iattrMap = new EnumMap<>(EntityAttributeType.class);
 
         for (EntityAttributeType eat : EntityAttributeType.values()) {
             this.iattrMap.put(eat,
@@ -180,16 +186,12 @@ public class RPGHandler extends ServerInternals {
     @Override
     public void loadExtraListeners() {
         if (!this.listenersLoaded) {
-            switch (serverType) {
-                case TWEAKKIT:
-                    this.plugin.getListenerManager().addListener(new TweakkitListener(this.plugin));
-                case SPIGOT:
-                    this.plugin.getListenerManager().addListener(new SpigotListener(this.plugin));
-                    break;
-                case BUKKIT:
-                    break;
-                default:
-                    break;
+            if (serverType == ServerType.TWEAKKIT) {
+                this.plugin.getListenerManager().addListener(new TweakkitListener(this.plugin));
+                this.plugin.getListenerManager().addListener(new SpigotListener(this.plugin));
+            } else if (serverType == ServerType.SPIGOT) {
+                this.plugin.getListenerManager().addListener(new SpigotListener(this.plugin));
+
             }
             this.listenersLoaded = true;
         }
@@ -221,27 +223,22 @@ public class RPGHandler extends ServerInternals {
     }
 
     @Override
-    public CreatureSpawnEvent.SpawnReason getSpawnReason(LivingEntity entity,
-                                                         SpawnReason provided) {
+    public SpawnReason getSpawnReason(LivingEntity entity, SpawnReason provided) {
         int ordinal = 3;
         if (provided != null) {
             ordinal = provided.ordinal();
         }
-        switch (serverType) {
-            case BUKKIT:
-            case SPIGOT:
-                ordinal = (int) getOrSetAttribute(entity, EntityAttributeType.SPAWNREASON, ordinal);
-                break;
-            case TWEAKKIT:
-                ordinal = TweakkitHelper
-                        .getEntityData(this.plugin, entity, SPAWNREASON_STRING, ordinal);
-                break;
-            default:
-                break;
+        if (serverType == ServerType.BUKKIT || serverType == ServerType.SPIGOT) {
+            ordinal = (int) getOrSetAttribute(entity, EntityAttributeType.SPAWNREASON, ordinal);
+
+        } else if (serverType == ServerType.TWEAKKIT) {
+            ordinal = TweakkitHelper
+                    .getEntityData(this.plugin, entity, SPAWNREASON_STRING, ordinal);
+
         }
-        CreatureSpawnEvent.SpawnReason reason = CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
+        SpawnReason reason = SpawnReason.CHUNK_GEN;
         try {
-            reason = CreatureSpawnEvent.SpawnReason.values()[ordinal];
+            reason = SpawnReason.values()[ordinal];
         } catch (Exception e) {
             // TODO: surface this better?
             this.plugin.debugLog(Level.WARNING,
@@ -272,15 +269,13 @@ public class RPGHandler extends ServerInternals {
         if (entity == null) {
             return;
         }
-        switch (serverType) {
-            case BUKKIT:
-            case SPIGOT:
-                setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
-                break;
-            case TWEAKKIT:
-                TweakkitHelper.getEntityData(this.plugin, entity, EXPERIENCE_STRING,
-                                             experience.doubleValue());
-                break;
+        if (serverType == ServerType.BUKKIT || serverType == ServerType.SPIGOT) {
+            setAttribute(entity, EntityAttributeType.EXPERIENCE, experience.doubleValue());
+
+        } else if (serverType == ServerType.TWEAKKIT) {
+            TweakkitHelper.getEntityData(this.plugin, entity, EXPERIENCE_STRING,
+                                         experience.doubleValue());
+
         }
     }
 
@@ -421,7 +416,7 @@ public class RPGHandler extends ServerInternals {
                                 final ISkill skill, double damage, final DamageCause cause,
                                 final boolean knockback) {
         Map<InsentientDamageEvent.DamageType, Double> modifiers =
-                new EnumMap<InsentientDamageEvent.DamageType, Double>(
+                new EnumMap<>(
                         ImmutableMap.of(InsentientDamageEvent.DamageType.PHYSICAL, damage));
         return damageEntity(target, attacker, skill, modifiers, cause, knockback);
     }
@@ -477,9 +472,7 @@ public class RPGHandler extends ServerInternals {
         if (casterLivingEntity instanceof Player) {
             try {
                 this.ldbpt.set(el, 60);
-            } catch (final IllegalArgumentException e) {
-                // do nothing
-            } catch (final IllegalAccessException e) {
+            } catch (final IllegalArgumentException | IllegalAccessException e) {
                 // do nothing
             }
         }
@@ -502,15 +495,14 @@ public class RPGHandler extends ServerInternals {
 
             final EntityLiving attackEntity = ((CraftLivingEntity) casterLivingEntity).getHandle();
             if (targetLivingEntity instanceof org.bukkit.entity.Monster) {
-                if ((targetLivingEntity instanceof Blaze) ||
-                        (targetLivingEntity instanceof Enderman) ||
-                        (targetLivingEntity instanceof Spider) ||
-                        (targetLivingEntity instanceof Giant) ||
-                        (targetLivingEntity instanceof Silverfish)) {
+                if ((targetLivingEntity instanceof Blaze) || (targetLivingEntity instanceof Spider)
+                        || (targetLivingEntity instanceof Enderman)
+                        || (targetLivingEntity instanceof Giant)
+                        || (targetLivingEntity instanceof Silverfish)) {
                     final EntityMonster em = (EntityMonster) el;
                     final EntityTargetEvent targetEvent = CraftEventFactory
                             .callEntityTargetEvent(em, attackEntity,
-                                                   EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY);
+                                                   TargetReason.TARGET_ATTACKED_ENTITY);
                     if (!targetEvent.isCancelled()) {
                         em.setTarget(attackEntity);
                     }
@@ -629,13 +621,19 @@ public class RPGHandler extends ServerInternals {
                             .max(f - Math.max(f - entityLiving.getAbsorptionHearts(), 0.0F), 0.0F));
                 }
             };
-            float absorptionModifier = absorption.apply(damage).floatValue();
+            Double temp = absorption.apply(damage);
+            float absorptionModifier;
+            if (temp == null) {
+                absorptionModifier = 0;
+            } else {
+                absorptionModifier = temp.floatValue();
+            }
             Map<EntityDamageEvent.DamageModifier, Double> damageModifierDoubleEnumMap =
-                    new EnumMap<EntityDamageEvent.DamageModifier, Double>(
+                    new EnumMap<>(
                             EntityDamageEvent.DamageModifier.class);
             Map<EntityDamageEvent.DamageModifier, Function<? super Double, Double>>
                     modifierFunctions =
-                    new EnumMap<EntityDamageEvent.DamageModifier, Function<? super Double, Double>>(
+                    new EnumMap<>(
                             EntityDamageEvent.DamageModifier.class);
             damageModifierDoubleEnumMap.put(EntityDamageEvent.DamageModifier.BASE, damage);
             modifierFunctions.put(EntityDamageEvent.DamageModifier.BASE, Functions.constant(-0.0));
@@ -689,9 +687,7 @@ public class RPGHandler extends ServerInternals {
     public void refreshLastPlayerDamageTime(LivingEntity entity) {
         try {
             this.ldbpt.set(((CraftLivingEntity) entity).getHandle(), 60);
-        } catch (final IllegalArgumentException e) {
-            // do nothing
-        } catch (final IllegalAccessException e) {
+        } catch (final IllegalArgumentException | IllegalAccessException e) {
             // do nothing
         }
     }
@@ -700,7 +696,7 @@ public class RPGHandler extends ServerInternals {
     public void hidePlayer(Insentient player) {
         if (this.plugin.getProperties().useVanishIfAvailable()) {
             // Do nothing
-
+            throw new UnsupportedOperationException("Vanishing is not implemented yet.");
         }
     }
 
@@ -708,25 +704,28 @@ public class RPGHandler extends ServerInternals {
     @Override
     public void sendFakePotionEffectPacket(PotionEffect effect, Player player) {
         EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-        entityPlayer.playerConnection.sendPacket(new PacketPlayOutEntityEffect(entityPlayer.getId(),
-                                                                          new MobEffect(
-                                                                                  effect.getType()
-                                                                                          .getId(),
-                                                                                  effect.getDuration(),
-                                                                                  effect.getAmplifier())));
+        entityPlayer.playerConnection.sendPacket(new PacketPlayOutEntityEffect(
+                entityPlayer.getId(),
+                new MobEffect(
+                        effect.getType()
+                                .getId(),
+                        effect.getDuration(),
+                        effect.getAmplifier())));
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void sendFakePotionEffectPackets(Set<PotionEffect> effects, Player player) {
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
         for (PotionEffect effect : effects) {
-            ePlayer.playerConnection.sendPacket(new PacketPlayOutEntityEffect(ePlayer.getId(),
-                                                                              new MobEffect(
-                                                                                      effect.getType()
-                                                                                              .getId(),
-                                                                                      effect.getDuration(),
-                                                                                      effect.getAmplifier())));
+            entityPlayer.playerConnection
+                    .sendPacket(new PacketPlayOutEntityEffect(
+                            entityPlayer.getId(),
+                            new MobEffect(
+                                    effect.getType()
+                                            .getId(),
+                                    effect.getDuration(),
+                                    effect.getAmplifier())));
         }
 
     }
@@ -734,26 +733,29 @@ public class RPGHandler extends ServerInternals {
     @SuppressWarnings("deprecation")
     @Override
     public void removeFakePotionEffectPacket(PotionEffect effect, Player player) {
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
-        ePlayer.playerConnection.sendPacket(new PacketPlayOutRemoveEntityEffect(ePlayer.getId(),
-                                                                                new MobEffect(
-                                                                                        effect.getType()
-                                                                                                .getId(),
-                                                                                        effect.getDuration(),
-                                                                                        effect.getAmplifier())));
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        entityPlayer.playerConnection
+                .sendPacket(new PacketPlayOutRemoveEntityEffect(
+                        entityPlayer.getId(),
+                        new MobEffect(
+                                effect.getType()
+                                        .getId(),
+                                effect.getDuration(),
+                                effect.getAmplifier())));
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void removeFakePotionEffectPackets(Set<PotionEffect> effects, Player player) {
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
         for (PotionEffect effect : effects) {
-            ePlayer.playerConnection.sendPacket(new PacketPlayOutRemoveEntityEffect(ePlayer.getId(),
-                                                                                    new MobEffect(
-                                                                                            effect.getType()
-                                                                                                    .getId(),
-                                                                                            effect.getDuration(),
-                                                                                            effect.getAmplifier())));
+            entityPlayer.playerConnection.sendPacket(
+                    new PacketPlayOutRemoveEntityEffect(entityPlayer.getId(),
+                                                        new MobEffect(
+                                                                effect.getType()
+                                                                        .getId(),
+                                                                effect.getDuration(),
+                                                                effect.getAmplifier())));
         }
     }
 
@@ -833,15 +835,13 @@ public class RPGHandler extends ServerInternals {
             this.modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
 
             Set<?> oldset = (Set<?>) f.get(null);
-            HashSet<Object> newset = new HashSet<Object>(oldset);
+            HashSet<Object> newset = new HashSet<>(oldset);
             for (ItemAttributeType type : ItemAttributeType.values()) {
                 newset.add(type.getAttributeName());
             }
 
             f.set(null, newset);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }

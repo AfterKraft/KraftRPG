@@ -17,9 +17,6 @@ buildscript {
 
 defaultTasks 'clean', 'license', 'check', 'build'
 
-//tasks.build.dependsOn fatJar
-//tasks.assemble.dependsOn fatJar
-
 group 'com.afterkraft.kraftrpg'
 version 'parent'
 
@@ -35,14 +32,33 @@ allprojects {
     apply plugin: 'maven-publish-auth'
 
     // Minimum version of Java required
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 
     // Project dependencies
     repositories {
         mavenCentral()
         maven {
             url "http://nexus.afterkraft.com/content/groups/public/"
+        }
+    }
+
+    idea {
+        module {
+
+            jdkName = '1.7'
+
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+
+    eclipse {
+
+        classpath {
+
+            downloadJavadoc = true
+            downloadSources = true
         }
     }
 

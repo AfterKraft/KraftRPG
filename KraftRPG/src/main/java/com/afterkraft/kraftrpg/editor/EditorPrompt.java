@@ -80,6 +80,11 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     /**
      * Push this prompt on the stack and return the given prompt. Use this to "call" another
      * prompt.
+     *
+     * @param context The context to add this to it
+     * @param next The prompt to fetch the next prompt
+     *
+     * @return The editor prompt after pushing
      */
     public EditorPrompt callPrompt(ConversationContext context, EditorPrompt next) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
@@ -105,6 +110,10 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
 
     /**
      * Pop the previous prompt off the stack. Use this to "return to" another prompt.
+     *
+     * @param context The conversation to fetch the prompt
+     *
+     * @return The prompt after popping from the stack
      */
     public EditorPrompt returnPrompt(ConversationContext context) {
         List<EditorPrompt> stack = EditorState.getPromptStack(context);
@@ -255,7 +264,7 @@ public abstract class EditorPrompt implements TabCompletablePrompt {
     @Override
     public List<String> onTabComplete(ConversationContext context, String fullMessage,
                                       String lastToken) {
-        List<String> matches = new ArrayList<String>();
+        List<String> matches = new ArrayList<>();
         StringUtil.copyPartialMatches(lastToken, getCompletions(context), matches);
         return matches;
     }

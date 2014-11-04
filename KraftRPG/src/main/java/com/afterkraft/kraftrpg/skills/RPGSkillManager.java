@@ -63,7 +63,7 @@ public class RPGSkillManager implements SkillManager {
     private static final Set<String> DEFAULT_ALLOWED_NODES;
 
     static {
-        DEFAULT_ALLOWED_NODES = new HashSet<String>();
+        DEFAULT_ALLOWED_NODES = new HashSet<>();
         for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
             DEFAULT_ALLOWED_NODES.add(setting.node());
             DEFAULT_ALLOWED_NODES.add(setting.scalingNode());
@@ -81,7 +81,7 @@ public class RPGSkillManager implements SkillManager {
     public RPGSkillManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
         this.listener = new SkillManagerListener();
-        this.skillMap = new HashMap<String, ISkill>();
+        this.skillMap = new HashMap<>();
     }
 
     /**
@@ -132,7 +132,7 @@ public class RPGSkillManager implements SkillManager {
         final PermissionSkill oSkill = new PermissionSkill(this.plugin, name);
         final ConfigurationSection config = RPGSkillConfigManager.outsourcedSkillConfig
                 .getConfigurationSection(oSkill.getName());
-        final Map<String, Boolean> perms = new HashMap<String, Boolean>();
+        final Map<String, Boolean> perms = new HashMap<>();
         if (config != null) {
             final ConfigurationSection permConfig = config.getConfigurationSection("permissions");
             for (String key : permConfig.getKeys(true)) {
@@ -221,7 +221,7 @@ public class RPGSkillManager implements SkillManager {
         Set<SkillSetting> settings = ImmutableSet.copyOf(skill.getUsedConfigNodes());
         ConfigurationSection section = skill.getDefaultConfig();
 
-        Set<String> allowedKeys = new HashSet<String>(DEFAULT_ALLOWED_NODES);
+        Set<String> allowedKeys = new HashSet<>(DEFAULT_ALLOWED_NODES);
         // Build the allowedKeys set
         for (SkillSetting setting : settings) {
             if (setting == SkillSetting.CUSTOM) {
@@ -254,8 +254,8 @@ public class RPGSkillManager implements SkillManager {
 
     private class SkillManagerListener implements Listener {
 
-        private final Set<PassiveSkill> passiveSkills = new HashSet<PassiveSkill>();
-        private final Set<PermissionSkill> permissionSkills = new HashSet<PermissionSkill>();
+        private final Set<PassiveSkill> passiveSkills = new HashSet<>();
+        private final Set<PermissionSkill> permissionSkills = new HashSet<>();
 
         protected void addSkill(ISkill skill) {
             if (skill instanceof PassiveSkill) {

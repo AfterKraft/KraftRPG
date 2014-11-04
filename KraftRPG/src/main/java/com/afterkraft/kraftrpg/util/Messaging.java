@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
@@ -59,128 +60,127 @@ public class Messaging {
     }
 
     public static String getEntityName(Entity entity) {
-        switch (entity.getType()) {
-            case DROPPED_ITEM:
-                return getMessage("entity-name-dropped-item");
-            case EXPERIENCE_ORB:
-                return getMessage("entity-name-experience-orb");
-            case LEASH_HITCH:
-                return getMessage("entity-name-leash");
-            case PAINTING:
-                return getMessage("entity-name-painting");
-            case ARROW:
-                return getMessage("entity-name-arrow");
-            case SNOWBALL:
-                return getMessage("entity-name-snowball");
-            case FIREBALL:
-                return getMessage("entity-name-fireball");
-            case SMALL_FIREBALL:
-                return getMessage("entity-name-small-fireball");
-            case ENDER_PEARL:
-                return getMessage("entity-name-ender-pearl");
-            case ENDER_SIGNAL:
-                return getMessage("entity-name-eye-of-ender");
-            case THROWN_EXP_BOTTLE:
-                return getMessage("entity-name-experience-bottle");
-            case ITEM_FRAME:
-                return getMessage("entity-name-item-frame");
-            case WITHER_SKULL:
-                return getMessage("entity-name-wither-skull");
-            case PRIMED_TNT:
-                return getMessage("entity-name-tnt");
-            case FALLING_BLOCK:
-                return getMessage("entity-name-falling-block");
-            case FIREWORK:
-                return getMessage("entity-name-firework");
-            case MINECART_COMMAND:
-                return getMessage("entity-name-minecart-commandblock");
-            case BOAT:
-                return getMessage("entity-name-boat");
-            case MINECART:
-                return getMessage("entity-name-minecart");
-            case MINECART_CHEST:
-                return getMessage("entity-name-minecart-chest");
-            case MINECART_FURNACE:
-                return getMessage("entity-name-minecart-furnace");
-            case MINECART_TNT:
-                return getMessage("entity-name-minecart-tnt");
-            case MINECART_HOPPER:
-                return getMessage("entity-name-minecart-hopper");
-            case MINECART_MOB_SPAWNER:
-                return getMessage("entity-name-minecart-mobspawner");
-            case CREEPER:
-                return getMessage("entity-name-creeper");
-            case SKELETON:
-                return getMessage("entity-name-skeleton");
-            case SPIDER:
-                return getMessage("entity-name-spider");
-            case GIANT:
-                return getMessage("entity-name-giant");
-            case ZOMBIE:
-                return getMessage("entity-name-zombie");
-            case SLIME:
-                return getMessage("entity-name-slime");
-            case GHAST:
-                return getMessage("entity-name-ghast");
-            case PIG_ZOMBIE:
-                return getMessage("entity-name-pig-zombie");
-            case ENDERMAN:
-                return getMessage("entity-name-enderman");
-            case CAVE_SPIDER:
-                return getMessage("entity-name-cavespider");
-            case SILVERFISH:
-                return getMessage("entity-name-silverfish");
-            case BLAZE:
-                return getMessage("entity-name-blaze");
-            case MAGMA_CUBE:
-                return getMessage("entity-name-magma-cube");
-            case ENDER_DRAGON:
-                return getMessage("entity-name-ender-dragon");
-            case WITHER:
-                return getMessage("entity-name-wither");
-            case BAT:
-                return getMessage("entity-name-bat");
-            case WITCH:
-                return getMessage("entity-name-witch");
-            case PIG:
-                return getMessage("entity-name-pig");
-            case SHEEP:
-                return getMessage("entity-name-sheep");
-            case COW:
-                return getMessage("entity-name-cow");
-            case CHICKEN:
-                return getMessage("entity-name-chicken");
-            case SQUID:
-                return getMessage("entity-name-squid");
-            case WOLF:
-                return getMessage("entity-name-wolf");
-            case MUSHROOM_COW:
-                return getMessage("entity-name-mushroom-cow");
-            case SNOWMAN:
-                return getMessage("entity-name-snowman");
-            case OCELOT:
-                return getMessage("entity-name-ocelot");
-            case IRON_GOLEM:
-                return getMessage("entity-name-iron-golem");
-            case HORSE:
-                return getMessage("entity-name-horse");
-            case VILLAGER:
-                return getMessage("entity-name-villager");
-            case ENDER_CRYSTAL:
-                return getMessage("entity-name-ender-crystal");
-            case SPLASH_POTION:
-                return getMessage("entity-name-splash-potion");
-            case EGG:
-                return getMessage("entity-name-egg");
-            case FISHING_HOOK:
-                return getMessage("entity-name-fishing-hook");
-            case LIGHTNING:
-                return getMessage("entity-name-lightning");
-            case PLAYER:
-                return ((Player) entity).getName();
-            case UNKNOWN:
-            default:
-                return getMessage("entity-name-unknown");
+        EntityType entityType = entity.getType();
+        if (entityType == org.bukkit.entity.EntityType.DROPPED_ITEM) {
+            return getMessage("entity-name-dropped-item");
+        } else if (entityType == org.bukkit.entity.EntityType.EXPERIENCE_ORB) {
+            return getMessage("entity-name-experience-orb");
+        } else if (entityType == org.bukkit.entity.EntityType.LEASH_HITCH) {
+            return getMessage("entity-name-leash");
+        } else if (entityType == org.bukkit.entity.EntityType.PAINTING) {
+            return getMessage("entity-name-painting");
+        } else if (entityType == org.bukkit.entity.EntityType.ARROW) {
+            return getMessage("entity-name-arrow");
+        } else if (entityType == org.bukkit.entity.EntityType.SNOWBALL) {
+            return getMessage("entity-name-snowball");
+        } else if (entityType == org.bukkit.entity.EntityType.FIREBALL) {
+            return getMessage("entity-name-fireball");
+        } else if (entityType == org.bukkit.entity.EntityType.SMALL_FIREBALL) {
+            return getMessage("entity-name-small-fireball");
+        } else if (entityType == org.bukkit.entity.EntityType.ENDER_PEARL) {
+            return getMessage("entity-name-ender-pearl");
+        } else if (entityType == org.bukkit.entity.EntityType.ENDER_SIGNAL) {
+            return getMessage("entity-name-eye-of-ender");
+        } else if (entityType == org.bukkit.entity.EntityType.THROWN_EXP_BOTTLE) {
+            return getMessage("entity-name-experience-bottle");
+        } else if (entityType == org.bukkit.entity.EntityType.ITEM_FRAME) {
+            return getMessage("entity-name-item-frame");
+        } else if (entityType == org.bukkit.entity.EntityType.WITHER_SKULL) {
+            return getMessage("entity-name-wither-skull");
+        } else if (entityType == org.bukkit.entity.EntityType.PRIMED_TNT) {
+            return getMessage("entity-name-tnt");
+        } else if (entityType == org.bukkit.entity.EntityType.FALLING_BLOCK) {
+            return getMessage("entity-name-falling-block");
+        } else if (entityType == org.bukkit.entity.EntityType.FIREWORK) {
+            return getMessage("entity-name-firework");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_COMMAND) {
+            return getMessage("entity-name-minecart-commandblock");
+        } else if (entityType == org.bukkit.entity.EntityType.BOAT) {
+            return getMessage("entity-name-boat");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART) {
+            return getMessage("entity-name-minecart");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_CHEST) {
+            return getMessage("entity-name-minecart-chest");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_FURNACE) {
+            return getMessage("entity-name-minecart-furnace");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_TNT) {
+            return getMessage("entity-name-minecart-tnt");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_HOPPER) {
+            return getMessage("entity-name-minecart-hopper");
+        } else if (entityType == org.bukkit.entity.EntityType.MINECART_MOB_SPAWNER) {
+            return getMessage("entity-name-minecart-mobspawner");
+        } else if (entityType == org.bukkit.entity.EntityType.CREEPER) {
+            return getMessage("entity-name-creeper");
+        } else if (entityType == org.bukkit.entity.EntityType.SKELETON) {
+            return getMessage("entity-name-skeleton");
+        } else if (entityType == org.bukkit.entity.EntityType.SPIDER) {
+            return getMessage("entity-name-spider");
+        } else if (entityType == org.bukkit.entity.EntityType.GIANT) {
+            return getMessage("entity-name-giant");
+        } else if (entityType == org.bukkit.entity.EntityType.ZOMBIE) {
+            return getMessage("entity-name-zombie");
+        } else if (entityType == org.bukkit.entity.EntityType.SLIME) {
+            return getMessage("entity-name-slime");
+        } else if (entityType == org.bukkit.entity.EntityType.GHAST) {
+            return getMessage("entity-name-ghast");
+        } else if (entityType == org.bukkit.entity.EntityType.PIG_ZOMBIE) {
+            return getMessage("entity-name-pig-zombie");
+        } else if (entityType == org.bukkit.entity.EntityType.ENDERMAN) {
+            return getMessage("entity-name-enderman");
+        } else if (entityType == org.bukkit.entity.EntityType.CAVE_SPIDER) {
+            return getMessage("entity-name-cavespider");
+        } else if (entityType == org.bukkit.entity.EntityType.SILVERFISH) {
+            return getMessage("entity-name-silverfish");
+        } else if (entityType == org.bukkit.entity.EntityType.BLAZE) {
+            return getMessage("entity-name-blaze");
+        } else if (entityType == org.bukkit.entity.EntityType.MAGMA_CUBE) {
+            return getMessage("entity-name-magma-cube");
+        } else if (entityType == org.bukkit.entity.EntityType.ENDER_DRAGON) {
+            return getMessage("entity-name-ender-dragon");
+        } else if (entityType == org.bukkit.entity.EntityType.WITHER) {
+            return getMessage("entity-name-wither");
+        } else if (entityType == org.bukkit.entity.EntityType.BAT) {
+            return getMessage("entity-name-bat");
+        } else if (entityType == org.bukkit.entity.EntityType.WITCH) {
+            return getMessage("entity-name-witch");
+        } else if (entityType == org.bukkit.entity.EntityType.PIG) {
+            return getMessage("entity-name-pig");
+        } else if (entityType == org.bukkit.entity.EntityType.SHEEP) {
+            return getMessage("entity-name-sheep");
+        } else if (entityType == org.bukkit.entity.EntityType.COW) {
+            return getMessage("entity-name-cow");
+        } else if (entityType == org.bukkit.entity.EntityType.CHICKEN) {
+            return getMessage("entity-name-chicken");
+        } else if (entityType == org.bukkit.entity.EntityType.SQUID) {
+            return getMessage("entity-name-squid");
+        } else if (entityType == org.bukkit.entity.EntityType.WOLF) {
+            return getMessage("entity-name-wolf");
+        } else if (entityType == org.bukkit.entity.EntityType.MUSHROOM_COW) {
+            return getMessage("entity-name-mushroom-cow");
+        } else if (entityType == org.bukkit.entity.EntityType.SNOWMAN) {
+            return getMessage("entity-name-snowman");
+        } else if (entityType == org.bukkit.entity.EntityType.OCELOT) {
+            return getMessage("entity-name-ocelot");
+        } else if (entityType == org.bukkit.entity.EntityType.IRON_GOLEM) {
+            return getMessage("entity-name-iron-golem");
+        } else if (entityType == org.bukkit.entity.EntityType.HORSE) {
+            return getMessage("entity-name-horse");
+        } else if (entityType == org.bukkit.entity.EntityType.VILLAGER) {
+            return getMessage("entity-name-villager");
+        } else if (entityType == org.bukkit.entity.EntityType.ENDER_CRYSTAL) {
+            return getMessage("entity-name-ender-crystal");
+        } else if (entityType == org.bukkit.entity.EntityType.SPLASH_POTION) {
+            return getMessage("entity-name-splash-potion");
+        } else if (entityType == org.bukkit.entity.EntityType.EGG) {
+            return getMessage("entity-name-egg");
+        } else if (entityType == org.bukkit.entity.EntityType.FISHING_HOOK) {
+            return getMessage("entity-name-fishing-hook");
+        } else if (entityType == org.bukkit.entity.EntityType.LIGHTNING) {
+            return getMessage("entity-name-lightning");
+        } else if (entityType == org.bukkit.entity.EntityType.PLAYER) {
+            return ((Player) entity).getName();
+        } else {
+            return getMessage("entity-name-unknown");
         }
     }
 
@@ -209,7 +209,7 @@ public class Messaging {
      * @param key - Message key to be obtained
      *
      * @return - Message that is localized to the configured Language
-     * @throws MessageNotFoundException
+     * @throws MessageNotFoundException When the message is not found
      */
     private static String getMessage1(String key) throws MessageNotFoundException {
         String msg = messages.getString(key);
@@ -224,6 +224,10 @@ public class Messaging {
     /**
      * Colorizes the message prior to being sent out. Eliminates the use of ChatColor and characters
      * that could break if character format is changed.
+     *
+     * @param message The message to colorize
+     *
+     * @return A colorized message with the correct unicode character
      */
     public static String colorize(String message) {
         return message.replaceAll("(?i)&([a-fklmno0-9])", "\u00A7$1");
@@ -234,7 +238,7 @@ public class Messaging {
      *
      * @param locale - Locale to be used
      *
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException When the bundle is not found
      */
     public static void setLocale(Locale locale) throws ClassNotFoundException {
         messages = ResourceBundle.getBundle("resources.Messages.Messages", locale);

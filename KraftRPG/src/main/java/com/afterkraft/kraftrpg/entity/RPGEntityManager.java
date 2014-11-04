@@ -72,15 +72,15 @@ public class RPGEntityManager implements EntityManager {
 
     public RPGEntityManager(RPGPlugin plugin) {
         this.plugin = plugin;
-        this.champions = new HashMap<UUID, Champion>();
-        this.monsters = new ConcurrentHashMap<UUID, Monster>();
-        this.entities = new ConcurrentHashMap<UUID, IEntity>();
-        this.summons = new ConcurrentHashMap<UUID, Summon>();
+        this.champions = new HashMap<>();
+        this.monsters = new ConcurrentHashMap<>();
+        this.entities = new ConcurrentHashMap<>();
+        this.summons = new ConcurrentHashMap<>();
         this.storage = this.plugin.getStorage();
     }
 
     public final Set<Sentient> getAllSentientBeings() {
-        Set<Sentient> sentients = new HashSet<Sentient>();
+        Set<Sentient> sentients = new HashSet<>();
         for (Champion champion : this.champions.values()) {
             sentients.add(champion);
         }

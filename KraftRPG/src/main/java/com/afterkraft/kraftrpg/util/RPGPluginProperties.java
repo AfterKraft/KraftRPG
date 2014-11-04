@@ -51,7 +51,7 @@ public class RPGPluginProperties implements Properties {
     public static int maxLevel = 50;
     public static int[] levels;
     public Map<EntityType, FixedPoint> creatureExperienceDrop =
-            new EnumMap<EntityType, FixedPoint>(EntityType.class);
+            new EnumMap<>(EntityType.class);
 
     public double getMobDamageDistanceModified() {
         return mobDamageDistanceModified;

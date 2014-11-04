@@ -41,9 +41,9 @@ import com.afterkraft.kraftrpg.api.entity.Insentient;
 public class RPGEffectManager implements EffectManager {
 
     private static final int EFFECT_INTERVAL = 2;
-    private final Set<Managed> managedEffects = new HashSet<Managed>();
-    private final Set<Managed> pendingRemovals = new HashSet<Managed>();
-    private final Set<Managed> pendingAdditions = new HashSet<Managed>();
+    private final Set<Managed> managedEffects = new HashSet<>();
+    private final Set<Managed> pendingRemovals = new HashSet<>();
+    private final Set<Managed> pendingAdditions = new HashSet<>();
     private final RPGPlugin plugin;
     private int taskID = 0;
 
@@ -86,14 +86,14 @@ public class RPGEffectManager implements EffectManager {
         @Override
         public void run() {
             final Set<Managed> removals =
-                    new HashSet<Managed>(RPGEffectManager.this.pendingRemovals);
+                    new HashSet<>(RPGEffectManager.this.pendingRemovals);
             RPGEffectManager.this.pendingRemovals.clear();
             for (final Managed managed : removals) {
                 RPGEffectManager.this.managedEffects.remove(managed);
             }
 
             final Set<Managed> additions =
-                    new HashSet<Managed>(RPGEffectManager.this.pendingAdditions);
+                    new HashSet<>(RPGEffectManager.this.pendingAdditions);
             RPGEffectManager.this.pendingAdditions.clear();
             for (final Managed managed : additions) {
                 RPGEffectManager.this.managedEffects.add(managed);

@@ -68,12 +68,12 @@ public class RPGRoleManager implements RoleManager {
     private final Map<String, Role> roleMap;
     private Role defaultPrimaryRole;
     private Role defaultSecondaryRole;
-    private DirectedGraph<Role> roleGraph = new DirectedGraph<Role>();
-    private Map<Role, FixedPoint[]> roleLevels = new HashMap<Role, FixedPoint[]>();
+    private DirectedGraph<Role> roleGraph = new DirectedGraph<>();
+    private Map<Role, FixedPoint[]> roleLevels = new HashMap<>();
 
     public RPGRoleManager(RPGPlugin plugin) {
         this.plugin = plugin;
-        this.roleMap = new HashMap<String, Role>();
+        this.roleMap = new HashMap<>();
         rolesDirectory = new File(plugin.getDataFolder() + File.separator + "roles");
 
     }
@@ -202,7 +202,7 @@ public class RPGRoleManager implements RoleManager {
     }
 
     private void reconstructRoleGraph() {
-        this.roleGraph = new DirectedGraph<Role>();
+        this.roleGraph = new DirectedGraph<>();
         for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
@@ -230,7 +230,7 @@ public class RPGRoleManager implements RoleManager {
 
     @Override
     public boolean areRoleDependenciesCyclic() {
-        DirectedGraph<Role> tempGraph = new DirectedGraph<Role>();
+        DirectedGraph<Role> tempGraph = new DirectedGraph<>();
         for (Map.Entry<String, Role> entry : this.roleMap.entrySet()) {
             Role role = entry.getValue();
             for (Role parent : role.getParents()) {
@@ -277,11 +277,11 @@ public class RPGRoleManager implements RoleManager {
                     .checkForConfig(new File(rolesDirectory, "archer.yml"));
         }
         File[] roleFiles = rolesDirectory.listFiles();
-        List<Role> wildCarded = new ArrayList<Role>();
+        List<Role> wildCarded = new ArrayList<>();
         if (roleFiles == null) {
             this.plugin.debugLog(Level.SEVERE, "KraftRPG is unable to find the roles directory!");
         } else {
-            List<Configuration> roleConfigurations = new ArrayList<Configuration>();
+            List<Configuration> roleConfigurations = new ArrayList<>();
             for (final File roleFile : roleFiles) {
                 if (roleFile.isFile() && roleFile.getName().endsWith(".yml")) {
                     YamlConfiguration roleYmlConfig = YamlConfiguration.loadConfiguration(roleFile);
@@ -498,7 +498,7 @@ public class RPGRoleManager implements RoleManager {
             Bukkit.getServer().getPluginManager().addPermission(permission);
         }
         // Now set up the wildcarded roles
-        final Map<String, Boolean> wildcardRolePermissions = new HashMap<String, Boolean>();
+        final Map<String, Boolean> wildcardRolePermissions = new HashMap<>();
         for (Role wildcardedRole : wildcarded) {
             wildcardRolePermissions
                     .put("kraftrpg.roles." + wildcardedRole.getName().toLowerCase(), true);

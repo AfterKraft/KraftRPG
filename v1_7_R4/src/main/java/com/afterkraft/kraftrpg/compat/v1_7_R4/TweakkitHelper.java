@@ -25,12 +25,13 @@ package com.afterkraft.kraftrpg.compat.v1_7_R4;
 
 import java.util.List;
 
-import com.afterkraft.metadata.PersistentMetadataValue;
-
 import org.bukkit.entity.Entity;
 import org.bukkit.metadata.MetadataValue;
 
+import com.afterkraft.metadata.PersistentMetadataValue;
+
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+
 
 /**
  * TODO Javadoc
@@ -157,7 +158,8 @@ public final class TweakkitHelper {
         }
     }
 
-    public static List<Object> getEntityData(RPGPlugin plugin, Entity entity, String key, List<Object> def) {
+    public static List<Object> getEntityData(RPGPlugin plugin, Entity entity,
+                                             String key, List<Object> def) {
         if (!entity.hasMetadata("kraftrpg" + key)) {
             PersistentMetadataValue value = new PersistentMetadataValue(plugin, def);
             entity.setMetadata("kraftrpg" + key, value);

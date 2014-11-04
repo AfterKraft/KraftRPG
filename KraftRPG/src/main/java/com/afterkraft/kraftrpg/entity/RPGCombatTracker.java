@@ -51,7 +51,7 @@ public class RPGCombatTracker implements CombatTracker {
     @Override
     public void initialize() {
         this.masterCombatMap =
-                new WeakHashMap<Insentient, WeakHashMap<Insentient, EnterCombatReason>>();
+                new WeakHashMap<>();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class RPGCombatTracker implements CombatTracker {
         Validate.notNull(reason, "Cannot enter combat with a null reason!");
         WeakHashMap<Insentient, EnterCombatReason> map = this.masterCombatMap.get(attacker);
         if (map == null) {
-            map = new WeakHashMap<Insentient, EnterCombatReason>();
+            map = new WeakHashMap<>();
         }
         map.put(target, reason);
         this.masterCombatMap.put(attacker, map);

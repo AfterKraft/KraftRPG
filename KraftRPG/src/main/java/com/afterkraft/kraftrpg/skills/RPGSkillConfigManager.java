@@ -62,12 +62,12 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     protected static Configuration defaultSkillConfig = new MemoryConfiguration();
 
     private static Map<String, Configuration> roleSkillConfigurations =
-            new HashMap<String, Configuration>();
+            new HashMap<>();
     private static File skillConfigFile;
     private static File outsourcedSkillConfigFile;
 
     private final Map<SkillCaster, Map<ISkill, ConfigurationSection>> customSettings =
-            new HashMap<SkillCaster, Map<ISkill, ConfigurationSection>>();
+            new HashMap<>();
     private final KraftRPGPlugin plugin;
 
     public RPGSkillConfigManager(KraftRPGPlugin plugin) {
@@ -176,7 +176,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         }
         Map<ISkill, ConfigurationSection> skillMap = this.customSettings.get(caster);
         if (skillMap == null) {
-            skillMap = new HashMap<ISkill, ConfigurationSection>();
+            skillMap = new HashMap<>();
         }
         skillMap.put(skill, section);
         this.customSettings.put(caster, skillMap);
@@ -202,7 +202,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
             }
             final Object o = dSection.get(key);
             if (o instanceof List) {
-                newSection.set(key, new ArrayList<Object>((List<?>) o));
+                newSection.set(key, new ArrayList<>((List<?>) o));
             } else {
                 newSection.set(key, o);
             }
@@ -250,7 +250,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         }
 
         if (!outsourcedSkillConfig.isConfigurationSection(path)) {
-            return new HashSet<String>();
+            return new HashSet<>();
         }
 
         return outsourcedSkillConfig.getConfigurationSection(path).getKeys(false);

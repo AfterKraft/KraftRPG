@@ -136,7 +136,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public Collection<ISkill> getAvailableSkills() {
-        Set<ISkill> skills = new HashSet<ISkill>();
+        Set<ISkill> skills = new HashSet<>();
         for (Role r : this.data.getAllRoles()) {
             skills.addAll(r.getAllSkillsAtLevel(getLevel(r)));
         }
@@ -148,7 +148,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
         // TODO cache results?
         // this is basically /only/ for tab-completion
 
-        Set<String> skillNames = new HashSet<String>();
+        Set<String> skillNames = new HashSet<>();
         for (Role r : this.data.getAllRoles()) {
             for (ISkill skill : r.getAllSkillsAtLevel(getLevel(r))) {
                 if (skill instanceof Active) {
@@ -161,7 +161,7 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public Collection<ISkill> getPossibleSkillsInRoles() {
-        Set<ISkill> skills = new HashSet<ISkill>();
+        Set<ISkill> skills = new HashSet<>();
         for (Role r : this.data.getAllRoles()) {
             for (ISkill skill : r.getAllSkills()) {
                 skills.add(skill);

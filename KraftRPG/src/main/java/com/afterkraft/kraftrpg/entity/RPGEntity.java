@@ -54,7 +54,7 @@ public class RPGEntity implements IEntity {
         Validate.notNull(plugin, "Cannot create an RPGEntity with a null plugin!");
         Validate.notNull(weakEntity, "Cannot create an RPGEntity with a null Entity!");
         this.plugin = plugin;
-        this.weakEntity = new WeakReference<Entity>(weakEntity);
+        this.weakEntity = new WeakReference<>(weakEntity);
         this.name = name != null ? name : weakEntity.getType().name();
         Validate.notNull(this.name, "Failed to create a name for this entity!");
         this.uuid = weakEntity.getUniqueId();
@@ -105,7 +105,7 @@ public class RPGEntity implements IEntity {
         if (!this.uuid.equals(entity.getUniqueId())) {
             return false;
         }
-        this.weakEntity = new WeakReference<Entity>(entity);
+        this.weakEntity = new WeakReference<>(entity);
         return true;
     }
 

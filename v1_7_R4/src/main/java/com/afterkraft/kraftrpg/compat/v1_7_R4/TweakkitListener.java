@@ -28,6 +28,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityPotionEffectChangeEvent;
+import org.bukkit.event.entity.EntityPotionEffectChangeEvent.Cause;
 import org.bukkit.potion.PotionEffect;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
@@ -43,25 +44,25 @@ public class TweakkitListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityPotionEffectChangeEvent(EntityPotionEffectChangeEvent event) {
-        switch (event.getCause()) {
-            case POTION:
-                handlePotionDamage(event.getEffect(), event.getEntity());
-                break;
-            case MOB:
-                handleMob(event.getEffect(), event.getEntity());
-                break;
-            case BEACON:
-                handleBeacon(event.getEffect(), event.getLocation());
-                break;
-            case FOOD:
-                handleFood(event.getEffect(), event.getEntity());
-                break;
-            case GOLDEN_APPLE:
-                handleGoldenApple(event.getEffect(), event.getEntity());
-                break;
-            case ENCHANTED_GOLDEN_APPLE:
-                handleEnchantedGoldenApple(event.getEffect(), event.getEntity());
-                break;
+        Cause i = event.getCause();
+        if (i == EntityPotionEffectChangeEvent.Cause.POTION) {
+            handlePotionDamage(event.getEffect(), event.getEntity());
+
+        } else if (i == EntityPotionEffectChangeEvent.Cause.MOB) {
+            handleMob(event.getEffect(), event.getEntity());
+
+        } else if (i == EntityPotionEffectChangeEvent.Cause.BEACON) {
+            handleBeacon(event.getEffect(), event.getLocation());
+
+        } else if (i == EntityPotionEffectChangeEvent.Cause.FOOD) {
+            handleFood(event.getEffect(), event.getEntity());
+
+        } else if (i == EntityPotionEffectChangeEvent.Cause.GOLDEN_APPLE) {
+            handleGoldenApple(event.getEffect(), event.getEntity());
+
+        } else if (i == EntityPotionEffectChangeEvent.Cause.ENCHANTED_GOLDEN_APPLE) {
+            handleEnchantedGoldenApple(event.getEffect(), event.getEntity());
+
         }
     }
 

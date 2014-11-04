@@ -36,7 +36,7 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin;
  */
 public class RPGCommandManager implements CommandManager {
     private KraftRPGPlugin plugin;
-    private Map<String, CommandExecutor> commandMap = new HashMap<String, CommandExecutor>();
+    private Map<String, CommandExecutor> commandMap = new HashMap<>();
 
     public RPGCommandManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
