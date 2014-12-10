@@ -166,10 +166,12 @@ public abstract class RootCommand implements TabExecutor {
              i++) {
             String key = this.helpList.get(i);
             Subcommand cmd = this.subcommandMap.get(key);
-            sender.sendMessage(String.format(
-                    " " + ChatColor.GREEN + "/%s %s" + ChatColor.RESET + " - "
-                            + ChatColor.DARK_GREEN + "%s",
-                    label, key, cmd.getShortDescription()));
+            if (sender.hasPermission(cmd.getPermission())) {
+                sender.sendMessage(String.format(
+                        " " + ChatColor.GREEN + "/%s %s" + ChatColor.RESET + " - "
+                                + ChatColor.DARK_GREEN + "%s",
+                        label, key, cmd.getShortDescription()));
+            }
         }
 
         sender.sendMessage(String.format(
