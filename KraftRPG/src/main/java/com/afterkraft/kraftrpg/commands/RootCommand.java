@@ -56,20 +56,26 @@ public abstract class RootCommand implements TabExecutor {
     }
 
     protected void addSubcommand(String name, Subcommand sub) {
-        assert this.helpList == null;
         name = name.toLowerCase();
 
         this.subcommandMap.put(name, sub);
+        
+        if (this.helpList != null) {
+            buildSortedList();
+        }
     }
 
     protected void addSubcommand(String name, Subcommand sub, String... aliases) {
-        assert this.helpList == null;
         name = name.toLowerCase();
 
         this.subcommandMap.put(name, sub);
         for (String alias : aliases) {
             this.subcommandMap.put(alias, sub);
             this.aliasMap.put(alias, name);
+        }
+        
+        if (this.HelpList != null) {
+            buildSortedList();
         }
     }
 
