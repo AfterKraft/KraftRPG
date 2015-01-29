@@ -10,59 +10,64 @@ buildscript {
     }
     dependencies {
         classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.1.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
     }
 }
 
-defaultTasks 'clean', 'license', 'check', 'build'
+defaultTasks 'clean', 'licenseFormat', 'check', 'build'
 
 group 'com.afterkraft.kraftrpg'
-version 'parent'
+version '0.0.2-SNAPSHOT'
 
-allprojects {
+// Plugins
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'checkstyle'
+apply plugin: 'maven'
+apply plugin: 'license'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'signing'
 
-    // Plugins
-    apply plugin: 'java'
-    apply plugin: 'eclipse'
-    apply plugin: 'idea'
-    apply plugin: 'checkstyle'
-    apply plugin: 'maven'
-    apply plugin: 'license'
-    apply plugin: 'maven-publish-auth'
+// Minimum version of Java required
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
-    // Minimum version of Java required
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-
-    // Project dependencies
-    repositories {
-        mavenCentral()
-        maven {
-            url "http://nexus.afterkraft.com/content/groups/public/"
-        }
+// Project dependencies
+repositories {
+    mavenCentral()
+    maven {
+        url "http://nexus.afterkraft.com/content/groups/public/"
     }
+}
 
-    idea {
-        module {
-
-            jdkName = '1.7'
-
-            downloadJavadoc = true
-            downloadSources = true
-        }
-    }
-
-    eclipse {
-
-        classpath {
-
-            downloadJavadoc = true
-            downloadSources = true
-        }
-    }
+dependencies {
+    compile 'com.google.guava:guava:18.0'
+    compile 'com.afterkraft.kraftrpg:KraftRPG-API:0.0.2'
+    compile 'org.spongepowered:spongeapi:1.1-SNAPSHOT'
 
 }
+
+idea {
+    module {
+
+        jdkName = '1.7'
+
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+eclipse {
+
+    classpath {
+
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 
 ext {
 
@@ -76,64 +81,144 @@ ext {
     commit = rootProject.hasProperty("commit") ? commit : 'unknown'
 }
 
-subprojects {
-    archivesBaseName = project.name
+archivesBaseName = 'KraftRPG'
 
-    task sourceJar(type: Jar) {
-        classifier 'sources'
-        from sourceSets.main.allSource
+// Generates javadoc.jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourceJar
+    archives javadocJar
+}
+
+configure([compileJava, compileTestJava]) {
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+    options.deprecation = true
+    options.encoding = 'utf8'
+}
+
+checkstyle {
+    configProperties = [
+            "name"        : project.name,
+            "organization": project.organization,
+            "url"         : project.url,
+            "year"        : project.inceptionYear
+    ]
+    configFile = file(rootProject.file("checkstyle.xml"))
+}
+
+processResources {
+    from 'KRAFTRPG-LICENSE'
+}
+
+
+configurations {
+    pom
+}
+
+signing {
+    required {
+        gradle.taskGraph.hasTask("uploadArchives")
     }
+    sign configurations.archives
+}
 
-    configure([compileJava, compileTestJava]) {
-        options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
-        options.deprecation = true
-        options.encoding = 'utf8'
-    }
+def sonatypeUser = hasProperty('afterkraftUser') ? sonatypeUser : System.getenv('afterkraftUser')
+def sonatypePassword = hasProperty('afterkraftPassword') ? sonatypePassword : System.getenv('afterkraftPassword')
 
-    checkstyle {
-        configProperties = [
-                "name"        : project.name,
-                "organization": project.organization,
-                "url"         : project.url,
-                "year"        : project.inceptionYear
-        ]
-        configFile = file(rootProject.file("checkstyle.xml"))
-    }
-
-    processResources {
-        from 'KRAFTRPG-LICENSE'
-    }
-
-
-    jar {
-        manifest {
-            attributes(
-                    "Implementation-Title": project.name,
-                    "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
-                    "Built-By": System.properties['user.name'],
-                    "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-                    "Implementation-Vendor": url
-            )
+uploadArchives {
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment ->
+            signing.signPom(deployment)
         }
-        from ("${rootProject}") {
-            include('KRAFTRPG-LICENSE', 'README.md')
-        }
+        repository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/releases") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
 
+        }
+        snapshotRepository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/snapshots") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
+        }
+        pom {
+            groupId = project.group
+            version = project.version
+            artifactId = project.archivesBaseName
+            project {
+                name project.archivesBaseName
+                packaging 'jar'
+                description 'Common API for KraftRPG.'
+                url 'http://afterkraft.com/'
+                scm {
+                    url 'https://github.com/AfterKraft/KraftRPG-API'
+                    connection 'git'
+                    developerConnection 'git@github.com:AfterKraft/KraftRPG-API.git'
+                }
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'http://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'gabizou'
+                        name 'Gabriel Harris-Rouquette'
+                        email 'gabizou@me.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+apply plugin: 'maven-publish-auth'
+
+
+shadowJar {
+    dependencies {
+        include(dependency('com.afterkraft.kraftrpg:KraftRPG-API:0.0.2'))
+    }
+}
+
+build.dependsOn shadowJar
+
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title": project.name,
+                "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+                "Built-By": System.properties['user.name'],
+                "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+                "Implementation-Vendor": url
+        )
+    }
+    from ("${rootProject}") {
+        include('KRAFTRPG-LICENSE', 'README.md')
     }
 
-    license {
-        ext.name = project.name
-        ext.organization = project.organization
-        ext.url = project.url
-        ext.year = project.inceptionYear
-        exclude "**/*.info"
-        exclude "assets/**"
-        header rootProject.file("KRAFTRPG-LICENSE")
-        sourceSets = project.sourceSets
-        ignoreFailures false
-        strictCheck true
-        mapping {
-            java = 'SLASHSTAR_STYLE'
-        }
+}
+
+license {
+    ext.name = project.name
+    ext.organization = project.organization
+    ext.url = project.url
+    ext.year = project.inceptionYear
+    exclude "**/*.info"
+    exclude "assets/**"
+    header rootProject.file("KRAFTRPG-LICENSE")
+    sourceSets = project.sourceSets
+    ignoreFailures false
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
     }
 }
