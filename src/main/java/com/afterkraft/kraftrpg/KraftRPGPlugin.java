@@ -118,28 +118,29 @@ public final class KraftRPGPlugin implements RPGPlugin {
     public void onConstruction(ConstructionEvent event) {
         RpgCommon.setPlugin(this);
         ExternalProviderRegistration.pluginLoaded(this);
+        this.logger.info("Construct");
         instance = this;
-
-        Injector injector = Guice.createInjector(new RpgModule());
     }
 
     @Subscribe
     public void onPreInit(PreInitializationEvent event) {
+        RpgCommon.setGame(event.getGame());
         this.configManager = new RPGConfigManager(this, this.mainConfig,
                 this.configLoader);
         this.properties = new RPGPluginProperties();
+        this.logger.info("pre-init");
 
     }
 
     @Subscribe
     public void onPostInit(PostInitializationEvent event) {
-
+        this.logger.info("post-init");
     }
 
     @Subscribe
     public void onPreStart(ServerAboutToStartEvent event) {
+        this.logger.info("about-to-start");
         RpgCommon.setCommonServer(event.getGame().getServer().get());
-        RpgCommon.setGame(event.getGame());
         ExternalProviderRegistration.finish();
         this.storageManager = new RPGStorageManager(this);
         if (cancel) {
@@ -178,11 +179,12 @@ public final class KraftRPGPlugin implements RPGPlugin {
 
     @Subscribe
     public void onStarting(ServerStartingEvent event) {
-
+        this.logger.info("Starting");
     }
 
     @Subscribe
     public void onDisable(ServerStoppingEvent event) {
+        this.logger.info("stopping");
         try {
             this.listenerManager.shutdown();
             this.entityManager.shutdown();

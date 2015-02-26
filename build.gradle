@@ -185,7 +185,7 @@ apply plugin: 'maven-publish-auth'
 
 shadowJar {
     dependencies {
-        include(dependency('com.afterkraft.kraftrpg:KraftRPG-API:0.0.2'))
+        include(dependency('com.afterkraft.kraftrpg:KraftRPG-API:0.0.3-SNAPSHOT'))
     }
 }
 

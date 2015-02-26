@@ -62,6 +62,8 @@ public class RPGSkillCommand implements CommandCallable {
                         List<String> parents) throws
             CommandException {
 
+        this.plugin.getLogger().info("The arguments: " + arguments);
+        this.plugin.getLogger().info("The parents: " + parents.toString());
         if (parents.size() == 1) {
             source.sendMessage(TextColors.RED + "No skill provided");
             return true;
