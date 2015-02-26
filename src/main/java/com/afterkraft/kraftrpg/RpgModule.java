@@ -21,18 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.afterkraft.kraftrpg.commands;
 
-import org.bukkit.command.CommandExecutor;
+package com.afterkraft.kraftrpg;
 
-import com.afterkraft.kraftrpg.api.Manager;
+import com.google.inject.Binder;
+import com.google.inject.Module;
 
-/**
- * TODO add documentation
- */
-public interface CommandManager extends Manager {
+import com.afterkraft.kraftrpg.api.RPGPlugin;
 
-    public void registerCommand(String commandName, CommandExecutor command);
-
-    public void unregisterCommand(String commandName);
+class RpgModule implements Module {
+    @Override
+    public void configure(Binder binder) {
+        binder.bind(RPGPlugin.class).to(KraftRPGPlugin.class);
+    }
 }

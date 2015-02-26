@@ -44,7 +44,7 @@ repositories {
 
 dependencies {
     compile 'com.google.guava:guava:18.0'
-    compile 'com.afterkraft.kraftrpg:KraftRPG-API:0.0.2'
+    compile 'com.afterkraft.kraftrpg:KraftRPG-API:0.0.3-SNAPSHOT'
     compile 'org.spongepowered:spongeapi:1.1-SNAPSHOT'
 
 }

@@ -29,11 +29,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.spongepowered.api.entity.ArmorEquipable;
 import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.item.inventory.Carrier;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.potion.PotionEffect;
 import org.spongepowered.api.potion.PotionEffectType;
@@ -42,11 +46,12 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.effects.EffectType;
 import com.afterkraft.kraftrpg.api.effects.IEffect;
 import com.afterkraft.kraftrpg.api.effects.Timed;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.common.Inventory;
+import com.afterkraft.kraftrpg.api.entity.resource.Resource;
 
 /**
  * Default implementation of an Insentient being. By default, this is a Living. It can
@@ -57,7 +62,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     protected final Map<String, IEffect> effects = new HashMap<>();
     protected final ArrayDeque<RPGPotionEffect> potionEffectQueue =
             new ArrayDeque<>();
-    protected MutableInt mana = new MutableInt(0);
+    protected AtomicInteger mana = new AtomicInteger(0);
     protected Map<String, Double> healthMap = new ConcurrentHashMap<>();
 
     protected RPGInsentient(RPGPlugin plugin, Living livingEntity, String name) {
@@ -72,7 +77,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     @Override
     public void setMana(int mana) {
         checkArgument(mana > 0, "Cannot set a negative mana value!");
-        this.mana.setValue(mana);
+        this.mana.set(mana);
     }
 
     @Override
@@ -182,7 +187,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     @Override
     public boolean isDead() {
         check();
-        return this.getUnsafeEntity().isDead();
+        return this.getUnsafeEntity().getHealth() <= 0;
     }
 
     @Override
@@ -191,16 +196,19 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     }
 
     @Override
-    public ItemStack getItemInHand() {
+    public Optional<ItemStack> getItemInHand() {
         check();
-        return this.isEntityValid() ? this.getEntity().getEquipment().getItemInHand() : null;
+        return this.isEntityValid() && this.getUnsafeEntity() instanceof ArmorEquipable
+                ? ((ArmorEquipable) this.getUnsafeEntity()).getItemInHand()
+                : Optional.<ItemStack>absent();
     }
 
     @Override
     public Inventory getInventory() {
         check();
-        return this.isEntityValid() ? (this.getEntity() instanceof InventoryHolder)
-                ? ((InventoryHolder) this.getEntity()).getInventory() : null : null;
+        return this.isEntityValid() && this.getUnsafeEntity() instanceof
+                Carrier ? ((Carrier) this.getUnsafeEntity()).getInventory() :
+                null;
     }
 
     @Override
@@ -226,11 +234,13 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             removeEffect(getEffect(effect.getName()).get());
         }
 
+        /*
         EffectAddEvent event = new EffectAddEvent(this, effect);
         this.plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return;
         }
+        */
 
         this.effects.put(effect.getName().toLowerCase(), effect);
         effect.apply(this);
@@ -246,9 +256,15 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         checkArgument(potion != null, "Cannot add a null PotionEffect!");
         if (this.isEntityValid()) {
             this.potionEffectQueue.add(
-                    new RPGPotionEffect(
-                            new PotionEffect(potion.getType(), potion.getDuration(),
-                                             potion.getAmplifier(), potion.isAmbient()), true));
+                    new RPGPotionEffect(RpgCommon.getGame()
+                                                .getRegistry()
+                                                .getPotionEffectBuilder()
+                                        .potionType(potion.getType())
+                                        .duration(potion.getDuration())
+                                        .ambience(potion.isAmbient())
+                                        .amplifier(potion.getAmplifier())
+                                        .particles(potion.getShowParticles())
+                                        .build(), true));
         }
     }
 
@@ -259,7 +275,11 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         if (this.isEntityValid()) {
             this.potionEffectQueue.add(
                     new RPGPotionEffect(
-                            new PotionEffect(type, 0, 0), false));
+                            RpgCommon.getGame()
+                                    .getRegistry()
+                                    .getPotionEffectBuilder()
+                                    .potionType(type)
+                                    .build(), false));
         }
     }
 
@@ -267,7 +287,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public boolean hasPotionEffect(PotionEffectType type) {
         check();
         checkArgument(type != null, "Cannot check on a null potion effect type!");
-        return this.getEntity() != null && this.getUnsafeEntity().hasPotionEffect(type);
+        return this.getUnsafeEntity() != null && this.getUnsafeEntity().hasPotionEffect
+                (type);
     }
 
     @Override
@@ -291,16 +312,23 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     }
 
     @Override
+    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
+        return null;
+    }
+
+    @Override
     public void removeEffect(IEffect effect) {
         check();
         checkArgument(effect != null, "Cannot remove a null effect!");
 
         // TODO
+        /*
         EffectRemoveEvent event = new EffectRemoveEvent(this, effect);
         this.plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return;
         }
+        */
 
         effect.remove(this);
         this.effects.remove(effect.getName().toLowerCase());

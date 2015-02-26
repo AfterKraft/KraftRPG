@@ -28,32 +28,17 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.ComplexEntityPart;
-import org.bukkit.entity.ComplexLivingEntity;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.projectiles.BlockProjectileSource;
-import org.bukkit.projectiles.ProjectileSource;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.entity.projectile.Projectile;
+import org.spongepowered.api.event.entity.EntityChangeHealthEvent;
+import org.spongepowered.api.item.Enchantment;
+import org.spongepowered.api.item.Enchantments;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.util.event.Order;
+import org.spongepowered.api.util.event.Subscribe;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -69,11 +54,6 @@ import com.afterkraft.kraftrpg.api.entity.Monster;
 import com.afterkraft.kraftrpg.api.entity.PartyMember;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.entity.Summon;
-import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageEvent;
-import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageEvent.DamageType;
-import com.afterkraft.kraftrpg.api.events.entity.damage.InsentientDamageInsentientEvent;
-import com.afterkraft.kraftrpg.api.events.entity.damage.ProjectileDamageEvent;
-import com.afterkraft.kraftrpg.api.events.entity.damage.WeaponDamageEvent;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.listeners.SkillDamageWrapper;
@@ -93,17 +73,31 @@ public class DamageListener extends AbstractListener {
         super(plugin);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity) || !(this.plugin.getEntityManager()
-                .isEntityManaged(event.getEntity())) || !(this.plugin.getEntityManager()
+    @Override
+    public void initialize() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+    /*
+
+    @Subscribe(order = Order., ignoreCancelled = true)
+    public void onEntityRegainHealth(EntityChangeHealthEvent event) {
+        if (!(event.getEntity() instanceof Living) || !(this.plugin
+                .getEntityManager()
+                .isEntityManaged(event.getEntity())) || !(this.plugin
+                .getEntityManager()
                 .getEntity(event.getEntity()) instanceof Insentient)) {
             return;
         }
 
         double amount = event.getAmount();
         final Insentient being =
-                (Insentient) this.plugin.getEntityManager().getEntity(event.getEntity());
+                (Insentient) this.plugin.getEntityManager()
+                        .getEntity(event.getEntity());
         final double maxHealth = being.getMaxHealth();
 
         // Satiated players regenerate % of total HP rather than 1 HP
@@ -115,7 +109,8 @@ public class DamageListener extends AbstractListener {
                 break;
             case MAGIC:
                 healPercent = amount / 6.0;
-                amount = Math.ceil(healPercent * this.plugin.getProperties().getFoodHealthPerTier()
+                amount = Math.ceil(healPercent * this.plugin.getProperties()
+                        .getFoodHealthPerTier()
                                            * maxHealth);
                 break;
             case CUSTOM:
@@ -130,26 +125,34 @@ public class DamageListener extends AbstractListener {
         event.setAmount(amount);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @Subscribe(order = Order.HIGH, ignoreCancelled = true)
     public void onEntityDamageEvent(EntityDamageEvent event) {
         final Entity defendingEntity = event.getEntity();
-        IEntity defendingIEntity = this.plugin.getEntityManager().getEntity(defendingEntity);
+        IEntity defendingIEntity =
+                this.plugin.getEntityManager().getEntity(defendingEntity);
         Entity attackingEntity = null;
         IEntity attackingIEntity = null;
         // Initialize the wrapped object for handling this event.
         DamageWrapper wrapper =
-                new DamageWrapper(event.getCause(), event.getDamage(), event.getFinalDamage(),
+                new DamageWrapper(event.getCause(), event.getDamage(),
+                                  event.getFinalDamage(),
                                   event.getCause());
 
         // TODO Somewhere... write some armor/item damage
         // handling that may ignore some of these damages
         // TODO Somehow, we should create and apply our own functions for these new DamageModifiers.
-        final double initialDamage = event.getOriginalDamage(DamageModifier.BASE);
-        final double initialArmor = event.getOriginalDamage(DamageModifier.ARMOR);
-        final double initialAbsorbtion = event.getOriginalDamage(DamageModifier.ABSORPTION);
-        final double initialBlocking = event.getOriginalDamage(DamageModifier.BLOCKING);
-        final double initialMagic = event.getOriginalDamage(DamageModifier.MAGIC);
-        final double initialResistance = event.getOriginalDamage(DamageModifier.RESISTANCE);
+        final double initialDamage =
+                event.getOriginalDamage(DamageModifier.BASE);
+        final double initialArmor =
+                event.getOriginalDamage(DamageModifier.ARMOR);
+        final double initialAbsorbtion =
+                event.getOriginalDamage(DamageModifier.ABSORPTION);
+        final double initialBlocking =
+                event.getOriginalDamage(DamageModifier.BLOCKING);
+        final double initialMagic =
+                event.getOriginalDamage(DamageModifier.MAGIC);
+        final double initialResistance =
+                event.getOriginalDamage(DamageModifier.RESISTANCE);
         double armorPercentage = (initialArmor / initialDamage);
         double absorptionPercentage = (initialAbsorbtion / initialDamage);
         double blockingPercentage = (initialBlocking / initialDamage);
@@ -159,22 +162,29 @@ public class DamageListener extends AbstractListener {
         // We need to check if any exterior plugin added an IEntity to our EntityManager
         // as a SkillCaster or just plain special Monster
         // We use this val for other purposes in the remaining listeners
-        final boolean isManaged = this.plugin.getEntityManager().isEntityManaged(defendingEntity);
+        final boolean isManaged =
+                this.plugin.getEntityManager().isEntityManaged(defendingEntity);
         boolean alreadyProcessed = false;
         if (event instanceof EntityDamageByEntityEvent) {
             attackingEntity = ((EntityDamageByEntityEvent) event).getDamager();
             // We should try to get the IEntity if it's registered.
-            if (this.plugin.getEntityManager().isEntityManaged(attackingEntity)) {
-                attackingIEntity = this.plugin.getEntityManager().getEntity(attackingEntity);
+            if (this.plugin.getEntityManager()
+                    .isEntityManaged(attackingEntity)) {
+                attackingIEntity = this.plugin.getEntityManager()
+                        .getEntity(attackingEntity);
             }
             // Cancel the PVP events if the attacking and
             // defending are players and world pvp is false.
-            if ((!defendingEntity.getWorld().getPVP() && !defendingIEntity.getWorld().getPVP()) && (
-                    defendingEntity instanceof Player || defendingIEntity instanceof Champion) && (
-                    attackingEntity instanceof Player || attackingIEntity instanceof Champion)) {
+            if ((!defendingEntity.getWorld().getPVP() && !defendingIEntity
+                    .getWorld().getPVP()) && (
+                    defendingEntity instanceof Player
+                            || defendingIEntity instanceof Champion) && (
+                    attackingEntity instanceof Player
+                            || attackingIEntity instanceof Champion)) {
                 event.setCancelled(true);
                 ((Insentient) attackingIEntity)
-                        .sendMessage(ChatColor.RED + Messaging.getMessage("pvp_disabled"));
+                        .sendMessage(ChatColor.RED + Messaging
+                                .getMessage("pvp_disabled"));
                 return;
             }
         }
@@ -184,7 +194,8 @@ public class DamageListener extends AbstractListener {
             return;
         }
         if (defendingEntity instanceof LivingEntity) {
-            if (defendingEntity.isDead() || ((LivingEntity) defendingEntity).getHealth() <= 0) {
+            if (defendingEntity.isDead()
+                    || ((LivingEntity) defendingEntity).getHealth() <= 0) {
                 return;
             } else if (defendingEntity instanceof Player) {
                 final Player player = (Player) defendingEntity;
@@ -212,7 +223,8 @@ public class DamageListener extends AbstractListener {
             }
 
             // We can't damage the entity any further.
-            if (((being.getNoDamageTicks() > 10) && damage > 0) || being.isDead()
+            if (((being.getNoDamageTicks() > 10) && damage > 0) || being
+                    .isDead()
                     || being.getHealth() <= 0) {
                 event.setCancelled(true);
                 return;
@@ -221,21 +233,27 @@ public class DamageListener extends AbstractListener {
             // Check if the attackingEntity is an instance of Projectile,
             // If so, we need to re-assign the variables for the proper
             // Insentient being shooting the arrow.
-            if (attackingEntity instanceof Projectile && ((Projectile) attackingEntity)
+            if (attackingEntity instanceof Projectile
+                    && ((Projectile) attackingEntity)
                     .getShooter() instanceof LivingEntity) {
-                attackingEntity = (LivingEntity) ((Projectile) attackingEntity).getShooter();
-                attackingIEntity = this.plugin.getEntityManager().getEntity(attackingEntity);
+                attackingEntity = (LivingEntity) ((Projectile) attackingEntity)
+                        .getShooter();
+                attackingIEntity = this.plugin.getEntityManager()
+                        .getEntity(attackingEntity);
             }
 
             // Cancel the PVP events if the attacking
             // and defending are players and world pvp is false.
-            if (!defendingEntity.getWorld().getPVP() && (defendingEntity instanceof Player
-                    || defendingIEntity instanceof Champion) && (attackingEntity instanceof Player
-                    || attackingIEntity instanceof Champion)) {
+            if (!defendingEntity.getWorld().getPVP() && (
+                    defendingEntity instanceof Player
+                            || defendingIEntity instanceof Champion) && (
+                    attackingEntity instanceof Player
+                            || attackingIEntity instanceof Champion)) {
                 event.setCancelled(true);
                 // By default, a player is always a Champion. If not, then there's a serious error.
                 ((Insentient) attackingIEntity)
-                        .sendMessage(ChatColor.RED + Messaging.getMessage("pvp_disabled"));
+                        .sendMessage(ChatColor.RED + Messaging
+                                .getMessage("pvp_disabled"));
                 return;
             }
 
@@ -277,7 +295,8 @@ public class DamageListener extends AbstractListener {
                 && defendingIEntity instanceof PartyMember
                 && attackingIEntity instanceof PartyMember) {
             if (this.plugin.getPartyManager()
-                    .isFriendly((PartyMember) defendingIEntity, (PartyMember) attackingIEntity)) {
+                    .isFriendly((PartyMember) defendingIEntity,
+                                (PartyMember) attackingIEntity)) {
                 event.setCancelled(true);
                 return;
             }
@@ -291,7 +310,8 @@ public class DamageListener extends AbstractListener {
         if (this.plugin.getSkillManager().isSkillTarget(defendingEntity)) {
             alreadyProcessed = true;
             // Need to handle the damage to armor
-            damage = onSkillDamage(event, attackingEntity, defendingEntity, damage);
+            damage = onSkillDamage(event, attackingEntity, defendingEntity,
+                                   damage);
 
             if (event.isCancelled()) {
                 if (defendingIEntity instanceof Insentient) {
@@ -303,20 +323,26 @@ public class DamageListener extends AbstractListener {
             final EntityDamageEvent.DamageCause cause = event.getCause();
             if (cause == DamageCause.SUICIDE) {
                 if (defendingEntity instanceof LivingEntity) {
-                    final LivingEntity livingEntity = (LivingEntity) defendingEntity;
-                    if ((livingEntity.getLastDamageCause() != null) && (livingEntity
+                    final LivingEntity livingEntity =
+                            (LivingEntity) defendingEntity;
+                    if ((livingEntity.getLastDamageCause() != null)
+                            && (livingEntity
                             .getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
                         final Entity tempDamager =
-                                ((EntityDamageByEntityEvent) livingEntity.getLastDamageCause())
+                                ((EntityDamageByEntityEvent) livingEntity
+                                        .getLastDamageCause())
                                         .getDamager();
                         Map<DamageModifier, Double> modifiers =
                                 new HashMap<>();
                         modifiers.put(DamageModifier.BASE, 1000D);
-                        Map<DamageModifier, Function<? super Double, Double>> uselessMap =
+                        Map<DamageModifier, Function<? super Double, Double>>
+                                uselessMap =
                                 new HashMap<>();
                         livingEntity.setLastDamageCause(
-                                new EntityDamageByEntityEvent(tempDamager, livingEntity,
-                                                              DamageCause.ENTITY_ATTACK, modifiers,
+                                new EntityDamageByEntityEvent(tempDamager,
+                                                              livingEntity,
+                                                              DamageCause.ENTITY_ATTACK,
+                                                              modifiers,
                                                               uselessMap));
                         livingEntity.damage(1000, tempDamager);
                         event.setDamage(0);
@@ -325,45 +351,61 @@ public class DamageListener extends AbstractListener {
                         return;
                     }
                 }
-            } else if (cause == DamageCause.ENTITY_ATTACK || cause == DamageCause.PROJECTILE) {
+            } else if (cause == DamageCause.ENTITY_ATTACK
+                    || cause == DamageCause.PROJECTILE) {
                 // When the attack is guaranteed to have been caused by an enemy entity
                 alreadyProcessed = true;
                 if (event.getDamage() == 0) {
                     damage = 0;
                 } else {
-                    damage = onEntityDamage(event, attackingEntity, defendingEntity,
-                                            attackingIEntity, defendingIEntity, event.getDamage());
+                    damage = onEntityDamage(event, attackingEntity,
+                                            defendingEntity,
+                                            attackingIEntity, defendingIEntity,
+                                            event.getDamage());
                 }
-            } else if (cause == DamageCause.STARVATION || cause == DamageCause.WITHER
-                    || cause == DamageCause.MELTING || cause == DamageCause.BLOCK_EXPLOSION
+            } else if (cause == DamageCause.STARVATION
+                    || cause == DamageCause.WITHER
+                    || cause == DamageCause.MELTING
+                    || cause == DamageCause.BLOCK_EXPLOSION
                     || cause == DamageCause.ENTITY_EXPLOSION) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage());
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage());
             } else if (cause == DamageCause.FALL) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.SAFEFALL);
-            } else if (cause == DamageCause.SUFFOCATION || cause == DamageCause.CONTACT) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+            } else if (cause == DamageCause.SUFFOCATION
+                    || cause == DamageCause.CONTACT) {
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_EARTH);
             } else if (cause == DamageCause.DROWNING) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
-                                        EffectType.WATER_BREATHING, EffectType.RESIST_WATER);
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
+                                        EffectType.WATER_BREATHING,
+                                        EffectType.RESIST_WATER);
             } else if (cause == DamageCause.FIRE || cause == DamageCause.LAVA
                     || cause == DamageCause.FIRE_TICK) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_FIRE);
             } else if (cause == DamageCause.POISON) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_POISON);
             } else if (cause == DamageCause.THORNS) {
                 damage = onSpiked(event, defendingEntity, event.getDamage());
             } else if (cause == DamageCause.MAGIC) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_MAGICAL);
             } else if (cause == DamageCause.VOID) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_VOID);
             } else if (cause == DamageCause.LIGHTNING) {
-                damage = onResistDamage(event, defendingEntity, event.getDamage(),
+                damage = onResistDamage(event, defendingEntity,
+                                        event.getDamage(),
                                         EffectType.RESIST_LIGHTNING);
             }
 
@@ -382,7 +424,8 @@ public class DamageListener extends AbstractListener {
                 Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final InsentientDamageEvent insentientDamageEvent =
-                        new InsentientDamageEvent((Insentient) defendingIEntity, event, modifiers,
+                        new InsentientDamageEvent((Insentient) defendingIEntity,
+                                                  event, modifiers,
                                                   this.plugin.getProperties()
                                                           .isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(insentientDamageEvent);
@@ -401,7 +444,8 @@ public class DamageListener extends AbstractListener {
             return;
         }
 
-        setEventDamage(event, damage, absorptionPercentage, armorPercentage, blockingPercentage,
+        setEventDamage(event, damage, absorptionPercentage, armorPercentage,
+                       blockingPercentage,
                        magicPercentage, resistancePercentage);
 
         if ((defendingEntity instanceof ComplexEntityPart)
@@ -411,30 +455,36 @@ public class DamageListener extends AbstractListener {
             if (defendingEntity instanceof ComplexLivingEntity) {
                 complexEntity = (ComplexLivingEntity) defendingEntity;
             } else {
-                complexEntity = ((ComplexEntityPart) defendingEntity).getParent();
+                complexEntity =
+                        ((ComplexEntityPart) defendingEntity).getParent();
             }
-            if (((complexEntity.getNoDamageTicks() > 10) && (damage > 0)) || complexEntity.isDead()
+            if (((complexEntity.getNoDamageTicks() > 10) && (damage > 0))
+                    || complexEntity.isDead()
                     || (complexEntity.getHealth() <= 0)) {
                 event.setCancelled(true);
                 return;
             }
-            setEventDamage(event, damage, absorptionPercentage, armorPercentage, blockingPercentage,
+            setEventDamage(event, damage, absorptionPercentage, armorPercentage,
+                           blockingPercentage,
                            magicPercentage, resistancePercentage);
 
         } else if (defendingEntity instanceof LivingEntity) {
             // Perform last minute damage checks and damageTicks.
             LivingEntity livingEntity = (LivingEntity) defendingEntity;
-            if (((livingEntity.getNoDamageTicks() > 10) && (damage > 0)) || livingEntity.isDead()
+            if (((livingEntity.getNoDamageTicks() > 10) && (damage > 0))
+                    || livingEntity.isDead()
                     || (livingEntity.getHealth() <= 0)) {
                 event.setCancelled(true);
                 return;
             }
-            setEventDamage(event, damage, absorptionPercentage, armorPercentage, blockingPercentage,
+            setEventDamage(event, damage, absorptionPercentage, armorPercentage,
+                           blockingPercentage,
                            magicPercentage, resistancePercentage);
         }
     }
 
-    private double onSkillDamage(EntityDamageEvent event, Entity attacker, Entity defender,
+    private double onSkillDamage(EntityDamageEvent event, Entity attacker,
+                                 Entity defender,
                                  double damage) {
         // Ignore everything if the damage is 0.
         // Bukkit sometimes will throw this in quick succession
@@ -442,11 +492,14 @@ public class DamageListener extends AbstractListener {
             return 0;
         }
         // Get the skill use object
-        final SkillUseObject skillInfo = this.plugin.getSkillManager().getSkillTargetInfo(defender);
+        final SkillUseObject skillInfo =
+                this.plugin.getSkillManager().getSkillTargetInfo(defender);
         if (event instanceof EntityDamageByEntityEvent) {
             // We need to get the API interfaced stuffs
-            SkillCaster caster = (SkillCaster) this.plugin.getEntityManager().getEntity(attacker);
-            Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(defender);
+            SkillCaster caster = (SkillCaster) this.plugin.getEntityManager()
+                    .getEntity(attacker);
+            Insentient being = (Insentient) this.plugin.getEntityManager()
+                    .getEntity(defender);
 
             // Check for possible resistances
             if (resistanceCheck(defender, skillInfo.getSkill())) {
@@ -456,13 +509,17 @@ public class DamageListener extends AbstractListener {
                 ISkill skill = skillInfo.getSkill();
                 for (final Player player : players) {
                     final Location playerLocation = player.getLocation();
-                    final Champion champ = this.plugin.getEntityManager().getChampion(player);
+                    final Champion champ =
+                            this.plugin.getEntityManager().getChampion(player);
                     if (champ.isIgnoringSkill(skill)) {
                         continue;
                     }
-                    if (caster.getWorld().equals(playerLocation.getWorld()) && (skill
+                    if (caster.getWorld().equals(playerLocation.getWorld())
+                            && (skill
                             .isInMessageRange(caster, champ))) {
-                        Messaging.send(player, Messaging.getMessage("skill-defender-resist-effect"),
+                        Messaging.send(player, Messaging
+                                               .getMessage(
+                                                       "skill-defender-resist-effect"),
                                        Messaging.getEntityName(defender),
                                        skillInfo.getSkill().getName());
                     }
@@ -473,48 +530,60 @@ public class DamageListener extends AbstractListener {
             // Double check the armor resistance damages for Entity Attack
             if (event.getCause() == DamageCause.ENTITY_ATTACK
                     || event.getCause() == DamageCause.PROJECTILE) {
-                damage = RpgCommon.getHandler().getPostArmorDamage(being, event, damage);
+                damage = RpgCommon.getHandler()
+                        .getPostArmorDamage(being, event, damage);
             }
 
             // Reset the wrapper
             being.setDamageWrapper(
-                    new SkillDamageWrapper(skillInfo.getCaster(), skillInfo.getSkill(),
-                                           event.getCause(), event.getDamage(), damage,
+                    new SkillDamageWrapper(skillInfo.getCaster(),
+                                           skillInfo.getSkill(),
+                                           event.getCause(), event.getDamage(),
+                                           damage,
                                            DamageCause.ENTITY_ATTACK));
 
-            this.plugin.getSkillManager().removeSkillTarget(defender, caster, skillInfo.getSkill());
+            this.plugin.getSkillManager()
+                    .removeSkillTarget(defender, caster, skillInfo.getSkill());
         }
 
         return damage;
     }
 
-    private double onEntityDamage(EntityDamageEvent event, Entity attacker, Entity defender,
-                                  IEntity attackingIEntity, IEntity defendingIEntity,
-                                  double damage) {
+    private double onEntityDamage(EntityChangeHealthEvent event,
+                                  Entity attacker, Entity defender,
+                                  IEntity attackingIEntity,
+                                  IEntity defendingIEntity, double damage) {
         // Get the projectile shooter instead of the the arrow.
         if (attacker instanceof Projectile && ((Projectile) attacker)
-                .getShooter() instanceof LivingEntity) {
-            attacker = (LivingEntity) ((Projectile) attacker).getShooter();
-            attackingIEntity = this.plugin.getEntityManager().getEntity(attacker);
+                .getShooter() instanceof Living) {
+            attacker = (Living) ((Projectile) attacker).getShooter();
+            attackingIEntity =
+                    this.plugin.getEntityManager().getEntity(attacker).get();
         }
 
-        if (event instanceof EntityDamageByEntityEvent) {
+        if (event instanceof EntityA) {
+            dou
             Insentient attackingInsentient = (Insentient) attackingIEntity;
             damage = this.plugin.getDamageManager()
-                    .getHighestItemDamage(attackingInsentient, (Insentient) defendingIEntity,
+                    .getHighestItemDamage(attackingInsentient,
+                                          (Insentient) defendingIEntity,
                                           event.getDamage());
 
             // Cancel the event if the attackingInsentient can't equip the item
-            if (!attackingInsentient.canEquipItem(attackingInsentient.getItemInHand())) {
+            if (!attackingInsentient
+                    .canEquipItem(attackingInsentient.getItemInHand())) {
                 event.setCancelled(true);
                 return 0;
             }
             // We must check the item in hand and for all possible damages it may have.
             // This needs to be improved later on as we need to handle customized damages
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
-            if (event.getCause() == DamageCause.PROJECTILE && damager instanceof Projectile) {
-                damage = this.plugin.getDamageManager().getHighestProjectileDamage(
-                        attackingInsentient, (ProjectileType.valueOf(damager.getType().name())));
+            if (event.getCause() == DamageCause.PROJECTILE
+                    && damager instanceof Projectile) {
+                damage = this.plugin.getDamageManager()
+                        .getHighestProjectileDamage(
+                                attackingInsentient, (ProjectileType
+                                        .valueOf(damager.getType().name())));
                 Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final ProjectileDamageEvent projectileDamageEvent =
@@ -522,7 +591,9 @@ public class DamageListener extends AbstractListener {
                                                   (Insentient) defendingIEntity,
                                                   (Projectile) damager,
                                                   (EntityDamageByEntityEvent) event,
-                                                  attackingInsentient.getItemInHand(), modifiers,
+                                                  attackingInsentient
+                                                          .getItemInHand(),
+                                                  modifiers,
                                                   this.plugin.getProperties()
                                                           .isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(projectileDamageEvent);
@@ -534,19 +605,26 @@ public class DamageListener extends AbstractListener {
                 } else {
                     damage = projectileDamageEvent.getTotalDamage();
                 }
-            } else if (attackingInsentient.getItemInHand().getType() != Material.AIR && this.plugin
+            } else if (attackingInsentient.getItemInHand().getType()
+                    != Material.AIR && this.plugin
                     .getDamageManager()
-                    .isStandardWeapon(attackingInsentient.getItemInHand().getType())) {
+                    .isStandardWeapon(
+                            attackingInsentient.getItemInHand().getType())) {
                 damage = this.plugin.getDamageManager()
-                        .getDefaultItemDamage(attackingInsentient.getItemInHand().getType(),
-                                              damage);
+                        .getDefaultItemDamage(
+                                attackingInsentient.getItemInHand().getType(),
+                                damage);
                 Map<DamageType, Double> modifiers = new EnumMap<>(
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final WeaponDamageEvent weaponEvent =
-                        new WeaponDamageEvent(attackingInsentient, (Insentient) defendingIEntity,
+                        new WeaponDamageEvent(attackingInsentient,
+                                              (Insentient) defendingIEntity,
                                               (EntityDamageByEntityEvent) event,
-                                              attackingInsentient.getItemInHand(), modifiers,
-                                              this.plugin.getProperties().isVaryingDamageEnabled());
+                                              attackingInsentient
+                                                      .getItemInHand(),
+                                              modifiers,
+                                              this.plugin.getProperties()
+                                                      .isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(weaponEvent);
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
@@ -565,8 +643,10 @@ public class DamageListener extends AbstractListener {
                         new InsentientDamageInsentientEvent(attackingInsentient,
                                                             (Insentient) defendingIEntity,
                                                             (EntityDamageByEntityEvent) event,
-                                                            modifiers, this.plugin.getProperties()
-                                .isVaryingDamageEnabled());
+                                                            modifiers,
+                                                            this.plugin
+                                                                    .getProperties()
+                                                                    .isVaryingDamageEnabled());
                 Bukkit.getPluginManager().callEvent(insentientEvent);
                 if (insentientEvent.isCancelled()) {
                     damage = 0D;
@@ -581,13 +661,16 @@ public class DamageListener extends AbstractListener {
         return damage;
     }
 
-    private double onResistDamage(EntityDamageEvent event, Entity damagee, double damage,
+    private double onResistDamage(EntityDamageEvent event, Entity damagee,
+                                  double damage,
                                   EffectType... type) {
-        if (!(damagee instanceof LivingEntity) || !(this.plugin.getEntityManager()
+        if (!(damagee instanceof LivingEntity) || !(this.plugin
+                .getEntityManager()
                 .getEntity(damagee) instanceof Insentient)) {
             return 0;
         }
-        final Insentient being = (Insentient) this.plugin.getEntityManager().getEntity(damagee);
+        final Insentient being =
+                (Insentient) this.plugin.getEntityManager().getEntity(damagee);
 
         for (EffectType effectType : type) {
             if (being.hasEffectType(effectType)) {
@@ -600,7 +683,8 @@ public class DamageListener extends AbstractListener {
 
         }
         final Double damagePercent =
-                this.plugin.getDamageManager().getEnvironmentalDamage(event.getCause());
+                this.plugin.getDamageManager()
+                        .getEnvironmentalDamage(event.getCause());
         if (damage <= 0) {
             event.setCancelled(true);
             return 0;
@@ -613,18 +697,22 @@ public class DamageListener extends AbstractListener {
         return damage < 1 ? 1 : damage;
     }
 
-    private double onSpiked(EntityDamageEvent event, Entity spiked, double damage) {
+    private double onSpiked(EntityDamageEvent event, Entity spiked,
+                            double damage) {
         if (event instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent entityEvent = (EntityDamageByEntityEvent) event;
+            EntityDamageByEntityEvent entityEvent =
+                    (EntityDamageByEntityEvent) event;
             Entity attacking = entityEvent.getDamager();
-            IEntity attackingIEntity = this.plugin.getEntityManager().getEntity(attacking);
+            IEntity attackingIEntity =
+                    this.plugin.getEntityManager().getEntity(attacking);
             if (attackingIEntity instanceof Insentient) {
                 Insentient attackingInsentient = (Insentient) attackingIEntity;
                 ItemStack[] armor = attackingInsentient.getArmor();
                 double tempDamage = 0D;
                 for (ItemStack item : armor) {
                     tempDamage += this.plugin.getDamageManager()
-                            .getItemEnchantmentDamage(attackingInsentient, Enchantment.THORNS,
+                            .getItemEnchantmentDamage(attackingInsentient,
+                                                      Enchantment.THORNS,
                                                       item);
                 }
                 // TODO add considerations for the defending
@@ -635,8 +723,10 @@ public class DamageListener extends AbstractListener {
         return damage;
     }
 
-    private void setEventDamage(EntityDamageEvent event, double damage, double absorbtion,
-                                double armor, double blocking, double magic, double resistance) {
+    private void setEventDamage(EntityDamageEvent event, double damage,
+                                double absorbtion,
+                                double armor, double blocking, double magic,
+                                double resistance) {
         event.setDamage(DamageModifier.BASE, damage);
         event.setDamage(DamageModifier.ABSORPTION, absorbtion * damage);
         event.setDamage(DamageModifier.ARMOR, armor * damage);
@@ -648,7 +738,8 @@ public class DamageListener extends AbstractListener {
     private boolean resistanceCheck(Entity defender, ISkill skill) {
         if (defender instanceof LivingEntity) {
             final Insentient being =
-                    (Insentient) this.plugin.getEntityManager().getEntity(defender);
+                    (Insentient) this.plugin.getEntityManager()
+                            .getEntity(defender);
             for (EffectType type : EffectType.values()) {
                 if (type.isSkillResisted(being, skill)) {
                     return true;
@@ -658,12 +749,12 @@ public class DamageListener extends AbstractListener {
         return false;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @Subscribe(order = Order.MONITOR)
     public void onEntityDeathEvent(EntityDeathEvent event) {
 
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @Subscribe(order = Order.HIGH)
     public void onProjectileLaunchEvent(ProjectileLaunchEvent event) {
         if (event.getEntity().getType() != EntityType.ARROW) {
             return;
@@ -673,7 +764,8 @@ public class DamageListener extends AbstractListener {
         ProjectileSource source = arrow.getShooter();
         double damage = 0;
         if (source instanceof BlockProjectileSource) {
-            damage = this.plugin.getDamageManager().getEnvironmentalDamage(DamageCause.PROJECTILE);
+            damage = this.plugin.getDamageManager()
+                    .getEnvironmentalDamage(DamageCause.PROJECTILE);
             if (damage < 1) {
                 damage = 1;
             }
@@ -684,7 +776,8 @@ public class DamageListener extends AbstractListener {
             }
         } else if (source instanceof LivingEntity) {
             LivingEntity shooter = (LivingEntity) source;
-            IEntity entity = this.plugin.getEntityManager().getEntity((LivingEntity) source);
+            IEntity entity = this.plugin.getEntityManager()
+                    .getEntity((LivingEntity) source);
             if (entity instanceof Summon) {
                 // TODO handle summon damages
             } else if (entity instanceof Monster) {
@@ -692,7 +785,8 @@ public class DamageListener extends AbstractListener {
                     case SKELETON:
                     case ZOMBIE:
                     case PIG_ZOMBIE:
-                        damage = this.plugin.getEntityManager().getMonster(shooter)
+                        damage = this.plugin.getEntityManager()
+                                .getMonster(shooter)
                                 .getModifiedDamage();
                         break;
                     default:
@@ -705,31 +799,37 @@ public class DamageListener extends AbstractListener {
         }
     }
 
-    private double getPlayerProjectileDamage(Player attacker, Projectile projectile,
+    private double getPlayerProjectileDamage(Player attacker, Projectile
+            projectile,
                                              double damage) {
-        Champion champion = this.plugin.getEntityManager().getChampion(attacker);
-        final double tempDamage = this.plugin.getDamageManager().getHighestProjectileDamage(
-                champion, DamageManager.ProjectileType.valueOf(projectile.getType().name()));
+        Champion champion = this.plugin.getEntityManager()
+                .getChampion(attacker).get();
+        final double tempDamage =
+                this.plugin.getDamageManager().getHighestProjectileDamage(
+                        champion, DamageManager.ProjectileType
+                                .valueOf(projectile.getType().name()));
         return tempDamage > 0 ? tempDamage : damage;
     }
 
     @SuppressWarnings("deprecation")
     private double getExtraBowDamage(ItemStack itemStack) {
-        if (itemStack.getType() != Material.BOW) {
+        if (itemStack.getItem() != ItemTypes.BOW) {
             return 0;
         }
         int amount = 0;
-        for (Map.Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
+        for (Map.Entry<Enchantment, Integer> entry : itemStack.getEnchantments()
+                .entrySet()) {
             Double val = this.plugin.getDamageManager()
                     .getEnchantmentDamage(entry.getKey(), entry.getValue());
             if (val == null) {
                 continue;
             }
-            if (entry.getKey().getId() == Enchantment.ARROW_DAMAGE.getId()) {
+            if (entry.getKey().getId().equals(Enchantments.POWER.getId())) {
                 amount += this.plugin.getDamageManager()
                         .getEnchantmentDamage(entry.getKey(), entry.getValue());
             }
         }
         return amount;
     }
+    */
 }

@@ -29,59 +29,61 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
-import org.apache.commons.lang.Validate;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.service.persistence.data.DataQuery;
+import org.spongepowered.api.service.persistence.data.DataView;
+import org.spongepowered.api.util.event.Order;
+import org.spongepowered.api.util.event.Subscribe;
+
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
-import com.afterkraft.kraftrpg.api.events.roles.RoleChangeEvent;
-import com.afterkraft.kraftrpg.api.events.roles.RoleLevelChangeEvent;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
-import com.afterkraft.kraftrpg.api.skills.PassiveSkill;
-import com.afterkraft.kraftrpg.api.skills.Skill;
 import com.afterkraft.kraftrpg.api.skills.SkillManager;
 import com.afterkraft.kraftrpg.api.skills.SkillSetting;
 import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
 import com.afterkraft.kraftrpg.api.skills.Stalled;
 import com.afterkraft.kraftrpg.api.skills.common.Permissible;
-import com.afterkraft.kraftrpg.api.skills.common.PermissionSkill;
+import com.afterkraft.kraftrpg.common.skills.PassiveSkill;
+import com.afterkraft.kraftrpg.common.skills.Skill;
+import com.afterkraft.kraftrpg.common.skills.common.PermissionSkill;
 
 /**
  * Default implementation of SkillManager for KraftRPG.
  */
 public class RPGSkillManager implements SkillManager {
-    private static final Set<String> DEFAULT_ALLOWED_NODES;
+    private static final Set<DataQuery> DEFAULT_ALLOWED_NODES;
 
     static {
-        DEFAULT_ALLOWED_NODES = new HashSet<>();
+        DEFAULT_ALLOWED_NODES = Sets.newHashSet();
         for (SkillSetting setting : SkillSetting.AUTOMATIC_SETTINGS) {
             DEFAULT_ALLOWED_NODES.add(setting.node());
-            DEFAULT_ALLOWED_NODES.add(setting.scalingNode());
+            if (setting.scalingNode().isPresent()) {
+                DEFAULT_ALLOWED_NODES.add(setting.scalingNode().get());
+            }
         }
         DEFAULT_ALLOWED_NODES.remove(null);
-
-        // Add more auto-applied stuff here
-        DEFAULT_ALLOWED_NODES.add("requirements");
     }
 
-    private final Map<String, ISkill> skillMap;
+    private final Map<String, ISkill> skillMap = Maps.newHashMap();
     private final KraftRPGPlugin plugin;
     private SkillManagerListener listener;
 
     public RPGSkillManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
         this.listener = new SkillManagerListener();
-        this.skillMap = new HashMap<>();
     }
 
     /**
@@ -92,13 +94,13 @@ public class RPGSkillManager implements SkillManager {
         for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
             addSkill(skill);
         }
-        this.plugin.getServer().getPluginManager()
-                .registerEvents(new SkillManagerListener(), this.plugin);
+        RpgCommon.getGame().getEventManager()
+                .register(this.plugin, new SkillManagerListener());
     }
 
     @Override
     public void addSkill(ISkill skill) {
-        Validate.notNull(skill, "Cannot add a null skill!");
+        checkNotNull(skill, "Cannot add a null skill!");
         if (!checkSkillConfig(skill)) {
             return;
         }
@@ -110,26 +112,27 @@ public class RPGSkillManager implements SkillManager {
 
     @Override
     public boolean hasSkill(String skillName) {
-        Validate.notNull(skillName, "Cannot check a null skill name!");
-        Validate.isTrue(!skillName.isEmpty(), "Cannot check an empty skill name!");
+        checkNotNull(skillName, "Cannot check a null skill name!");
+        checkArgument(!skillName.isEmpty(), "Cannot check an empty skill name!");
         return false;
     }
 
     @Override
-    public ISkill getSkill(String name) {
-        Validate.notNull(name, "Cannot get a null skill name!");
+    public Optional<ISkill> getSkill(String name) {
+        checkNotNull(name, "Cannot get a null skill name!");
         name = name.toLowerCase();
-        return this.skillMap.get(name);
+        return Optional.fromNullable(this.skillMap.get(name));
     }
 
     @Override
     public boolean loadPermissionSkill(String name) {
-        Validate.notNull(name, "Cannot load a null permission skill name!");
+        checkNotNull(name, "Cannot load a null permission skill name!");
         if ((name == null) || (this.skillMap.get(name.toLowerCase()) != null)) {
             return true;
         }
 
         final PermissionSkill oSkill = new PermissionSkill(this.plugin, name);
+        /*
         final ConfigurationSection config = RPGSkillConfigManager.outsourcedSkillConfig
                 .getConfigurationSection(oSkill.getName());
         final Map<String, Boolean> perms = new HashMap<>();
@@ -142,12 +145,14 @@ public class RPGSkillManager implements SkillManager {
 
         }
         if (perms.isEmpty()) {
-            this.plugin
-                    .log(Level.SEVERE, "There are no permissions defined for " + oSkill.getName());
+            this.plugin.getLogger()
+                    .error("There are no permissions defined for "
+                                   + oSkill.getName());
             return false;
         }
         oSkill.setPermissions(perms);
         this.skillMap.put(name.toLowerCase(), oSkill);
+        */
         return true;
     }
 
@@ -158,59 +163,53 @@ public class RPGSkillManager implements SkillManager {
 
     @Override
     public boolean isLoaded(String name) {
-        Validate.notNull(name, "Cannot check if a null skill name is loaded!");
+        checkNotNull(name, "Cannot check if a null skill name is loaded!");
         return this.skillMap.containsKey(name.toLowerCase());
     }
 
     @Override
     public void removeSkill(ISkill skill) {
-        Validate.notNull(skill, "Cannot remove a null skill!");
+        checkNotNull(skill, "Cannot remove a null skill!");
         this.skillMap.remove(skill.getName().toLowerCase().replace("skill", ""));
     }
 
     @Override
-    public boolean isCasterDelayed(SkillCaster caster) {
-        Validate.notNull(caster, "Cannot check if a null caster is delayed!");
-        return false;
-    }
-
-    @Override
-    public Stalled getDelayedSkill(SkillCaster caster) {
-        Validate.notNull(caster, "Cannot get the stalled skill of a null caster!");
-        return null;
+    public Optional<Stalled> getDelayedSkill(SkillCaster caster) {
+        checkNotNull(caster, "Cannot get the stalled skill of a null caster!");
+        return Optional.absent();
     }
 
     @Override
     public void setCompletedSkill(SkillCaster caster) {
-        Validate.notNull(caster, "Cannot set a null caster to complete a skill!");
+        checkNotNull(caster, "Cannot set a null caster to complete a skill!");
 
     }
 
     @Override
     public void addSkillTarget(Entity o, SkillCaster caster, ISkill skill) {
-        Validate.notNull(o, "Cannot add a null entity as a skill target!");
-        Validate.notNull(caster, "Cannot add a null caster!");
-        Validate.notNull(skill, "Cannot add a skill target to a null skill!");
+        checkNotNull(o, "Cannot add a null entity as a skill target!");
+        checkNotNull(caster, "Cannot add a null caster!");
+        checkNotNull(skill, "Cannot add a skill target to a null skill!");
 
     }
 
     @Override
-    public SkillUseObject getSkillTargetInfo(Entity o) {
-        Validate.notNull(o, "Cannot get the skill target info on a null entity!");
-        return null;
+    public Optional<SkillUseObject> getSkillTargetInfo(Entity o) {
+        checkNotNull(o, "Cannot get the skill target info on a null entity!");
+        return Optional.absent();
     }
 
     @Override
     public boolean isSkillTarget(Entity o) {
-        Validate.notNull(o, "Cannot check a null skill target!");
+        checkNotNull(o, "Cannot check a null skill target!");
         return false;
     }
 
     @Override
     public void removeSkillTarget(Entity entity, SkillCaster caster, ISkill skill) {
-        Validate.notNull(entity, "Cannot remove a null entity skill target!");
-        Validate.notNull(caster, "Cannot remove a null caster skill target!");
-        Validate.notNull(skill, "Cannot remove a null skill from a skill target!");
+        checkNotNull(entity, "Cannot remove a null entity skill target!");
+        checkNotNull(caster, "Cannot remove a null caster skill target!");
+        checkNotNull(skill, "Cannot remove a null skill from a skill target!");
 
     }
 
@@ -219,9 +218,9 @@ public class RPGSkillManager implements SkillManager {
             return true;
         }
         Set<SkillSetting> settings = ImmutableSet.copyOf(skill.getUsedConfigNodes());
-        ConfigurationSection section = skill.getDefaultConfig();
+        DataView section = skill.getDefaultConfig();
 
-        Set<String> allowedKeys = new HashSet<>(DEFAULT_ALLOWED_NODES);
+        Set<DataQuery> allowedKeys = new HashSet<>(DEFAULT_ALLOWED_NODES);
         // Build the allowedKeys set
         for (SkillSetting setting : settings) {
             if (setting == SkillSetting.CUSTOM) {
@@ -230,17 +229,23 @@ public class RPGSkillManager implements SkillManager {
                 continue;
             }
             allowedKeys.add(setting.node());
-            allowedKeys.add(setting.scalingNode());
+            if (setting.scalingNode().isPresent()) {
+                allowedKeys.add(setting.scalingNode().get());
+            }
         }
         allowedKeys.remove(null);
 
         // Let's provide a nice message
         // return allowedKeys.containsAll(section.getKeys(false));
-        for (String configKey : section.getKeys(false)) {
+        for (DataQuery configKey : section.getKeys(false)) {
             if (!allowedKeys.contains(configKey)) {
-                this.plugin.getLogger().severe("Error in skill " + skill.getName() + ":");
-                this.plugin.getLogger().severe("  Extra default configuration value " + configKey
-                                                       + " not declared in getUsedConfigNodes()");
+                this.plugin.getLogger().error(
+                        "Error in skill " + skill.getName()
+                                + ":");
+                this.plugin.getLogger().error("  Extra default configuration "
+                                                      + "value " + configKey
+                                                      + " not declared in "
+                                                      + "getUsedConfigNodes()");
                 return false;
             }
         }
@@ -252,7 +257,7 @@ public class RPGSkillManager implements SkillManager {
 
     }
 
-    private class SkillManagerListener implements Listener {
+    private class SkillManagerListener {
 
         private final Set<PassiveSkill> passiveSkills = new HashSet<>();
         private final Set<PermissionSkill> permissionSkills = new HashSet<>();
@@ -265,7 +270,8 @@ public class RPGSkillManager implements SkillManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        /*
+        @Subscribe(order = Order.POST)
         public void onClassChangeEvent(RoleChangeEvent event) {
             for (PermissionSkill skill : this.permissionSkills) {
                 skill.tryLearning(event.getSentientBeing());
@@ -275,7 +281,7 @@ public class RPGSkillManager implements SkillManager {
             }
         }
 
-        @EventHandler(priority = EventPriority.MONITOR)
+        @Subscribe(order = Order.POST)
         public void onLevelChangeEvent(RoleLevelChangeEvent event) {
             for (PermissionSkill skill : this.permissionSkills) {
                 skill.tryLearning(event.getSentientBeing());
@@ -284,5 +290,6 @@ public class RPGSkillManager implements SkillManager {
                 skill.apply((SkillCaster) event.getSentientBeing());
             }
         }
+        */
     }
 }

@@ -23,10 +23,6 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.inventory.InventoryEvent;
-
 import com.afterkraft.kraftrpg.api.RPGPlugin;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
@@ -39,8 +35,13 @@ public class InventoryListener extends AbstractListener {
         super(plugin);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onInventoryEvent(InventoryEvent event) {
+    @Override
+    public void initialize() {
+
+    }
+
+    @Override
+    public void shutdown() {
 
     }
 }

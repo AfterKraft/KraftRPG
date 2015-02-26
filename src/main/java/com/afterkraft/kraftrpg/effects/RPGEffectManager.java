@@ -23,11 +23,13 @@
  */
 package com.afterkraft.kraftrpg.effects;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.UUID;
 
-import com.afterkraft.kraftrpg.api.RPGPlugin;
+import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.effects.EffectManager;
 import com.afterkraft.kraftrpg.api.effects.Expirable;
 import com.afterkraft.kraftrpg.api.effects.Managed;
@@ -44,10 +46,11 @@ public class RPGEffectManager implements EffectManager {
     private final Set<Managed> managedEffects = new HashSet<>();
     private final Set<Managed> pendingRemovals = new HashSet<>();
     private final Set<Managed> pendingAdditions = new HashSet<>();
-    private final RPGPlugin plugin;
-    private int taskID = 0;
+    private final KraftRPGPlugin plugin;
+    @Nullable
+    private UUID taskID;
 
-    public RPGEffectManager(RPGPlugin plugin) {
+    public RPGEffectManager(KraftRPGPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -68,17 +71,25 @@ public class RPGEffectManager implements EffectManager {
 
     @Override
     public void initialize() {
-        if (this.taskID != 0) {
-            throw new IllegalStateException("RPGEffectManager is already initalized!");
+        if (this.taskID != null) {
+            throw new IllegalStateException(
+                    "RPGEffectManager is already initalized!");
         }
-        this.taskID = this.plugin.getServer().getScheduler()
-                .scheduleSyncRepeatingTask(this.plugin, new EffectUpdater(), 0, EFFECT_INTERVAL);
+        this.taskID = RpgCommon.getGame()
+                .getSyncScheduler()
+                .runRepeatingTask(this.plugin,
+                                  new EffectUpdater(),
+                                  EFFECT_INTERVAL).get().getUniqueId();
     }
 
     @Override
     public void shutdown() {
-        this.plugin.getServer().getScheduler().cancelTask(this.taskID);
-        this.taskID = 0;
+        if (this.taskID != null) {
+            RpgCommon.getGame()
+                    .getSyncScheduler()
+                    .getTaskById(this.taskID).get().cancel();
+            this.taskID = null;
+        }
     }
 
     class EffectUpdater implements Runnable {
@@ -103,13 +114,15 @@ public class RPGEffectManager implements EffectManager {
                 if (managed.getEffect() instanceof Expirable) {
                     if (((Expirable) managed.getEffect()).isExpired()) {
                         try {
-                            managed.getSentientBeing().removeEffect(managed.getEffect());
+                            managed.getSentientBeing()
+                                    .removeEffect(managed.getEffect());
                         } catch (final Exception e) {
-                            RPGEffectManager.this.plugin.log(Level.SEVERE,
-                                                             "There was an error attempting to "
-                                                                     + "remove effect: "
-                                                                     + managed
-                                                                     .getEffect().getName());
+                            RPGEffectManager.this.plugin.getLogger()
+                                    .error("There "
+                                           + "was an "
+                                           + "error attempting to "
+                                           + "remove effect: "
+                                           + managed.getEffect().getName());
                             e.printStackTrace();
                         }
                     }
@@ -121,11 +134,11 @@ public class RPGEffectManager implements EffectManager {
                             periodic.tick(managed.getSentientBeing());
                         }
                     } catch (final Exception e) {
-                        RPGEffectManager.this.plugin.log(Level.SEVERE,
-                                                         "There was an error attempting to "
-                                                                 + "tick effect: "
-                                                                 + managed
-                                                                 .getEffect().getName());
+                        RPGEffectManager.this
+                                .plugin.getLogger()
+                                .error("There was an error attempting to "
+                                       + "tick effect: "
+                                       + managed.getEffect().getName());
                         e.printStackTrace();
                     }
                 }

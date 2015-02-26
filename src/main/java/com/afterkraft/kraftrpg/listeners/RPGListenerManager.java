@@ -23,10 +23,14 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.google.common.collect.Lists;
+
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
 
@@ -37,9 +41,15 @@ public class RPGListenerManager implements ListenerManager {
 
     private KraftRPGPlugin plugin;
 
-    private List<AbstractListener> listeners = new ArrayList<>();
+    private List<AbstractListener> listeners = Lists.newArrayList();
 
+    /**
+     * Creates a new {@link RPGListenerManager}.
+     *
+     * @param plugin The plugin instance
+     */
     public RPGListenerManager(KraftRPGPlugin plugin) {
+        checkNotNull(plugin);
         this.plugin = plugin;
     }
 
@@ -70,9 +80,12 @@ public class RPGListenerManager implements ListenerManager {
 
     @Override
     public void addListener(AbstractListener listener) {
-        if (listener != null && !this.listeners.contains(listener)) {
+        checkNotNull(listener);
+        if (!this.listeners.contains(listener)) {
             this.listeners.add(listener);
             listener.initialize();
+            RpgCommon.getGame().getEventManager()
+                    .register(this.plugin, listener);
         }
     }
 }

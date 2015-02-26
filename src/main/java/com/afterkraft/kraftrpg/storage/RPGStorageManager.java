@@ -44,17 +44,21 @@ public class RPGStorageManager implements Manager {
     public void initialize() {
         String configuredBackend = this.plugin.getProperties().getStorageType();
         StorageBackend backend =
-                ExternalProviderRegistration.getStorageBackendMap().get(configuredBackend);
+                ExternalProviderRegistration.getStorageBackendMap()
+                        .get(configuredBackend);
 
         if (backend == null) {
-            this.plugin.getLogger().severe("ERROR - You specified the '" + configuredBackend
-                                                   + "' storage type, but that storage "
-                                                   + "type is not available.");
+            this.plugin.getLogger().error("ERROR - You specified the '"
+                                                  + configuredBackend
+                                                  + "' storage type,"
+                                                  + " but that storage "
+                                                  + "type is not available.");
             StringBuilder sb = new StringBuilder("Available storage types are:");
-            for (String str : ExternalProviderRegistration.getStorageBackendMap().keySet()) {
+            for (String str : ExternalProviderRegistration
+                    .getStorageBackendMap().keySet()) {
                 sb.append(" '").append(str).append("'");
             }
-            this.plugin.getLogger().severe(sb.toString());
+            this.plugin.getLogger().error(sb.toString());
             this.plugin.cancelEnable();
             return;
         }
@@ -63,16 +67,19 @@ public class RPGStorageManager implements Manager {
             backend.initialize();
         } catch (Throwable e) {
             e.printStackTrace();
-            this.plugin.getLogger().severe("The storage backend '" + configuredBackend
-                                                   + "' threw an exception during startup:");
-            this.plugin.getLogger().severe(e.getMessage());
+            this.plugin.getLogger().error("The storage backend '"
+                                                  + configuredBackend
+                                                  + "' threw an exception"
+                                                  + " during startup:");
+            this.plugin.getLogger().error(e.getMessage());
             this.plugin.cancelEnable();
             return;
         }
 
         this.storage = ExternalProviderRegistration.getStorageFrontendOverride()
                 .construct(this.plugin, backend);
-        this.plugin.getLogger().info("Storage initialized with provider " + this.storage.getName());
+        this.plugin.getLogger().info("Storage initialized with provider "
+                                             + this.storage.getName());
     }
 
     @Override

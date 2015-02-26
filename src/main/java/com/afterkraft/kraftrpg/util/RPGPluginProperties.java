@@ -23,13 +23,15 @@
  */
 package com.afterkraft.kraftrpg.util;
 
-import java.util.EnumMap;
 import java.util.Map;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.world.Location;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.api.util.Properties;
@@ -51,7 +53,7 @@ public class RPGPluginProperties implements Properties {
     public static int maxLevel = 50;
     public static int[] levels;
     public Map<EntityType, FixedPoint> creatureExperienceDrop =
-            new EnumMap<>(EntityType.class);
+            Maps.newHashMap();
 
     public double getMobDamageDistanceModified() {
         return mobDamageDistanceModified;
@@ -69,27 +71,12 @@ public class RPGPluginProperties implements Properties {
         return distanceTierModifier;
     }
 
-    @Override
-    public boolean isMobDamageDistanceModified() {
-        return isMobDamageDistanceModified;
-    }
-
     public boolean isMobHealthDistanceModified() {
         return isMobHealthDistanceModified;
     }
 
     public boolean isMobExpDistanceModified() {
         return isMobExpDistanceModified;
-    }
-
-    @Override
-    public String getStorageType() {
-        return storageType.toLowerCase();
-    }
-
-    @Override
-    public boolean useVanishIfAvailable() {
-        return true;
     }
 
     @Override
@@ -123,7 +110,7 @@ public class RPGPluginProperties implements Properties {
     }
 
     @Override
-    public int getStaminaIncreaseForFood(Material foodMaterial) {
+    public int getStaminaIncreaseForFood(ItemType foodMaterial) {
         return 0;
     }
 
@@ -143,14 +130,15 @@ public class RPGPluginProperties implements Properties {
     }
 
     @Override
-    public FixedPoint getMonsterExperience(LivingEntity entity, Location spawnPoint) {
+    public FixedPoint getMonsterExperience(Living entity, Location spawnPoint) {
         if (isMobExpDistanceModified) {
             FixedPoint exp = this.creatureExperienceDrop.get(entity.getType());
             Double value = Math.ceil(exp != null ? exp.doubleValue() : 0.0D);
             double percent = 1 + mobExpDistanceModified / distanceTierModifier;
             double modifier = Math.pow(percent,
                                        MathUtil.getModulatedDistance(
-                                               entity.getWorld().getSpawnLocation(), spawnPoint)
+                                               entity.getLocation(),
+                                               spawnPoint)
                                                / distanceTierModifier);
             value = Math.ceil(value * modifier);
             return FixedPoint.valueOf(value);
@@ -179,8 +167,8 @@ public class RPGPluginProperties implements Properties {
     }
 
     @Override
-    public FixedPoint getEntityReward(EntityType type) {
-        return new FixedPoint();
+    public Optional<FixedPoint> getEntityReward(EntityType type) {
+        return Optional.absent();
     }
 
     @Override
@@ -191,5 +179,20 @@ public class RPGPluginProperties implements Properties {
     @Override
     public double getSpawnCampingMultiplier() {
         return 0;
+    }
+
+    @Override
+    public boolean isMobDamageDistanceModified() {
+        return isMobDamageDistanceModified;
+    }
+
+    @Override
+    public String getStorageType() {
+        return storageType.toLowerCase();
+    }
+
+    @Override
+    public boolean useVanishIfAvailable() {
+        return true;
     }
 }

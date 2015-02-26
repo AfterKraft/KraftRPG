@@ -23,18 +23,27 @@
  */
 package com.afterkraft.kraftrpg;
 
-import java.util.logging.Level;
+import java.io.File;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Server;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
+import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.event.state.ConstructionEvent;
+import org.spongepowered.api.event.state.PostInitializationEvent;
+import org.spongepowered.api.event.state.PreInitializationEvent;
+import org.spongepowered.api.event.state.ServerAboutToStartEvent;
+import org.spongepowered.api.event.state.ServerStartingEvent;
+import org.spongepowered.api.event.state.ServerStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.service.command.CommandService;
+import org.spongepowered.api.service.config.DefaultConfig;
 import org.spongepowered.api.util.event.Subscribe;
 
-import net.milkbowl.vault.permission.Permission;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
 import com.afterkraft.kraftrpg.api.RPGPlugin;
@@ -45,16 +54,11 @@ import com.afterkraft.kraftrpg.api.entity.EntityManager;
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager;
 import com.afterkraft.kraftrpg.api.listeners.ListenerManager;
 import com.afterkraft.kraftrpg.api.roles.RoleManager;
-import com.afterkraft.kraftrpg.api.skills.ISkill;
-import com.afterkraft.kraftrpg.api.skills.SkillBind;
 import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
 import com.afterkraft.kraftrpg.api.skills.SkillManager;
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
-import com.afterkraft.kraftrpg.api.util.ConfigManager;
 import com.afterkraft.kraftrpg.api.util.DamageManager;
 import com.afterkraft.kraftrpg.api.util.Properties;
-import com.afterkraft.kraftrpg.commands.RPGCommandManager;
-import com.afterkraft.kraftrpg.commands.RPGParentCommand;
 import com.afterkraft.kraftrpg.commands.RPGSkillCommand;
 import com.afterkraft.kraftrpg.effects.RPGEffectManager;
 import com.afterkraft.kraftrpg.entity.RPGCombatTracker;
@@ -65,15 +69,14 @@ import com.afterkraft.kraftrpg.roles.RPGRoleManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillConfigManager;
 import com.afterkraft.kraftrpg.skills.RPGSkillManager;
 import com.afterkraft.kraftrpg.storage.RPGStorageManager;
-import com.afterkraft.kraftrpg.storage.YMLStorageBackend;
 import com.afterkraft.kraftrpg.util.RPGConfigManager;
 import com.afterkraft.kraftrpg.util.RPGDamageManager;
 import com.afterkraft.kraftrpg.util.RPGPluginProperties;
-import com.afterkraft.kraftrpg.util.VaultPermissionsManager;
 
 /**
  * Standard implementation of RPGPlugin for SpongeAPI
  */
+@Singleton
 @Plugin(id = "KraftRPG", name = "KraftRPG", version = "0.0.2-SNAPSHOT")
 public final class KraftRPGPlugin implements RPGPlugin {
 
@@ -81,6 +84,17 @@ public final class KraftRPGPlugin implements RPGPlugin {
             "kraftrpg.admin.bypass.inventory";
     private static KraftRPGPlugin instance;
     private static boolean cancel = false;
+
+    @Inject
+    private Logger logger;
+
+    @Inject
+    @DefaultConfig(sharedRoot = false)
+    private File mainConfig;
+
+    @Inject
+    @DefaultConfig(sharedRoot = false)
+    private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 
     private RPGSkillManager skillManager;
     private RPGSkillConfigManager skillConfigManager;
@@ -94,69 +108,39 @@ public final class KraftRPGPlugin implements RPGPlugin {
     private PartyManager partyManager;
     private RPGEffectManager effectManager;
     private RPGListenerManager listenerManager;
-    private RPGCommandManager commandManager;
-
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
+    private boolean enabled = false;
 
     public static KraftRPGPlugin getInstance() {
         return KraftRPGPlugin.instance;
     }
 
-
-
-    @Override
-    public void onLoad() {
-        // Register serialized classes
-        ConfigurationSerialization.registerClass(SkillBind.class);
+    @Subscribe
+    public void onConstruction(ConstructionEvent event) {
         RpgCommon.setPlugin(this);
-        RpgCommon.setCommonServer(this.getServer());
-        // Register our defaults
         ExternalProviderRegistration.pluginLoaded(this);
-        ExternalProviderRegistration
-                .registerStorageBackend(new YMLStorageBackend(this), "yml", "yaml");
+        instance = this;
+
+        Injector injector = Guice.createInjector(new RpgModule());
     }
 
     @Subscribe
-    public void onDisable() {
-        try {
+    public void onPreInit(PreInitializationEvent event) {
+        this.configManager = new RPGConfigManager(this, this.mainConfig,
+                                                  this.configLoader);
+        this.properties = new RPGPluginProperties();
 
-        } catch (Exception e) {
-            log(Level.WARNING, "------------------------------------------------");
-            log(Level.WARNING, "|--- Something did not shut down correctly! ---|");
-            log(Level.WARNING, "|--- Please make sure to report the following -|");
-            log(Level.WARNING, "|--- error to the KraftRPG devs! --------------|");
-            e.printStackTrace();
-            log(Level.WARNING, "|----------------------------------------------|");
-            log(Level.WARNING, "|---------------- End of Error ----------------|");
-            log(Level.WARNING, "------------------------------------------------");
-
-        }
     }
 
-    @Override
-    public void onEnable() {
-        // Set the instance as necessary
-        instance = this;
-        setupVault();
-        if (RpgCommon.getHandler() == null) {
-            getLogger()
-                    .severe("Could not initialize internal handlers - please check for updates!");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-        // End registration of Skills
+    @Subscribe
+    public void onPostInit(PostInitializationEvent event) {
+
+    }
+
+    @Subscribe
+    public void onPreStart(ServerAboutToStartEvent event) {
+        RpgCommon.setCommonServer(event.getGame().getServer().get());
+        RpgCommon.setGame(event.getGame());
         ExternalProviderRegistration.finish();
-
-        // Register the additional NBTAttributes as necessary
-        RpgCommon.getHandler().addNBTAttributes();
-
-        // Start up the necessary things in precise order.
-        // If the order is ignored, some managers may produce NPE's.
-        this.properties = new RPGPluginProperties();
-        this.configManager = new RPGConfigManager(this);
         this.storageManager = new RPGStorageManager(this);
         if (cancel) {
             return;
@@ -187,31 +171,51 @@ public final class KraftRPGPlugin implements RPGPlugin {
         this.partyManager.initialize();
         // Start up the RPGListener
         this.listenerManager = new RPGListenerManager(this);
-        RpgCommon.getHandler().loadExtraListeners();
         this.listenerManager.initialize();
-        this.commandManager = new RPGCommandManager(this);
-        registerCommandExecutors();
-        this.commandManager.initialize();
         RpgCommon.finish();
+        this.enabled = true;
     }
 
-    private void setupVault() {
-        if (this.getServer().getPluginManager().getPlugin("Vault") != null) {
-            RegisteredServiceProvider<Permission> rsp =
-                    getServer().getServicesManager().getRegistration(Permission.class);
-            RpgCommon.setPermissionManager(new VaultPermissionsManager(rsp.getProvider()));
+    @Subscribe
+    public void onStarting(ServerStartingEvent event) {
+
+    }
+
+    @Subscribe
+    public void onDisable(ServerStoppingEvent event) {
+        try {
+            this.listenerManager.shutdown();
+            this.entityManager.shutdown();
+
+        } catch (Exception e) {
+            this.logger
+                    .warn("------------------------------------------------");
+            this.logger
+                    .warn("|--- Something did not shut down correctly! ---|");
+            this.logger
+                    .warn("|--- Please make sure to report the following -|");
+            this.logger
+                    .warn("|--- error to the KraftRPG devs! --------------|");
+            e.printStackTrace();
+            this.logger
+                    .warn("|----------------------------------------------|");
+            this.logger
+                    .warn("|---------------- End of Error ----------------|");
+            this.logger
+                    .warn("------------------------------------------------");
         }
     }
 
     private void registerCommandExecutors() {
-        this.commandManager.registerCommand("skill", new RPGSkillCommand(this));
-        this.commandManager.registerCommand("rpg", new RPGParentCommand(this));
+        CommandService service = RpgCommon.getGame().getCommandDispatcher();
+        service.register(this, new RPGSkillCommand(this), "skill", "skills",
+                         "cast");
+
     }
 
     @Override
     public void cancelEnable() {
         cancel = true;
-        getServer().getPluginManager().disablePlugin(this);
     }
 
     @Override
@@ -240,7 +244,7 @@ public final class KraftRPGPlugin implements RPGPlugin {
     }
 
     @Override
-    public ConfigManager getConfigurationManager() {
+    public RPGConfigManager getConfigurationManager() {
         return this.configManager;
     }
 
@@ -275,29 +279,11 @@ public final class KraftRPGPlugin implements RPGPlugin {
     }
 
     @Override
-    public void log(Level level, String msg) {
-
+    public boolean isEnabled() {
+        return this.enabled;
     }
 
-    @Override
-    public void logSkillThrowing(ISkill skill, String action, Throwable thrown, Object context) {
-        Bukkit.broadcast(
-                String.format("%sThe skill %s%s%s encountered an error while %s%s%s - %s%s.",
-                              ChatColor.RED, ChatColor.YELLOW, skill.getName(), ChatColor.RED,
-                              ChatColor.YELLOW, action, ChatColor.RED, ChatColor.BLUE,
-                              thrown.getClass()),
-                Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
-        thrown.printStackTrace();
-        System.err.println(context);
-    }
-
-    @Override
-    public void debugLog(Level level, String msg) {
-
-    }
-
-    @Override
-    public void debugThrow(String sourceClass, String sourceMethod, Throwable thrown) {
-
+    public Logger getLogger() {
+        return this.logger;
     }
 }

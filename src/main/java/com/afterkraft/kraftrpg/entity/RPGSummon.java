@@ -71,12 +71,13 @@ public class RPGSummon extends RPGInsentient implements Summon {
 
     @Override
     public double getMaxHealth() {
-        return this.isEntityValid() ? this.getUnsafeEntity().getMaxHealth() : 0D;
+        return this.isEntityValid() ? this.getUnsafeEntity().getMaxHealth()
+                : 0D;
     }
 
     @Override
-    public DamageWrapper getDamageWrapper() {
-        return this.wrapper;
+    public Optional<DamageWrapper> getDamageWrapper() {
+        return Optional.of(this.wrapper);
     }
 
     @Override
@@ -87,7 +88,8 @@ public class RPGSummon extends RPGInsentient implements Summon {
 
     @Override
     public int getNoDamageTicks() {
-        return this.isEntityValid() ? this.getUnsafeEntity().getInvulnerabilityTicks() : 0;
+        return this.isEntityValid() ? this.getUnsafeEntity()
+                .getInvulnerabilityTicks() : 0;
     }
 
     @Override
@@ -112,22 +114,12 @@ public class RPGSummon extends RPGInsentient implements Summon {
 
     @Override
     public ItemStack[] getArmor() {
-        if (!this.isEntityValid()) {
-            return new ItemStack[4];
-        } else {
-            ItemStack[] armor = new ItemStack[4];
-            for (int i = 0; i < getEntity().getEquipment().getArmorContents().length; i++) {
-                armor[i] = new ItemStack(getEntity().getEquipment().getArmorContents()[i]);
-            }
-            return armor;
-        }
+        return new ItemStack[] {};
     }
 
     @Override
-    public void setArmor(ItemStack item, int armorSlot) throws IllegalArgumentException {
-        checkArgument(armorSlot < getEntity().getEquipment().getArmorContents().length,
-                      "Cannot set the armor slot greater than the current armor!");
-        getEntity().getEquipment().getArmorContents()[armorSlot] = new ItemStack(item);
+    public void setArmor(ItemStack item, int armorSlot) {
+        // TODO
     }
 
     @Override

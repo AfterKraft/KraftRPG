@@ -24,30 +24,31 @@
 package com.afterkraft.kraftrpg.skills;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.service.persistence.data.DataContainer;
+import org.spongepowered.api.service.persistence.data.DataQuery;
+import org.spongepowered.api.service.persistence.data.DataView;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import ninja.leaping.configurate.ConfigurationNode;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.entity.SkillCaster;
 import com.afterkraft.kraftrpg.api.roles.Role;
+import com.afterkraft.kraftrpg.api.roles.aspects.SkillAspect;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.skills.SkillConfigManager;
 import com.afterkraft.kraftrpg.api.skills.SkillSetting;
-import com.afterkraft.kraftrpg.api.skills.common.PermissionSkill;
+import com.afterkraft.kraftrpg.common.skills.common.PermissionSkill;
 import com.afterkraft.kraftrpg.util.MathUtil;
 
 /**
@@ -57,52 +58,34 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     // Configurations
 
     // TODO Review all methods and possible re-implement getters
-    protected static Configuration outsourcedSkillConfig;
-    protected static Configuration standardSkillConfig;
-    protected static Configuration defaultSkillConfig = new MemoryConfiguration();
+    protected ConfigurationNode outsourcedSkillConfig;
+    protected ConfigurationNode standardSkillConfig;
+    protected ConfigurationNode defaultSkillConfig;
 
-    private static Map<String, Configuration> roleSkillConfigurations =
-            new HashMap<>();
-    private static File skillConfigFile;
-    private static File outsourcedSkillConfigFile;
+    private Map<String, ConfigurationNode> roleSkillConfigurations;
+    private File skillConfigFile;
+    private File outsourcedSkillConfigFile;
 
-    private final Map<SkillCaster, Map<ISkill, ConfigurationSection>> customSettings =
-            new HashMap<>();
-    private final KraftRPGPlugin plugin;
+    private final Map<SkillCaster, Map<ISkill, ConfigurationNode>>
+            customSettings;
+    private KraftRPGPlugin plugin;
 
     public RPGSkillConfigManager(KraftRPGPlugin plugin) {
-        final File dataFolder = plugin.getDataFolder();
-        skillConfigFile = new File(dataFolder, "skills.yml");
-        outsourcedSkillConfigFile = new File(dataFolder, "permission-skills.yml");
         this.plugin = plugin;
-        plugin.getConfigurationManager().checkForConfig(outsourcedSkillConfigFile);
+        this.customSettings = Maps.newHashMap();
+        // TODO
     }
 
     @Override
     public void reload() {
-        standardSkillConfig = null;
-        outsourcedSkillConfig = null;
+        this.standardSkillConfig = null;
+        this.outsourcedSkillConfig = null;
         this.initialize();
     }
 
     @Override
     public void initialize() {
-        // Setup the standard skill configuration
-        standardSkillConfig = YamlConfiguration.loadConfiguration(skillConfigFile);
-        standardSkillConfig.setDefaults(defaultSkillConfig);
-        standardSkillConfig.options().copyDefaults(true);
-
-        // Setup the outsourced skill configuration
-        outsourcedSkillConfig = YamlConfiguration.loadConfiguration(outsourcedSkillConfigFile);
-        outsourcedSkillConfig.setDefaults(standardSkillConfig);
-
-        //MERGE!
-        for (final String key : standardSkillConfig.getKeys(true)) {
-            if (standardSkillConfig.isConfigurationSection(key)) {
-                continue;
-            }
-            outsourcedSkillConfig.set(key, standardSkillConfig.get(key));
-        }
+        // TODO
     }
 
     @Override
@@ -113,73 +96,18 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public void saveSkillConfig() {
-        try {
-            ((YamlConfiguration) standardSkillConfig).save(skillConfigFile);
-        } catch (final IOException e) {
-            this.plugin.log(Level.WARNING, "Unable to save default skills file!");
-        }
+
     }
 
     @Override
-    public Configuration getRoleSkillConfig(String name) {
-        return roleSkillConfigurations.get(name);
+    public DataContainer getRoleSkillConfig(String name) {
+        return null;
     }
 
     @Override
     public void addRoleSkillSettings(String roleName, String skillName,
-                                     ConfigurationSection section) {
-        checkArgument(roleName != null,
-                      "Cannot add Role Skill configurations with a null Role name!");
-        checkArgument(skillName != null,
-                      "Cannot add a Role Skill configuration with a null Skill name");
-        checkArgument(section != null, "Cannot add a null configuration section!");
-        Configuration config = roleSkillConfigurations.get(roleName);
-        if (config == null) {
-            config = new MemoryConfiguration();
-            roleSkillConfigurations.put(roleName, config);
-        }
-
-        ConfigurationSection classSection = config.getConfigurationSection(skillName);
-        if (classSection == null) {
-            classSection = config.createSection(skillName);
-        }
-
-        for (final String key : section.getKeys(true)) {
-            if (section.isConfigurationSection(key)) {
-                classSection.createSection(key);
-            }
-        }
-
-        for (final String key : section.getKeys(true)) {
-            if (section.isConfigurationSection(key)) {
-                continue;
-            }
-
-            classSection.set(key, section.get(key));
-        }
-    }
-
-    @Override
-    public void addTemporarySkillConfigurations(ISkill skill, SkillCaster caster,
-                                                ConfigurationSection section) {
-        checkArgument(skill != null, "Cannot assign a custom setting for a null skill!");
-        checkArgument(caster != null, "Cannot assign a custom setting for a null caster!");
-        checkArgument(section != null,
-                      "Cannot assign a null configuration setting for a caster's skill use!");
-        for (String key : skill.getDefaultConfig().getKeys(true)) {
-            if (!section.isSet(key)) {
-                throw new IllegalArgumentException(
-                        "The provided ConfigurationSection does not contain all "
-                                + "necessary settings for the skill:"
-                                + skill.getName());
-            }
-        }
-        Map<ISkill, ConfigurationSection> skillMap = this.customSettings.get(caster);
-        if (skillMap == null) {
-            skillMap = new HashMap<>();
-        }
-        skillMap.put(skill, section);
-        this.customSettings.put(caster, skillMap);
+                                     DataView section) {
+        // TODO
     }
 
     @Override
@@ -187,44 +115,30 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         if (skill instanceof PermissionSkill) {
             return;
         }
-        final ConfigurationSection dSection = skill.getDefaultConfig();
-        final ConfigurationSection newSection = defaultSkillConfig.createSection(skill.getName());
-        //Loop through once and create all the keys
-        for (final String key : dSection.getKeys(true)) {
-            if (dSection.isConfigurationSection(key)) {
-                newSection.createSection(key);
-            }
-        }
-        for (final String key : dSection.getKeys(true)) {
-            if (dSection.isConfigurationSection(key)) {
-                //Skip section as they would overwrite data here
-                continue;
-            }
-            final Object o = dSection.get(key);
-            if (o instanceof List) {
-                newSection.set(key, new ArrayList<>((List<?>) o));
-            } else {
-                newSection.set(key, o);
-            }
-        }
-    }
-
-    public void setClassDefaults() {
-        for (final Configuration config : roleSkillConfigurations.values()) {
-            config.setDefaults(outsourcedSkillConfig);
-        }
+        // TODO
     }
 
     @Override
-    public String getRawString(ISkill skill, String setting) {
-        checkArgument(skill != null, "Cannot check the config of a null skill!");
-        checkArgument(setting != null, "Cannot check the config with a null path!");
-        if (!outsourcedSkillConfig.isSet(skill.getName() + "." + setting)) {
-            throw new IllegalStateException(
-                    "The requested skill setting, " + setting + " was not defaulted by the skill: "
-                            + skill.getName());
-        }
-        return outsourcedSkillConfig.getString(skill.getName() + "." + setting);
+    public void addTemporarySkillConfigurations(ISkill skill,
+                                                SkillCaster caster,
+                                                DataView section) {
+        // TODO
+    }
+
+    @Override
+    public void clearTemporarySkillConfigurations(SkillCaster caster) {
+        checkNotNull(caster, "Cannot remove a null caster's custom "
+                + "configurations!");
+        this.customSettings.remove(caster);
+    }
+
+    @Override
+    public void clearTemporarySkillConfigurations(SkillCaster caster,
+                                                  ISkill skill) {
+        checkNotNull(caster, "Cannot clear configurations of a null caster!");
+        checkNotNull(skill, "Cannot clear configurations of a null "
+                + "skill!");
+
     }
 
     @Override
@@ -233,71 +147,68 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
+    public String getRawString(ISkill skill, DataQuery setting) {
+        checkNotNull(skill, "Cannot check the config of a null skill!");
+        checkNotNull(setting, "Cannot check the config with a null path!");
+        if (outsourcedSkillConfig.getNode(skill.getName() + "." + setting)
+                .isVirtual()) {
+            throw new IllegalStateException(
+                    "The requested skill setting, " + setting
+                            + " was not defaulted by the skill: "
+                            + skill.getName());
+        }
+        return outsourcedSkillConfig.getString(skill.getName() + "." + setting);
+    }
+
+    @Override
     public Boolean getRawBoolean(ISkill skill, SkillSetting setting) {
-        return null;
+        return Boolean.FALSE;
     }
 
     @Override
-    public Boolean getRawBoolean(ISkill skill, String setting) {
-        return null;
+    public Boolean getRawBoolean(ISkill skill, DataQuery setting) {
+        return Boolean.FALSE;
     }
 
     @Override
-    public Set<String> getRawKeys(ISkill skill, String setting) {
-        String path = skill.getName();
-        if (setting != null) {
-            path += "." + setting;
-        }
-
-        if (!outsourcedSkillConfig.isConfigurationSection(path)) {
-            return new HashSet<>();
-        }
-
-        return outsourcedSkillConfig.getConfigurationSection(path).getKeys(false);
-    }
-
-    @Override
-    public void clearTemporarySkillConfigurations(SkillCaster caster, ISkill skill) {
-        checkArgument(caster != null, "Cannot clear configurations of a null caster!");
-        checkArgument(skill != null, "Cannot clear configurations of a null skill!");
-        Map<ISkill, ConfigurationSection> skillMap = this.customSettings.get(caster);
-        if (skillMap != null) {
-            skillMap.remove(skill);
-            this.customSettings.put(caster, skillMap);
-        }
-    }
-
-    @Override
-    public void clearTemporarySkillConfigurations(SkillCaster caster) {
-        checkArgument(caster != null, "Cannot remove a null caster's custom configurations!");
-        this.customSettings.remove(caster);
+    public Set<DataQuery> getRawKeys(ISkill skill, DataQuery setting) {
+        return Sets.newHashSet();
     }
 
     @Override
     public boolean isSettingConfigured(ISkill skill, SkillSetting setting) {
-        checkArgument(skill != null, "Cannot check the use configurations for a null skill!");
-        checkArgument(setting != null, "Cannot check the use configurations for a null setting!");
-        return skill.getDefaultConfig().contains(setting.node()) || outsourcedSkillConfig
-                .contains(skill.getName() + "." + setting.node());
+        checkNotNull(skill,
+                     "Cannot check the use configurations for a null skill!");
+        checkNotNull(setting,
+                     "Cannot check the use configurations for a null setting!");
+        return skill.getDefaultConfig().contains(setting.node()) ||
+                !outsourcedSkillConfig.getNode(skill.getName()
+                                                       + "." + setting.node())
+                        .isVirtual();
     }
 
     @Override
-    public boolean isSettingConfigured(ISkill skill, String setting) {
-        checkArgument(skill != null, "Cannot check the use configurations for a null skill!");
-        checkArgument(setting != null, "Cannot check the use configurations for a null setting!");
-        return skill.getDefaultConfig().contains(setting) || outsourcedSkillConfig
-                .contains(skill.getName() + "." + setting);
+    public boolean isSettingConfigured(ISkill skill, DataQuery setting) {
+        checkNotNull(skill,
+                     "Cannot check the use configurations for a null skill!");
+        checkNotNull(setting,
+                     "Cannot check the use configurations for a null setting!");
+        return skill.getDefaultConfig().contains(setting) ||
+                !outsourcedSkillConfig.getNode(skill.getName() + "." + setting)
+                        .isVirtual();
     }
 
     @Override
-    public Object getRawSetting(ISkill skill, String setting) {
+    public Object getRawSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         if (!isSettingConfigured(skill, setting)) {
             throw new IllegalStateException(
-                    "The skill: " + skill.getName() + " has no configured defaults for: "
+                    "The skill: " + skill.getName()
+                            + " has no configured defaults for: "
                             + setting);
         }
-        return outsourcedSkillConfig.get(skill.getName() + "." + setting);
+        return outsourcedSkillConfig.getNode(skill.getName() + "." + setting)
+                .getValue();
     }
 
     @Override
@@ -305,24 +216,27 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         check(skill, setting);
         if (!isSettingConfigured(skill, setting)) {
             throw new IllegalStateException(
-                    "The skill: " + skill.getName() + " has no configured defaults for: " + setting
+                    "The skill: " + skill.getName()
+                            + " has no configured defaults for: " + setting
                             .node());
         }
         return getRawSetting(skill, setting.node());
     }
 
     @Override
-    public int getRawIntSetting(ISkill skill, String setting) {
+    public int getRawIntSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         Object val = getRawSetting(skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         } else {
             final Integer i = MathUtil.asInt(val);
             if (i == null) {
-                throw new IllegalStateException("The configured setting is not an integer!");
+                throw new IllegalStateException(
+                        "The configured setting is not an integer!");
             }
             return i;
         }
@@ -335,17 +249,19 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public double getRawDoubleSetting(ISkill skill, String setting) {
+    public double getRawDoubleSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         Object val = getRawSetting(skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         } else {
             final Double i = MathUtil.asDouble(val);
             if (i == null) {
-                throw new IllegalStateException("The configured setting is not an integer!");
+                throw new IllegalStateException(
+                        "The configured setting is not an integer!");
             }
             return i;
         }
@@ -358,12 +274,13 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public String getRawStringSetting(ISkill skill, String setting) {
+    public String getRawStringSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         Object val = getRawSetting(skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         }
         return val.toString();
@@ -376,12 +293,13 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public Boolean getRawBooleanSetting(ISkill skill, String setting) {
+    public Boolean getRawBooleanSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         Object val = getRawSetting(skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         } else {
             return (Boolean) val;
@@ -396,12 +314,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> getRawStringListSetting(ISkill skill, String setting) {
+    public List<String> getRawStringListSetting(ISkill skill,
+                                                DataQuery setting) {
         check(skill, setting);
         final Object val = getRawSetting(skill, setting);
         if (val == null || !(val instanceof List)) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         } else {
             return (List<String>) val;
@@ -409,25 +329,29 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public List<String> getRawStringListSetting(ISkill skill, SkillSetting setting) {
+    public List<String> getRawStringListSetting(ISkill skill,
+                                                SkillSetting setting) {
         check(skill, setting);
         return getRawStringListSetting(skill, setting.node());
     }
 
     @Override
-    public ItemStack getRawItemStackSetting(ISkill skill, String setting) {
+    public ItemStack getRawItemStackSetting(ISkill skill, DataQuery setting) {
         check(skill, setting);
         final Object val = getRawSetting(skill, setting);
         if (!(val instanceof ItemStack)) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for skill: " + skill.getName()
+                    "There was an issue getting the setting for skill: " + skill
+                            .getName()
                             + " and setting: " + setting);
         }
-        return new ItemStack((ItemStack) val);
+        return RpgCommon.getGame().getRegistry().getItemBuilder()
+                .fromItemStack((ItemStack) val).build();
     }
 
     @Override
-    public ItemStack getRawItemStackSetting(ISkill skill, SkillSetting setting) {
+    public ItemStack getRawItemStackSetting(ISkill skill,
+                                            SkillSetting setting) {
         check(skill, setting);
         return getRawItemStackSetting(skill, setting.node());
     }
@@ -437,25 +361,29 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         check(role, skill, setting);
         if (!isSettingConfigured(skill, setting)) {
             throw new IllegalStateException(
-                    "The skill: " + skill.getName() + " has no configured defaults for: " + setting
+                    "The skill: " + skill.getName()
+                            + " has no configured defaults for: " + setting
                             .node());
         }
         return getSetting(role, skill, setting.node());
     }
 
     @Override
-    public Object getSetting(Role role, ISkill skill, String setting) {
+    public Object getSetting(Role role, ISkill skill, DataQuery setting) {
         check(role, skill, setting);
-        final Configuration config = roleSkillConfigurations.get(role.getName());
+        final ConfigurationNode config = roleSkillConfigurations
+                .get(role.getName());
         if (!isSettingConfigured(skill, setting)) {
             throw new IllegalStateException(
-                    "The skill: " + skill.getName() + " has no configured defaults for: "
+                    "The skill: " + skill.getName()
+                            + " has no configured defaults for: "
                             + setting);
         }
-        final String configurationSettingString = skill.getName() + "." + setting;
+        final String configurationSettingString = skill.getName()
+                + "." + setting;
 
-        if (config.isSet(configurationSettingString)) {
-            return config.get(configurationSettingString);
+        if (!config.getNode(configurationSettingString).isVirtual()) {
+            return config.getNode(configurationSettingString).getValue();
         } else {
             return getRawSetting(skill, setting);
         }
@@ -467,14 +395,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         return getIntSetting(role, skill, setting.node());
     }
 
-
     @Override
-    public int getIntSetting(Role role, ISkill skill, String setting) {
+    public int getIntSetting(Role role, ISkill skill, DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill: "
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill: "
                             + skill.getName() + " and setting: " + setting);
         } else {
             return MathUtil.toInt(val);
@@ -482,18 +410,20 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public double getDoubleSetting(Role role, ISkill skill, SkillSetting setting) {
+    public double getDoubleSetting(Role role, ISkill skill,
+                                   SkillSetting setting) {
         check(role, skill, setting);
         return getDoubleSetting(role, skill, setting.node());
     }
 
     @Override
-    public double getDoubleSetting(Role role, ISkill skill, String setting) {
+    public double getDoubleSetting(Role role, ISkill skill, DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill: "
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill: "
                             + skill.getName() + " and setting: " + setting);
         } else {
             return MathUtil.toDouble(val);
@@ -501,36 +431,41 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public String getStringSetting(Role role, ISkill skill, SkillSetting setting) {
+    public String getStringSetting(Role role, ISkill skill,
+                                   SkillSetting setting) {
         check(role, skill, setting);
         return getStringSetting(role, skill, setting.node());
     }
 
     @Override
-    public String getStringSetting(Role role, ISkill skill, String setting) {
+    public String getStringSetting(Role role, ISkill skill, DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill: "
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill: "
                             + skill.getName() + " and setting: " + setting);
         }
         return val instanceof String ? (String) val : val.toString();
     }
 
     @Override
-    public Boolean getBooleanSetting(Role role, ISkill skill, SkillSetting setting) {
+    public Boolean getBooleanSetting(Role role, ISkill skill,
+                                     SkillSetting setting) {
         check(role, skill, setting);
         return getBooleanSetting(role, skill, setting.node());
     }
 
     @Override
-    public Boolean getBooleanSetting(Role role, ISkill skill, String setting) {
+    public Boolean getBooleanSetting(Role role, ISkill skill,
+                                     DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill: "
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill: "
                             + skill.getName() + " and setting: " + setting);
         } else {
             return (Boolean) val;
@@ -538,19 +473,22 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public List<String> getStringListSetting(Role role, ISkill skill, SkillSetting setting) {
+    public List<String> getStringListSetting(Role role, ISkill skill,
+                                             SkillSetting setting) {
         check(role, skill, setting);
         return getStringListSetting(role, skill, setting.node());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> getStringListSetting(Role role, ISkill skill, String setting) {
+    public List<String> getStringListSetting(Role role, ISkill skill,
+                                             DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null || !(val instanceof List)) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill: "
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill: "
                             + skill.getName() + " and setting: " + setting);
         } else {
             return (List<String>) val;
@@ -558,21 +496,25 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public ItemStack getItemStackSetting(Role role, ISkill skill, String setting) {
+    public ItemStack getItemStackSetting(Role role, ISkill skill,
+                                         SkillSetting setting) {
+        check(role, skill, setting);
+        return getItemStackSetting(role, skill, setting.node());
+    }
+
+    @Override
+    public ItemStack getItemStackSetting(Role role, ISkill skill,
+                                         DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (!(val instanceof ItemStack)) {
             throw new IllegalStateException(
-                    "There was an issue getting the setting for: " + role.getName() + " skill:"
+                    "There was an issue getting the setting for: " + role
+                            .getName() + " skill:"
                             + skill.getName() + " and setting: " + setting);
         }
-        return new ItemStack((ItemStack) val);
-    }
-
-    @Override
-    public ItemStack getItemStackSetting(Role role, ISkill skill, SkillSetting setting) {
-        check(role, skill, setting);
-        return getItemStackSetting(role, skill, setting.node());
+        return RpgCommon.getGame().getRegistry().getItemBuilder()
+                .fromItemStack((ItemStack) val).build();
     }
 
     @Override
@@ -581,103 +523,113 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public Object getUsedSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public Object getUsedSetting(SkillCaster caster, ISkill skill,
+                                 SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedSetting(caster, skill, setting.node());
     }
 
     @Override
-    public Object getUsedSetting(SkillCaster caster, ISkill skill, String setting) {
+    public Object getUsedSetting(SkillCaster caster, ISkill skill,
+                                 DataQuery setting) {
         check(caster, skill, setting);
-        if (this.customSettings.containsKey(caster) && this.customSettings.get(caster)
+        if (this.customSettings.containsKey(caster) && this.customSettings
+                .get(caster)
                 .containsKey(skill)) {
-            return this.customSettings.get(caster).get(skill).get(setting);
+            return this.customSettings.get(caster).get(skill)
+                    .getNode(setting).getValue();
         }
         if (!isSettingConfigured(skill, setting)) {
             throw new IllegalStateException(
-                    "The skill: " + skill.getName() + " has no configured defaults for: "
+                    "The skill: " + skill.getName()
+                            + " has no configured defaults for: "
                             + setting);
         }
         if (caster.canPrimaryUseSkill(skill)) {
-            return getSetting(caster.getPrimaryRole(), skill, setting);
+            return getSetting(caster.getPrimaryRole().get(), skill, setting);
         } else if (caster.canSecondaryUseSkill(skill)) {
-            return getSetting(caster.getSecondaryRole(), skill, setting);
+            return getSetting(caster.getSecondaryRole().get(), skill, setting);
         } else if (caster.canAdditionalUseSkill(skill)) {
             for (Role role : caster.getAdditionalRoles()) {
-                if (role.hasSkillAtLevel(skill, caster.getLevel(role))) {
+                Optional<SkillAspect> optional = role.getAspect(SkillAspect
+                                                                        .class);
+                if (optional.isPresent()
+                        && optional.get()
+                        .hasSkillAtLevel(skill, caster.getLevel(role).get())) {
                     return getSetting(role, skill, setting);
                 }
             }
         }
-        return outsourcedSkillConfig.get(skill.getName() + "." + setting);
-    }
-
-    private Number getUsedNumberSetting(SkillCaster caster, ISkill skill, String setting) {
-        check(caster, skill, setting);
-        Object val = getUsedSetting(caster, skill, setting);
-        if (val instanceof Number) {
-            return (Number) val;
-        } else {
-            return MathUtil.asDouble(val);
-        }
+        return outsourcedSkillConfig.getNode(skill.getName() + "." + setting)
+                .getValue();
     }
 
     @Override
-    public int getUsedIntSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public int getUsedIntSetting(SkillCaster caster, ISkill skill,
+                                 SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedIntSetting(caster, skill, setting.node());
     }
 
     @Override
-    public int getUsedIntSetting(SkillCaster caster, ISkill skill, String setting) {
+    public int getUsedIntSetting(SkillCaster caster, ISkill skill,
+                                 DataQuery setting) {
         check(caster, skill, setting);
         return getUsedNumberSetting(caster, skill, setting).intValue();
     }
 
     @Override
-    public double getUsedDoubleSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public double getUsedDoubleSetting(SkillCaster caster, ISkill skill,
+                                       SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedDoubleSetting(caster, skill, setting.node());
     }
 
     @Override
-    public double getUsedDoubleSetting(SkillCaster caster, ISkill skill, String setting) {
+    public double getUsedDoubleSetting(SkillCaster caster, ISkill skill,
+                                       DataQuery setting) {
         check(caster, skill, setting);
         return getUsedNumberSetting(caster, skill, setting).doubleValue();
     }
 
     @Override
-    public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill,
+                                         SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedBooleanSetting(caster, skill, setting.node());
     }
 
     @Override
-    public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill, String setting) {
+    public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill,
+                                         DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof Boolean) {
             return (Boolean) val;
         }
         throw new IllegalStateException(
-                "Undefined default for the following skill: " + skill.getName());
+                "Undefined default for the following skill: " + skill
+                        .getName());
     }
 
     @Override
-    public String getUsedStringSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public String getUsedStringSetting(SkillCaster caster, ISkill skill,
+                                       SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedStringSetting(caster, skill, setting.node());
     }
 
     @Override
-    public String getUsedStringSetting(SkillCaster caster, ISkill skill, String setting) {
+    public String getUsedStringSetting(SkillCaster caster, ISkill skill,
+                                       DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         return val instanceof String ? (String) val : val.toString();
     }
 
     @Override
-    public List<?> getUsedListSetting(SkillCaster caster, ISkill skill, SkillSetting setting) {
+    public List<?> getUsedListSetting(SkillCaster caster, ISkill skill,
+                                      SkillSetting setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -688,7 +640,8 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public List<?> getUsedListSetting(SkillCaster caster, ISkill skill, String setting) {
+    public List<?> getUsedListSetting(SkillCaster caster, ISkill skill,
+                                      DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -700,7 +653,8 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> getUsedStringListSetting(SkillCaster caster, ISkill skill,
+    public List<String> getUsedStringListSetting(SkillCaster caster,
+                                                 ISkill skill,
                                                  SkillSetting setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
@@ -713,7 +667,9 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> getUsedStringListSetting(SkillCaster caster, ISkill skill, String setting) {
+    public List<String> getUsedStringListSetting(SkillCaster caster,
+                                                 ISkill skill,
+                                                 DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -729,55 +685,79 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof ItemStack) {
-            return new ItemStack((ItemStack) val);
+            return RpgCommon.getGame().getRegistry().getItemBuilder()
+                    .fromItemStack((ItemStack) val).build();
         }
         throw new IllegalStateException(
                 "Illegal default for the following skill: " + skill.getName());
     }
 
     @Override
-    public ItemStack getUsedItemStackSetting(SkillCaster caster, ISkill skill, String setting) {
+    public ItemStack getUsedItemStackSetting(SkillCaster caster, ISkill skill,
+                                             DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof ItemStack) {
-            return new ItemStack((ItemStack) val);
+            return RpgCommon.getGame().getRegistry().getItemBuilder()
+                    .fromItemStack((ItemStack) val).build();
         }
         throw new IllegalStateException(
                 "Illegal default for the following skill: " + skill.getName());
     }
 
-    private void check(SkillCaster caster, ISkill skill, String setting) {
-        checkArgument(caster != null, "Cannot check the use configurations for a null caster!");
-        checkArgument(skill != null, "Cannot check the use configurations for a null skill!");
-        checkArgument(setting != null, "Cannot check the use configurations for a null setting!");
-    }
-
     private void check(SkillCaster caster, ISkill skill, SkillSetting setting) {
-        checkArgument(caster != null, "Cannot check the use configurations for a null caster!");
-        checkArgument(skill != null, "Cannot check the use configurations for a null skill!");
-        checkArgument(setting != null, "Cannot check the use configurations for a null setting!");
+        checkNotNull(caster,
+                     "Cannot check the use configurations for a null caster!");
+        checkNotNull(skill,
+                     "Cannot check the use configurations for a null skill!");
+        checkNotNull(setting,
+                     "Cannot check the use configurations for a null setting!");
     }
 
-    private void check(Role role, ISkill skill, String setting) {
-        checkArgument(role != null, "Cannot get a setting for a null role!");
-        checkArgument(skill != null, "Cannot get a setting for a null skill!");
-        checkArgument(setting != null, "Cannot get a setting for a null path!");
+    private void check(SkillCaster caster, ISkill skill, DataQuery setting) {
+        checkNotNull(caster,
+                     "Cannot check the use configurations for a null caster!");
+        checkNotNull(skill,
+                     "Cannot check the use configurations for a null skill!");
+        checkNotNull(setting,
+                     "Cannot check the use configurations for a null setting!");
+    }
+
+    private Number getUsedNumberSetting(SkillCaster caster, ISkill skill,
+                                        DataQuery setting) {
+        check(caster, skill, setting);
+        Object val = getUsedSetting(caster, skill, setting);
+        if (val instanceof Number) {
+            return (Number) val;
+        } else {
+            return MathUtil.asDouble(val);
+        }
     }
 
     private void check(Role role, ISkill skill, SkillSetting setting) {
-        checkArgument(role != null, "Cannot get a setting for a null role!");
-        checkArgument(skill != null, "Cannot get a setting for a null skill!");
-        checkArgument(setting != null, "Cannot get a setting for a null path!");
+        checkNotNull(role, "Cannot get a setting for a null role!");
+        checkNotNull(skill, "Cannot get a setting for a null skill!");
+        checkNotNull(setting, "Cannot get a setting for a null path!");
     }
 
-    private void check(ISkill skill, String setting) {
-        checkArgument(skill != null, "Cannot get a setting for a null skill!");
-        checkArgument(setting != null, "Cannot get a setting for a null path!");
+    private void check(Role role, ISkill skill, DataQuery setting) {
+        checkNotNull(role, "Cannot get a setting for a null role!");
+        checkNotNull(skill, "Cannot get a setting for a null skill!");
+        checkNotNull(setting, "Cannot get a setting for a null path!");
     }
 
     private void check(ISkill skill, SkillSetting setting) {
-        checkArgument(skill != null, "Cannot get a setting for a null skill!");
-        checkArgument(setting != null, "Cannot get a setting for a null path!");
+        checkNotNull(skill, "Cannot get a setting for a null skill!");
+        checkNotNull(setting, "Cannot get a setting for a null path!");
+    }
+
+    private void check(ISkill skill, DataQuery setting) {
+        checkNotNull(skill, "Cannot get a setting for a null skill!");
+        checkNotNull(setting, "Cannot get a setting for a null path!");
+    }
+
+    public void setClassDefaults() {
+        // TODO
     }
 
 }

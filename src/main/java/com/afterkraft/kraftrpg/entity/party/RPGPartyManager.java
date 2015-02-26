@@ -23,7 +23,7 @@
  */
 package com.afterkraft.kraftrpg.entity.party;
 
-import org.apache.commons.lang.Validate;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.entity.PartyMember;
@@ -55,14 +55,14 @@ public class RPGPartyManager implements PartyManager {
 
     @Override
     public Party createParty(PartyMember partyLeader, PartyMember... members) {
-        Validate.notNull(partyLeader, "Cannot create a party with a null leader!");
+        checkNotNull(partyLeader, "Cannot create a party with a null leader!");
         // TODO Implement
         return null;
     }
 
     @Override
     public boolean isFriendly(PartyMember a, PartyMember b) {
-        if (!a.hasParty() || !b.hasParty()) {
+        if (!a.getParty().isPresent() || !b.getParty().isPresent()) {
             return false;
         }
         // TODO Implement

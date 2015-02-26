@@ -27,11 +27,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
 
-import org.bukkit.configuration.Configuration;
+import org.spongepowered.api.service.config.ConfigService;
+
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
+import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.util.ConfigManager;
 
 /**
@@ -40,38 +43,51 @@ import com.afterkraft.kraftrpg.api.util.ConfigManager;
 public class RPGConfigManager implements ConfigManager {
 
     // Files
+    protected static File pluginDirectory;
     protected static File roleConfigFolder;
     protected static File expConfigFile;
     protected static File damageConfigFile;
     protected static File recipesConfigFile;
     protected static File storageConfigFile;
-    //Configurations
-    private static Configuration damageConfig;
-    private static Configuration expConfig;
-    private static Configuration recipeConfig;
     protected final KraftRPGPlugin plugin;
 
 
-    public RPGConfigManager(KraftRPGPlugin plugin) {
+    public RPGConfigManager(KraftRPGPlugin plugin, File mainConfig,
+                            ConfigurationLoader<CommentedConfigurationNode>
+                                    configurationLoader) {
         this.plugin = plugin;
-        final File dataFolder = plugin.getDataFolder();
-        RPGConfigManager.expConfigFile = new File(dataFolder, "experience.yml");
-        RPGConfigManager.damageConfigFile = new File(dataFolder, "damages.yml");
-        RPGConfigManager.recipesConfigFile = new File(dataFolder, "recipes.yml");
-        RPGConfigManager.storageConfigFile = new File(dataFolder, "storage.yml");
+
+        RPGConfigManager.pluginDirectory = getConfigurationDirectory();
+        RPGConfigManager.expConfigFile =
+                new File(pluginDirectory, "experience.yml");
+        RPGConfigManager.damageConfigFile =
+                new File(pluginDirectory, "damages.yml");
+        RPGConfigManager.recipesConfigFile =
+                new File(pluginDirectory, "recipes.yml");
+        RPGConfigManager.storageConfigFile =
+                new File(pluginDirectory, "storage.yml");
+    }
+
+    private static File getConfigurationDirectory() {
+        return RpgCommon.getGame().getServiceManager()
+                .provide(ConfigService.class)
+                .get().getSharedConfig(RpgCommon.getPlugin()).getDirectory();
     }
 
     @Override
     public void checkForConfig(File config) {
         if (!config.exists()) {
             try {
-                this.plugin.log(Level.WARNING,
-                                "File " + config.getName() + " not found - generating defaults.");
+                this.plugin.getLogger()
+                        .warn("File " + config.getName() + " not "
+                                      + "found - "
+                                      + "generating defaults.");
                 config.getParentFile().mkdir();
                 config.createNewFile();
                 final OutputStream output = new FileOutputStream(config, false);
                 final InputStream input =
-                        RPGConfigManager.class.getResourceAsStream("/defaults/" + config.getName());
+                        RPGConfigManager.class.getResourceAsStream(
+                                "/defaults/" + config.getName());
                 final byte[] buf = new byte[8192];
                 while (true) {
                     final int length = input.read(buf);
@@ -86,5 +102,9 @@ public class RPGConfigManager implements ConfigManager {
                 e.printStackTrace();
             }
         }
+    }
+
+    public File getConfigDirectory() {
+        return RPGConfigManager.pluginDirectory;
     }
 }

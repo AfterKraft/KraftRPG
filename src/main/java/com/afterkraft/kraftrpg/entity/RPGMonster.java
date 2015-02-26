@@ -26,26 +26,29 @@ package com.afterkraft.kraftrpg.entity;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.world.Location;
 
+import com.google.common.base.Optional;
+
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.entity.Monster;
+import com.afterkraft.kraftrpg.api.entity.resource.Resource;
 import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
 import com.afterkraft.kraftrpg.api.skills.ISkill;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.listeners.EntityListener;
 
 /**
- * Standard implementation of Monster. Note: This does not wrap non-living entities.
+ * Standard implementation of Monster. Note: This does not wrap non-living
+ * entities.
  */
 public class RPGMonster extends RPGInsentient implements Monster {
 
     private FixedPoint experience = new FixedPoint();
     private double baseDamage = 0;
     private double damage = 0;
-    private SpawnReason spawnReason = null;
     private int maxMana;
     private DamageWrapper wrapper;
 
@@ -57,23 +60,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     protected RPGMonster(RPGPlugin plugin, Living entity, String name) {
         super(plugin, entity, name);
-        this.spawnReason =
-                RpgCommon.getHandler().getSpawnReason(entity, getMetaSpawnReason(entity));
-        this.spawnPoint = RpgCommon.getHandler().getSpawnLocation(entity);
-        this.baseDamage = plugin.getDamageManager().getEntityDamage(entity.getType());
-        this.damage = plugin.getDamageManager()
-                .getModifiedEntityDamage(this, this.spawnPoint, this.baseDamage, this.spawnReason);
-        this.damage = RpgCommon.getHandler().getEntityDamage(entity, this.damage);
-        this.experience = plugin.getProperties().getMonsterExperience(entity, this.spawnPoint);
-        this.experience = RpgCommon.getHandler().getMonsterExperience(entity, this.experience);
-    }
 
-    private static SpawnReason getMetaSpawnReason(Living entity) {
-        List<MetadataValue> values = entity.getMetadata(EntityListener.SPAWNREASON_META_KEY);
-        if (values.isEmpty()) {
-            return null;
-        }
-        return (SpawnReason) values.get(0).value();
     }
 
     @Override
@@ -93,13 +80,14 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public void setModifiedDamage(double damage) {
-        checkArgument(damage > 0, "Cannot set the attacking damage to zero or less than zero!");
+        checkArgument(damage > 0,
+                      "Cannot set the attacking damage to zero or less than zero!");
         this.damage = damage > 0 ? damage : 1;
     }
 
     @Override
-    public SpawnReason getSpawnReason() {
-        return this.spawnReason;
+    public Cause getSpawnReason() {
+        return null;
     }
 
     @Override
@@ -115,12 +103,13 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public double getMaxHealth() {
-        return this.isEntityValid() ? this.getEntity().getMaxHealth() : 0D;
+        return this.isEntityValid() ? this.getUnsafeEntity().getMaxHealth()
+                : 0D;
     }
 
     @Override
-    public DamageWrapper getDamageWrapper() {
-        return this.wrapper;
+    public Optional<DamageWrapper> getDamageWrapper() {
+        return Optional.of(this.wrapper);
     }
 
     @Override
@@ -130,7 +119,8 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public int getNoDamageTicks() {
-        return this.isEntityValid() ? this.getEntity().getNoDamageTicks() : 0;
+        return this.isEntityValid() ? this.getUnsafeEntity()
+                .getInvulnerabilityTicks() : 0;
     }
 
     @Override
@@ -155,22 +145,14 @@ public class RPGMonster extends RPGInsentient implements Monster {
 
     @Override
     public ItemStack[] getArmor() {
-        if (!this.isEntityValid()) {
-            return new ItemStack[4];
-        } else {
-            ItemStack[] armor = new ItemStack[4];
-            for (int i = 0; i < getEntity().getEquipment().getArmorContents().length; i++) {
-                armor[i] = new ItemStack(getEntity().getEquipment().getArmorContents()[i]);
-            }
-            return armor;
-        }
+        // TODO
+        return new ItemStack[]{};
     }
 
     @Override
-    public void setArmor(ItemStack item, int armorSlot) throws IllegalArgumentException {
-        checkArgument(armorSlot < getEntity().getEquipment().getArmorContents().length,
-                      "Cannot set the armor slot greater than the current armor!");
-        getEntity().getEquipment().getArmorContents()[armorSlot] = new ItemStack(item);
+    public void setArmor(ItemStack item, int armorSlot) {
+
+        // TODO
     }
 
     @Override
@@ -189,7 +171,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
             return;
         }
         this.experience = experience;
-        RpgCommon.getHandler().setMonsterExperience(getEntity(), experience);
+        // TODO
     }
 
     @Override
@@ -208,13 +190,18 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
-    public ItemStack getItemInHand() {
-        return this.isEntityValid() ? this.getEntity().getEquipment().getItemInHand() : null;
+    public Optional<ItemStack> getItemInHand() {
+        return Optional.absent();
     }
 
     @Override
     public Inventory getInventory() {
-        return this.isEntityValid() ? (this.getEntity() instanceof InventoryHolder)
-                ? ((InventoryHolder) this.getEntity()).getInventory() : null : null;
+        // TODO
+        return null;
+    }
+
+    @Override
+    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
+        return null;
     }
 }

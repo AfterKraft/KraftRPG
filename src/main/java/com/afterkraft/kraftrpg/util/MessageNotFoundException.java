@@ -24,8 +24,8 @@
 package com.afterkraft.kraftrpg.util;
 
 /**
- * Exception thrown when a message is not fond in the included message bundle. Somewhere something
- * is calling for a message that does not exist.
+ * Exception thrown when a message is not fond in the included message bundle.
+ * Somewhere something is calling for a message that does not exist.
  */
 public class MessageNotFoundException extends RuntimeException {
 

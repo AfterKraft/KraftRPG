@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
-import org.apache.commons.lang.Validate;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -61,7 +61,7 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public Map<Insentient, EnterCombatReason> getCombatants(Insentient target) {
-        Validate.notNull(target, "Cannot get the combatants for a null target!");
+        checkNotNull(target, "Cannot get the combatants for a null target!");
         ImmutableMap.Builder<Insentient, EnterCombatReason> builder = ImmutableMap.builder();
         for (Entry<Insentient, WeakHashMap<Insentient, EnterCombatReason>> entry :
                 this.masterCombatMap.entrySet()) {
@@ -74,9 +74,9 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public void enterCombatWith(Insentient target, Insentient attacker, EnterCombatReason reason) {
-        Validate.notNull(target, "Cannot enter combat with a null target!");
-        Validate.notNull(attacker, "Cannot enter combat with a null attacker!");
-        Validate.notNull(reason, "Cannot enter combat with a null reason!");
+        checkNotNull(target, "Cannot enter combat with a null target!");
+        checkNotNull(attacker, "Cannot enter combat with a null attacker!");
+        checkNotNull(reason, "Cannot enter combat with a null reason!");
         WeakHashMap<Insentient, EnterCombatReason> map = this.masterCombatMap.get(attacker);
         if (map == null) {
             map = new WeakHashMap<>();
@@ -87,9 +87,9 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public void leaveCombatWith(Insentient target, Insentient attacker, LeaveCombatReason reason) {
-        Validate.notNull(target, "Cannot enter combat with a null target!");
-        Validate.notNull(attacker, "Cannot enter combat with a null attacker!");
-        Validate.notNull(reason, "Cannot enter combat with a null reason!");
+        checkNotNull(target, "Cannot enter combat with a null target!");
+        checkNotNull(attacker, "Cannot enter combat with a null attacker!");
+        checkNotNull(reason, "Cannot enter combat with a null reason!");
         WeakHashMap<Insentient, EnterCombatReason> map = this.masterCombatMap.get(attacker);
         if (map != null) {
             map.remove(target);

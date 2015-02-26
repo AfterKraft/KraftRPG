@@ -121,7 +121,7 @@ public final class ActiveSkillRunner {
     }
 
     private static SkillCastResult castSkillPart2(SkillCaster caster, Active skill, String[] args) {
-        RPGPlugin plugin = KraftRPGPlugin.getInstance();
+        KraftRPGPlugin plugin = KraftRPGPlugin.getInstance();
         SkillConfigManager confman = plugin.getSkillConfigManager();
         if (plugin.getCombatTracker().isInCombat(caster)) {
             if (confman.getUsedBooleanSetting(caster, skill, SkillSetting.NO_COMBAT_USE)) {
@@ -152,9 +152,10 @@ public final class ActiveSkillRunner {
                     confman.getUsedIntSetting(caster, skill, SkillSetting.REAGENT_QUANTITY);
         }
         if (reagentQuantity != -1 && reagent != null) {
-            reagent.setAmount(reagentQuantity);
+            reagent.setQuantity(reagentQuantity);
         }
 
+        /*
         SkillCastEvent skillEvent =
                 new SkillCastEvent(caster, skill, manaCost, healthCost, hungerCost, reagent);
         plugin.getServer().getPluginManager().callEvent(skillEvent);
@@ -162,20 +163,23 @@ public final class ActiveSkillRunner {
             return SkillCastResult.EVENT_CANCELLED;
         }
 
+
         healthCost = skillEvent.getHealthCost();
         manaCost = skillEvent.getManaCost();
         hungerCost = skillEvent.getStaminaCostAsExhaustion();
         reagent = skillEvent.getItemCost();
-
+        */
         if (caster.getHealth() < healthCost) {
             return SkillCastResult.LOW_HEALTH;
         }
         if (caster.getMana() < manaCost) {
             return SkillCastResult.LOW_MANA;
         }
+        /*
         if (caster.getEntity() instanceof Player) {
             Player p = (Player) caster.getEntity();
-            float foodLevel = (p.getFoodLevel() + p.getSaturation()) * 4 - p.getExhaustion();
+            float foodLevel = (p.getHunger() + p.getSaturation()) * 4 - p
+                    .getExhaustion();
             if (foodLevel < hungerCost) {
                 return SkillCastResult.LOW_STAMINA;
             }
@@ -184,6 +188,7 @@ public final class ActiveSkillRunner {
                 .containsAtLeast(reagent, reagent.getAmount())) {
             return SkillCastResult.MISSING_REAGENT;
         }
+        */
 
         SkillCastResult result;
         try {
@@ -192,7 +197,9 @@ public final class ActiveSkillRunner {
                     return SkillCastResult.SYNTAX_ERROR;
                 }
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "parsing arguments", t, new Object[]{caster, args});
+                plugin.getLogger().error("parsing arguments", t, new
+                        Object[]{caster,
+                        args});
                 t.printStackTrace();
                 return SkillCastResult.FAIL;
             }
@@ -200,8 +207,8 @@ public final class ActiveSkillRunner {
             try {
                 result = skill.checkCustomRestrictions(caster, false);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "checking restrictions", t,
-                                        new Object[]{caster, args});
+                plugin.getLogger().error("checking restrictions", t,
+                                         new Object[]{caster, args});
                 t.printStackTrace();
                 return SkillCastResult.FAIL;
             }
@@ -217,13 +224,14 @@ public final class ActiveSkillRunner {
             try {
                 result = skill.useSkill(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "using skill", t, new Object[]{caster, args});
+                plugin.getLogger().error("using skill", t,
+                                         new Object[]{caster, args});
             }
         } finally {
             try {
                 skill.cleanState(caster);
             } catch (Throwable t) {
-                plugin.logSkillThrowing(skill, "cleaning skill state", t,
+                plugin.getLogger().error("cleaning skill state", t,
                                         new Object[]{caster, args});
             }
         }
@@ -236,7 +244,7 @@ public final class ActiveSkillRunner {
             caster.setHealth(caster.getHealth() - healthCost);
             caster.setMana(caster.getMana() - (int) manaCost);
             caster.modifyStamina((int) -hungerCost);
-            caster.getInventory().removeItem(reagent);
+//            caster.getInventory().removeItem(reagent);
 
             double exp = plugin.getSkillConfigManager()
                     .getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST);

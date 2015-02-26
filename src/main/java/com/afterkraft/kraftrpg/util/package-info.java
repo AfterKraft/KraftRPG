@@ -22,5 +22,4 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package com.afterkraft.kraftrpg.util;
+@org.spongepowered.api.util.annotation.NonnullByDefault package com.afterkraft.kraftrpg.util;

@@ -23,7 +23,7 @@
  */
 package com.afterkraft.kraftrpg.util;
 
-import org.bukkit.Location;
+import org.spongepowered.api.world.Location;
 
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 
@@ -60,8 +60,10 @@ public class MathUtil {
         }
     }
 
-    public static double getModulatedDistance(final Location from, final Location to) {
-        return (from.toVector().distance(to.toVector())) - (from.toVector().distance(to.toVector())
+    public static double getModulatedDistance(final Location from,
+                                              final Location to) {
+        return (from.getPosition().distance(to.getPosition())) - (from
+                .getPosition().distance(to.getPosition())
                 % RPGPluginProperties.distanceTierModifier);
     }
 
