@@ -243,9 +243,9 @@ public class RPGSkillManager implements SkillManager {
                         "Error in skill " + skill.getName()
                                 + ":");
                 this.plugin.getLogger().error("  Extra default configuration "
-                                                      + "value " + configKey
-                                                      + " not declared in "
-                                                      + "getUsedConfigNodes()");
+                        + "value " + configKey
+                        + " not declared in "
+                        + "getUsedConfigNodes()");
                 return false;
             }
         }

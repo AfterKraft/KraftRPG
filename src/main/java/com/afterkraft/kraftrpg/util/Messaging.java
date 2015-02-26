@@ -54,8 +54,8 @@ public class Messaging {
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 msg = msg.replace("$" + (i + 1),
-                                  TextColors.WHITE + params[i].toString()
-                                          + TextColors.GRAY);
+                        TextColors.WHITE + params[i].toString()
+                                + TextColors.GRAY);
             }
         }
         return msg;
@@ -193,7 +193,6 @@ public class Messaging {
      * send a warning to log.
      *
      * @param key of the message to fetch
-     *
      * @return the localized message for the key
      */
     public static String getMessage(String key) {
@@ -202,7 +201,7 @@ public class Messaging {
         } catch (MessageNotFoundException e) {
             KraftRPGPlugin.getInstance()
                     .getLogger().error("Messages.properties is "
-                                               + "missing: " + key);
+                    + "missing: " + key);
             return "";
         }
     }
@@ -211,7 +210,6 @@ public class Messaging {
      * Retrieves the localized message for Townships
      *
      * @param key - Message key to be obtained
-     *
      * @return - Message that is localized to the configured Language
      * @throws MessageNotFoundException When the message is not found
      */
@@ -232,7 +230,6 @@ public class Messaging {
      * changed.
      *
      * @param message The message to colorize
-     *
      * @return A colorized message with the correct unicode character
      */
     public static String colorize(String message) {
@@ -244,7 +241,6 @@ public class Messaging {
      * available.
      *
      * @param locale - Locale to be used
-     *
      * @throws ClassNotFoundException When the bundle is not found
      */
     public static void setLocale(Locale locale) throws ClassNotFoundException {

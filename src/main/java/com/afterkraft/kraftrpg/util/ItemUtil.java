@@ -42,7 +42,6 @@ public class ItemUtil {
      * only covering vanilla cases.
      *
      * @param mat The material of armor to check
-     *
      * @return True if the material is an armor type
      */
     public static boolean isArmor(ItemType mat) {
@@ -99,7 +98,6 @@ public class ItemUtil {
      * weapons/tools.
      *
      * @param mat The material of the weapon/tool to check
-     *
      * @return True if the item type is considered a weapon/tool
      */
     public static boolean isWeapon(ItemType mat) {

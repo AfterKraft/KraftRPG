@@ -107,7 +107,7 @@ public class RPGEntityManager implements EntityManager {
     @Override
     public final Optional<? extends IEntity> getEntity(Entity entity) {
         checkArgument(entity != null,
-                      "Cannot get an IEntity of a null Entity!");
+                "Cannot get an IEntity of a null Entity!");
         if (entity instanceof Player) {
             return this.getChampion((Player) entity);
         } else if (entity instanceof Living) {
@@ -143,8 +143,8 @@ public class RPGEntityManager implements EntityManager {
                     .getUniqueId() != player
                     .getUniqueId())) {
                 this.plugin.getLogger().warn("Duplicate Champion object "
-                                                     + "found! "
-                                                     + "Please make sure Champions are properly removed!");
+                        + "found! "
+                        + "Please make sure Champions are properly removed!");
                 champion.clearEffects();
                 champion.setPlayer(player);
             }
@@ -174,9 +174,9 @@ public class RPGEntityManager implements EntityManager {
     @Override
     public Champion createChampionWithData(Player player, PlayerData data) {
         checkNotNull(player,
-                     "Cannot create a Champion with a null player!");
+                "Cannot create a Champion with a null player!");
         checkNotNull(data,
-                     "Cannot create a Champion with a null player data!");
+                "Cannot create a Champion with a null player data!");
         Champion champion = new RPGChampion(this.plugin, player, data);
         champion.recalculateMaxHealth();
         champion.setMana(data.currentMana);
@@ -228,18 +228,18 @@ public class RPGEntityManager implements EntityManager {
     public Summon createSummon(SkillCaster owner, EntityType type) {
         checkNotNull(type, "Cannot create a null summon!");
         checkNotNull(owner,
-                     "Cannot create a summon for a null owner!");
+                "Cannot create a summon for a null owner!");
         checkArgument(owner.isValid(),
-                      "Cannot create a summon for an invalid owner!");
+                "Cannot create a summon for an invalid owner!");
         checkArgument(Living.class.isAssignableFrom(type.getEntityClass()),
-                      "Cannot create a summon that isn't living!");
+                "Cannot create a summon that isn't living!");
         Optional<Entity> optional = owner.getWorld().createEntity(type, owner
                 .getLocation().getPosition());
         Living entity =
                 (Living) optional.get();
         owner.getWorld().spawnEntity(optional.get());
         Summon summon = new RPGSummon(this.plugin, owner, entity,
-                                      entity.getCustomName());
+                entity.getCustomName());
         this.summons.put(summon.getUniqueID(), summon);
         return summon;
     }
@@ -283,8 +283,8 @@ public class RPGEntityManager implements EntityManager {
                 .get().getUniqueId();
         this.potionTaskID = RpgCommon.getGame().getSyncScheduler()
                 .runRepeatingTask(this.plugin,
-                                  new RPGInsentientPotionEffectTask(),
-                                  100).get().getUniqueId();
+                        new RPGInsentientPotionEffectTask(),
+                        100).get().getUniqueId();
 
     }
 

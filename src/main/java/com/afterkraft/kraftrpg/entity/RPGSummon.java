@@ -114,7 +114,7 @@ public class RPGSummon extends RPGInsentient implements Summon {
 
     @Override
     public ItemStack[] getArmor() {
-        return new ItemStack[] {};
+        return new ItemStack[]{};
     }
 
     @Override

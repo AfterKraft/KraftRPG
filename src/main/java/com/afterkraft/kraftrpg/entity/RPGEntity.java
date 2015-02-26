@@ -60,7 +60,8 @@ public class RPGEntity implements IEntity {
 
     public RPGEntity(RPGPlugin plugin, Entity weakEntity, String name) {
         checkNotNull(plugin, "Cannot create an RPGEntity with a null plugin!");
-        checkNotNull(weakEntity, "Cannot create an RPGEntity with a null Entity!");
+        checkNotNull(weakEntity,
+                "Cannot create an RPGEntity with a null Entity!");
         checkNotNull(name);
         this.plugin = plugin;
         this.weakEntity = new WeakReference<>(weakEntity);
@@ -91,15 +92,17 @@ public class RPGEntity implements IEntity {
     }
 
     /**
-     * Returns the entity associated with this character if the entity has not been garbage
-     * collected already (in which case, this RPGEntity will need to be removed from the system.
+     * Returns the entity associated with this character if the entity has not
+     * been garbage collected already (in which case, this RPGEntity will need
+     * to be removed from the system.
      *
-     * @return the associated Living for this RPGEntity or null if the Living no longer
-     * exists
+     * @return the associated Living for this RPGEntity or null if the Living no
+     * longer exists
      */
     @Override
     public Optional<? extends Entity> getEntity() {
-        checkState(!isEntityValid(), "This RPGEntity is proxying a null entity!");
+        checkState(!isEntityValid(),
+                "This RPGEntity is proxying a null entity!");
         return Optional.of(this.getUnsafeEntity());
     }
 
@@ -143,24 +146,32 @@ public class RPGEntity implements IEntity {
     }
 
     @Override
-    public List<Entity> getNearbyEntities(final double x, final double y, final double z) {
+    public List<Entity> getNearbyEntities(final double x, final double y,
+                                          final double z) {
         check();
         if (isEntityValid()) {
             return ImmutableList.<Entity>builder()
-                    .addAll(this.getWorld().getEntities(new Predicate<Entity>() {
-                        @Override
-                        public boolean apply(
-                                @Nullable
-                                Entity input) {
-                            if (input == null) {
-                                return false;
-                            }
-                            Location entityLocation = getLocation();
-                            Location difference = input.getLocation();
-                            return entityLocation.getPosition().distance(difference.getPosition())
-                                    <= Math.sqrt(x * x + y * y + z * z);
-                        }
-                    })).build();
+                    .addAll(this.getWorld()
+                            .getEntities(new Predicate<Entity>() {
+                                @Override
+                                public boolean apply(
+                                        @Nullable
+                                        Entity input) {
+                                    if (input == null) {
+                                        return false;
+                                    }
+                                    Location entityLocation =
+                                            getLocation();
+                                    Location difference =
+                                            input.getLocation();
+                                    return entityLocation.getPosition()
+                                            .distance(difference
+                                                    .getPosition())
+                                            <= Math.sqrt(x * x + y * y
+                                            + z
+                                            * z);
+                                }
+                            })).build();
         } else {
             return Lists.newArrayList();
         }
@@ -190,8 +201,8 @@ public class RPGEntity implements IEntity {
     @Override
     public int hashCode() {
         return Objects.hashCode(this.name,
-                                this.uuid,
-                                this.weakEntity);
+                this.uuid,
+                this.weakEntity);
     }
 
     @Override

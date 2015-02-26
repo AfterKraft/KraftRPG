@@ -79,7 +79,7 @@ public class RPGRoleManager implements RoleManager {
     public boolean setDefaultPrimaryRole(Role role) {
         checkNotNull(role, "Cannot set the a default Primary null Role!");
         checkArgument(role.getType() == RoleType.PRIMARY,
-                      "Cannot have a non Primary RoleType as the default Primary Role!");
+                "Cannot have a non Primary RoleType as the default Primary Role!");
         this.defaultPrimaryRole = role;
         return true;
     }
@@ -93,8 +93,8 @@ public class RPGRoleManager implements RoleManager {
     public void setDefaultSecondaryRole(@Nullable Role role) {
         if (role != null) {
             checkArgument(role.getType() == RoleType.SECONDARY,
-                          "Cannot have a non Secondary RoleType "
-                                  + "as the default Secondary Role!");
+                    "Cannot have a non Secondary RoleType "
+                            + "as the default Secondary Role!");
         }
         this.defaultSecondaryRole = role;
     }
@@ -148,13 +148,13 @@ public class RPGRoleManager implements RoleManager {
     public FixedPoint getRoleLevelExperience(Role role, int level) {
         checkNotNull(role, "Cannot calculate the experience for a null role!");
         checkArgument(this.roleLevels.containsKey(role),
-                      "Cannot return the experience requirement for a role "
-                              + "that isn't registered with the system!");
+                "Cannot return the experience requirement for a role "
+                        + "that isn't registered with the system!");
         checkArgument(level <= role.getMaxLevel(),
-                      "Cannot return the experience requirement for a level "
-                              + "above the max level for the role!");
+                "Cannot return the experience requirement for a level "
+                        + "above the max level for the role!");
         checkArgument(level > 0,
-                      "Cannot get the experience requirement for a negative level!");
+                "Cannot get the experience requirement for a negative level!");
         return this.roleLevels.get(role)[level - 1];
     }
 
@@ -178,9 +178,9 @@ public class RPGRoleManager implements RoleManager {
     @Override
     public boolean removeRoleDependency(Role parent, Role child) {
         checkNotNull(parent,
-                     "Cannot remove a null Role Parent dependency!");
+                "Cannot remove a null Role Parent dependency!");
         checkNotNull(child,
-                     "Cannot remove a null Role child dependency!");
+                "Cannot remove a null Role child dependency!");
         reconstructRoleGraph();
         this.roleGraph.removeEdge(parent, child);
         Role newParent = Role.copyOf(parent).removeChild(child).build();
@@ -203,7 +203,7 @@ public class RPGRoleManager implements RoleManager {
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
                             .error("Could not add a Role dependency from parent: "
-                                           + parent
+                                    + parent
                                     .getName() + " to child: " + role
                                     .getName());
                     e.printStackTrace();
@@ -216,8 +216,8 @@ public class RPGRoleManager implements RoleManager {
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
                             .error("Could not add a Role dependency from parent: "
-                                           + role.getName()
-                                           + " to child: " + child.getName());
+                                    + role.getName()
+                                    + " to child: " + child.getName());
                     e.printStackTrace();
                     return false;
                 }
@@ -236,7 +236,7 @@ public class RPGRoleManager implements RoleManager {
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
                             .error("Could not add a Role dependency from parent: "
-                                           + "" + parent
+                                    + "" + parent
                                     .getName() + " to child: " + role
                                     .getName());
                     e.printStackTrace();
@@ -248,8 +248,8 @@ public class RPGRoleManager implements RoleManager {
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
                             .error("Could not add a Role dependency from parent: "
-                                           + role.getName()
-                                           + " to child: " + child.getName());
+                                    + role.getName()
+                                    + " to child: " + child.getName());
                     e.printStackTrace();
                 }
             }

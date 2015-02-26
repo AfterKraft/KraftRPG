@@ -57,17 +57,15 @@ import com.afterkraft.kraftrpg.util.MathUtil;
 public class RPGSkillConfigManager implements SkillConfigManager {
     // Configurations
 
+    private final Map<SkillCaster, Map<ISkill, ConfigurationNode>>
+            customSettings;
     // TODO Review all methods and possible re-implement getters
     protected ConfigurationNode outsourcedSkillConfig;
     protected ConfigurationNode standardSkillConfig;
     protected ConfigurationNode defaultSkillConfig;
-
     private Map<String, ConfigurationNode> roleSkillConfigurations;
     private File skillConfigFile;
     private File outsourcedSkillConfigFile;
-
-    private final Map<SkillCaster, Map<ISkill, ConfigurationNode>>
-            customSettings;
     private KraftRPGPlugin plugin;
 
     public RPGSkillConfigManager(KraftRPGPlugin plugin) {
@@ -178,21 +176,21 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     public boolean isSettingConfigured(ISkill skill, SkillSetting setting) {
         checkNotNull(skill,
-                     "Cannot check the use configurations for a null skill!");
+                "Cannot check the use configurations for a null skill!");
         checkNotNull(setting,
-                     "Cannot check the use configurations for a null setting!");
+                "Cannot check the use configurations for a null setting!");
         return skill.getDefaultConfig().contains(setting.node()) ||
                 !outsourcedSkillConfig.getNode(skill.getName()
-                                                       + "." + setting.node())
+                        + "." + setting.node())
                         .isVirtual();
     }
 
     @Override
     public boolean isSettingConfigured(ISkill skill, DataQuery setting) {
         checkNotNull(skill,
-                     "Cannot check the use configurations for a null skill!");
+                "Cannot check the use configurations for a null skill!");
         checkNotNull(setting,
-                     "Cannot check the use configurations for a null setting!");
+                "Cannot check the use configurations for a null setting!");
         return skill.getDefaultConfig().contains(setting) ||
                 !outsourcedSkillConfig.getNode(skill.getName() + "." + setting)
                         .isVirtual();
@@ -552,7 +550,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         } else if (caster.canAdditionalUseSkill(skill)) {
             for (Role role : caster.getAdditionalRoles()) {
                 Optional<SkillAspect> optional = role.getAspect(SkillAspect
-                                                                        .class);
+                        .class);
                 if (optional.isPresent()
                         && optional.get()
                         .hasSkillAtLevel(skill, caster.getLevel(role).get())) {
@@ -707,20 +705,20 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     private void check(SkillCaster caster, ISkill skill, SkillSetting setting) {
         checkNotNull(caster,
-                     "Cannot check the use configurations for a null caster!");
+                "Cannot check the use configurations for a null caster!");
         checkNotNull(skill,
-                     "Cannot check the use configurations for a null skill!");
+                "Cannot check the use configurations for a null skill!");
         checkNotNull(setting,
-                     "Cannot check the use configurations for a null setting!");
+                "Cannot check the use configurations for a null setting!");
     }
 
     private void check(SkillCaster caster, ISkill skill, DataQuery setting) {
         checkNotNull(caster,
-                     "Cannot check the use configurations for a null caster!");
+                "Cannot check the use configurations for a null caster!");
         checkNotNull(skill,
-                     "Cannot check the use configurations for a null skill!");
+                "Cannot check the use configurations for a null skill!");
         checkNotNull(setting,
-                     "Cannot check the use configurations for a null setting!");
+                "Cannot check the use configurations for a null setting!");
     }
 
     private Number getUsedNumberSetting(SkillCaster caster, ISkill skill,

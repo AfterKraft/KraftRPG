@@ -78,8 +78,8 @@ public class RPGEffectManager implements EffectManager {
         this.taskID = RpgCommon.getGame()
                 .getSyncScheduler()
                 .runRepeatingTask(this.plugin,
-                                  new EffectUpdater(),
-                                  EFFECT_INTERVAL).get().getUniqueId();
+                        new EffectUpdater(),
+                        EFFECT_INTERVAL).get().getUniqueId();
     }
 
     @Override
@@ -119,10 +119,10 @@ public class RPGEffectManager implements EffectManager {
                         } catch (final Exception e) {
                             RPGEffectManager.this.plugin.getLogger()
                                     .error("There "
-                                           + "was an "
-                                           + "error attempting to "
-                                           + "remove effect: "
-                                           + managed.getEffect().getName());
+                                            + "was an "
+                                            + "error attempting to "
+                                            + "remove effect: "
+                                            + managed.getEffect().getName());
                             e.printStackTrace();
                         }
                     }
@@ -137,8 +137,8 @@ public class RPGEffectManager implements EffectManager {
                         RPGEffectManager.this
                                 .plugin.getLogger()
                                 .error("There was an error attempting to "
-                                       + "tick effect: "
-                                       + managed.getEffect().getName());
+                                        + "tick effect: "
+                                        + managed.getEffect().getName());
                         e.printStackTrace();
                     }
                 }

@@ -208,7 +208,7 @@ public final class ActiveSkillRunner {
                 result = skill.checkCustomRestrictions(caster, false);
             } catch (Throwable t) {
                 plugin.getLogger().error("checking restrictions", t,
-                                         new Object[]{caster, args});
+                        new Object[]{caster, args});
                 t.printStackTrace();
                 return SkillCastResult.FAIL;
             }
@@ -225,14 +225,14 @@ public final class ActiveSkillRunner {
                 result = skill.useSkill(caster);
             } catch (Throwable t) {
                 plugin.getLogger().error("using skill", t,
-                                         new Object[]{caster, args});
+                        new Object[]{caster, args});
             }
         } finally {
             try {
                 skill.cleanState(caster);
             } catch (Throwable t) {
                 plugin.getLogger().error("cleaning skill state", t,
-                                        new Object[]{caster, args});
+                        new Object[]{caster, args});
             }
         }
 
@@ -252,7 +252,7 @@ public final class ActiveSkillRunner {
 
                 if (caster.canGainExperience(ExperienceType.SKILL)) {
                     caster.gainExperience(FixedPoint.valueOf(exp), ExperienceType.SKILL,
-                                          caster.getLocation());
+                            caster.getLocation());
                 }
             }
 

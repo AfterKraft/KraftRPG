@@ -136,10 +136,10 @@ public class RPGPluginProperties implements Properties {
             Double value = Math.ceil(exp != null ? exp.doubleValue() : 0.0D);
             double percent = 1 + mobExpDistanceModified / distanceTierModifier;
             double modifier = Math.pow(percent,
-                                       MathUtil.getModulatedDistance(
-                                               entity.getLocation(),
-                                               spawnPoint)
-                                               / distanceTierModifier);
+                    MathUtil.getModulatedDistance(
+                            entity.getLocation(),
+                            spawnPoint)
+                            / distanceTierModifier);
             value = Math.ceil(value * modifier);
             return FixedPoint.valueOf(value);
         }

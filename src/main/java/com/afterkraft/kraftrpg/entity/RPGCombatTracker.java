@@ -42,7 +42,8 @@ import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
  */
 public class RPGCombatTracker implements CombatTracker {
     private RPGPlugin plugin;
-    private WeakHashMap<Insentient, WeakHashMap<Insentient, EnterCombatReason>> masterCombatMap;
+    private WeakHashMap<Insentient, WeakHashMap<Insentient, EnterCombatReason>>
+            masterCombatMap;
 
     public RPGCombatTracker(RPGPlugin plugin) {
         this.plugin = plugin;
@@ -62,7 +63,8 @@ public class RPGCombatTracker implements CombatTracker {
     @Override
     public Map<Insentient, EnterCombatReason> getCombatants(Insentient target) {
         checkNotNull(target, "Cannot get the combatants for a null target!");
-        ImmutableMap.Builder<Insentient, EnterCombatReason> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<Insentient, EnterCombatReason> builder =
+                ImmutableMap.builder();
         for (Entry<Insentient, WeakHashMap<Insentient, EnterCombatReason>> entry :
                 this.masterCombatMap.entrySet()) {
             if (entry.getValue().containsKey(target)) {
@@ -73,11 +75,13 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
-    public void enterCombatWith(Insentient target, Insentient attacker, EnterCombatReason reason) {
+    public void enterCombatWith(Insentient target, Insentient attacker,
+                                EnterCombatReason reason) {
         checkNotNull(target, "Cannot enter combat with a null target!");
         checkNotNull(attacker, "Cannot enter combat with a null attacker!");
         checkNotNull(reason, "Cannot enter combat with a null reason!");
-        WeakHashMap<Insentient, EnterCombatReason> map = this.masterCombatMap.get(attacker);
+        WeakHashMap<Insentient, EnterCombatReason> map =
+                this.masterCombatMap.get(attacker);
         if (map == null) {
             map = new WeakHashMap<>();
         }
@@ -86,11 +90,13 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
-    public void leaveCombatWith(Insentient target, Insentient attacker, LeaveCombatReason reason) {
+    public void leaveCombatWith(Insentient target, Insentient attacker,
+                                LeaveCombatReason reason) {
         checkNotNull(target, "Cannot enter combat with a null target!");
         checkNotNull(attacker, "Cannot enter combat with a null attacker!");
         checkNotNull(reason, "Cannot enter combat with a null reason!");
-        WeakHashMap<Insentient, EnterCombatReason> map = this.masterCombatMap.get(attacker);
+        WeakHashMap<Insentient, EnterCombatReason> map =
+                this.masterCombatMap.get(attacker);
         if (map != null) {
             map.remove(target);
         }
@@ -109,7 +115,8 @@ public class RPGCombatTracker implements CombatTracker {
     }
 
     @Override
-    public boolean isInCombatWith(Insentient target, Insentient potentialAttacker) {
+    public boolean isInCombatWith(Insentient target,
+                                  Insentient potentialAttacker) {
         // TODO Auto-generated method stub
         return false;
     }

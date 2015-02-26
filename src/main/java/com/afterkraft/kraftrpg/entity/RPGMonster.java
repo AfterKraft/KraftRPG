@@ -81,7 +81,7 @@ public class RPGMonster extends RPGInsentient implements Monster {
     @Override
     public void setModifiedDamage(double damage) {
         checkArgument(damage > 0,
-                      "Cannot set the attacking damage to zero or less than zero!");
+                "Cannot set the attacking damage to zero or less than zero!");
         this.damage = damage > 0 ? damage : 1;
     }
 

@@ -53,9 +53,12 @@ import com.afterkraft.kraftrpg.api.effects.Timed;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.resource.Resource;
 
+import javax.annotation.Nullable;
+
 /**
- * Default implementation of an Insentient being. By default, this is a Living. It can
- * overridden by creating a new implementation of RPGInsentient for non-LivingEntities.
+ * Default implementation of an Insentient being. By default, this is a Living.
+ * It can overridden by creating a new implementation of RPGInsentient for
+ * non-LivingEntities.
  */
 public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
@@ -65,8 +68,24 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     protected AtomicInteger mana = new AtomicInteger(0);
     protected Map<String, Double> healthMap = new ConcurrentHashMap<>();
 
-    protected RPGInsentient(RPGPlugin plugin, Living livingEntity, String name) {
+    protected RPGInsentient(RPGPlugin plugin, Living livingEntity,
+                            String name) {
         super(plugin, livingEntity, name);
+    }
+
+    @Override
+    public Optional<? extends Living> getEntity() {
+        return Optional.fromNullable(this.getUnsafeEntity());
+    }
+
+    @Override
+    Living getUnsafeEntity() {
+        return (Living) super.getUnsafeEntity();
+    }
+
+    @Override
+    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
+        return null;
     }
 
     @Override
@@ -78,11 +97,6 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public void setMana(int mana) {
         checkArgument(mana > 0, "Cannot set a negative mana value!");
         this.mana.set(mana);
-    }
-
-    @Override
-    Living getUnsafeEntity() {
-        return (Living) super.getUnsafeEntity();
     }
 
     @Override
@@ -101,15 +115,11 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     }
 
     @Override
-    public Optional<? extends Living> getEntity() {
-        return Optional.fromNullable(this.getUnsafeEntity());
-    }
-
-    @Override
     public boolean addMaxHealth(String key, double value) {
         check();
         checkNotNull(key, "Cannot add a MaxHealth module with a null key!");
-        checkArgument(!key.isEmpty(), "Cannot add a MaxHealth module with an empty key!");
+        checkArgument(!key.isEmpty(),
+                "Cannot add a MaxHealth module with an empty key!");
         if (!this.isEntityValid()) {
             return false;
         }
@@ -121,8 +131,10 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             return false;
         }
         this.healthMap.put(key, value);
-        this.getUnsafeEntity().setMaxHealth(this.getUnsafeEntity().getMaxHealth() + value);
-        this.getUnsafeEntity().setHealth(value + this.getUnsafeEntity().getHealth());
+        this.getUnsafeEntity()
+                .setMaxHealth(this.getUnsafeEntity().getMaxHealth() + value);
+        this.getUnsafeEntity()
+                .setHealth(value + this.getUnsafeEntity().getHealth());
         return true;
     }
 
@@ -130,7 +142,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public boolean removeMaxHealth(String key) {
         check();
         checkNotNull(key, "Cannot remove a null key health module!");
-        checkArgument(!key.isEmpty(), "Cannot remove an empty key health module!");
+        checkArgument(!key.isEmpty(),
+                "Cannot remove an empty key health module!");
         if (!this.isEntityValid()) {
             return false;
         }
@@ -170,7 +183,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     public void clearHealthBonuses() {
         check();
         double current = this.getUnsafeEntity().getHealth();
-        Iterator<Map.Entry<String, Double>> iter = this.healthMap.entrySet().iterator();
+        Iterator<Map.Entry<String, Double>> iter =
+                this.healthMap.entrySet().iterator();
         int minus = 0;
         while (iter.hasNext()) {
             Double val = iter.next().getValue();
@@ -181,7 +195,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         if (this.getUnsafeEntity().getHealth() != 0) {
             this.getUnsafeEntity().setHealth(current < 0 ? 0 : current);
         }
-        this.getUnsafeEntity().setMaxHealth(this.getUnsafeEntity().getMaxHealth() - minus);
+        this.getUnsafeEntity()
+                .setMaxHealth(this.getUnsafeEntity().getMaxHealth() - minus);
     }
 
     @Override
@@ -198,17 +213,20 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     @Override
     public Optional<ItemStack> getItemInHand() {
         check();
-        return this.isEntityValid() && this.getUnsafeEntity() instanceof ArmorEquipable
+        return this.isEntityValid() && this
+                .getUnsafeEntity() instanceof ArmorEquipable
                 ? ((ArmorEquipable) this.getUnsafeEntity()).getItemInHand()
                 : Optional.<ItemStack>absent();
     }
 
     @Override
+    @Nullable
     public Inventory getInventory() {
         check();
         return this.isEntityValid() && this.getUnsafeEntity() instanceof
-                Carrier ? ((Carrier) this.getUnsafeEntity()).getInventory() :
-                null;
+                Carrier
+                ? ((Carrier) this.getUnsafeEntity()).getInventory()
+                : null;
     }
 
     @Override
@@ -257,14 +275,16 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
         if (this.isEntityValid()) {
             this.potionEffectQueue.add(
                     new RPGPotionEffect(RpgCommon.getGame()
-                                                .getRegistry()
-                                                .getPotionEffectBuilder()
-                                        .potionType(potion.getType())
-                                        .duration(potion.getDuration())
-                                        .ambience(potion.isAmbient())
-                                        .amplifier(potion.getAmplifier())
-                                        .particles(potion.getShowParticles())
-                                        .build(), true));
+                            .getRegistry()
+                            .getPotionEffectBuilder()
+                            .potionType(potion.getType())
+                            .duration(potion.getDuration())
+                            .ambience(potion.isAmbient())
+                            .amplifier(
+                                    potion.getAmplifier())
+                            .particles(
+                                    potion.getShowParticles())
+                            .build(), true));
         }
     }
 
@@ -286,15 +306,18 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     @Override
     public boolean hasPotionEffect(PotionEffectType type) {
         check();
-        checkArgument(type != null, "Cannot check on a null potion effect type!");
-        return this.getUnsafeEntity() != null && this.getUnsafeEntity().hasPotionEffect
-                (type);
+        checkArgument(type != null,
+                "Cannot check on a null potion effect type!");
+        return this.getUnsafeEntity() != null && this.getUnsafeEntity()
+                .hasPotionEffect
+                        (type);
     }
 
     @Override
     public boolean hasEffect(String name) {
         check();
-        checkArgument(name != null, "Cannot check if an effect with a null name!");
+        checkArgument(name != null,
+                "Cannot check if an effect with a null name!");
         checkArgument(!name.isEmpty(), "Cannot check an empty effect name!");
         return this.effects.containsKey(name.toLowerCase());
     }
@@ -309,11 +332,6 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
             }
         }
         return false;
-    }
-
-    @Override
-    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
-        return null;
     }
 
     @Override
@@ -377,7 +395,8 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
 
     private void check() {
         if (!isValid()) {
-            throw new IllegalStateException("The linked entity is no longer available!");
+            throw new IllegalStateException(
+                    "The linked entity is no longer available!");
         }
     }
 }

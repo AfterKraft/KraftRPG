@@ -80,8 +80,8 @@ public class RPGConfigManager implements ConfigManager {
             try {
                 this.plugin.getLogger()
                         .warn("File " + config.getName() + " not "
-                                      + "found - "
-                                      + "generating defaults.");
+                                + "found - "
+                                + "generating defaults.");
                 config.getParentFile().mkdir();
                 config.createNewFile();
                 final OutputStream output = new FileOutputStream(config, false);

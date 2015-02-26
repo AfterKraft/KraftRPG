@@ -76,8 +76,8 @@ public class RPGSkillCommand implements CommandCallable {
                 .getSkillManager().getSkill(skillName);
         if (!optionalSkill.isPresent()) {
             source.sendMessage(TextColors.RED + "Skill " + TextColors.YELLOW
-                                       + skillName + TextColors.RED
-                                       + " not found.");
+                    + skillName + TextColors.RED
+                    + " not found.");
             return true;
         }
         Champion champ =
@@ -105,8 +105,8 @@ public class RPGSkillCommand implements CommandCallable {
                 }
             }
             source.sendMessage(TextColors.RED + "The skill " + TextColors.YELLOW
-                                       + skillName + TextColors.RED
-                                       + " is not available to you.");
+                    + skillName + TextColors.RED
+                    + " is not available to you.");
             return true;
         }
 
@@ -121,16 +121,16 @@ public class RPGSkillCommand implements CommandCallable {
 
         if (!(sk instanceof Active)) {
             source.sendMessage(TextColors.RED + "The skill " + TextColors.YELLOW
-                                       + skillName + TextColors.RED
-                                       + " cannot be triggered. Try "
-                                       + TextColors.LIGHT_PURPLE + "/skill "
-                                       + skillName + " ?");
+                    + skillName + TextColors.RED
+                    + " cannot be triggered. Try "
+                    + TextColors.LIGHT_PURPLE + "/skill "
+                    + skillName + " ?");
         } else {
             String[] cutArgs = parents
                     .subList(1, parents.size() - 1).toArray(new String[]{});
             SkillCastResult result;
             result = ActiveSkillRunner
-                            .castSkillInitial(champ, (Active) sk, cutArgs);
+                    .castSkillInitial(champ, (Active) sk, cutArgs);
             Message message;
             switch (result) {
                 case CUSTOM_NO_MESSAGE_FAILURE:
@@ -157,22 +157,22 @@ public class RPGSkillCommand implements CommandCallable {
                                     + TextColors.YELLOW
                                     + this.plugin.getSkillConfigManager()
                                     .getUsedIntSetting(champ,
-                                                       sk,
-                                                       SkillSetting.HEALTH_COST)
+                                            sk,
+                                            SkillSetting.HEALTH_COST)
                                     + TextColors.RED
                                     + " HP (you have "
                                     + champ.getHealth() + ").");
                     break;
                 case LOW_MANA:
                     message = Messages.of("Not enough mana! You need at least "
-                                                  + TextColors.YELLOW
-                                                  + this.plugin
+                            + TextColors.YELLOW
+                            + this.plugin
                             .getSkillConfigManager()
                             .getUsedIntSetting(champ,
-                                               sk, SkillSetting.MANA_COST)
-                                                  + TextColors.RED
-                                                  + " mana (you have "
-                                                  + champ.getMana() + ").")
+                                    sk, SkillSetting.MANA_COST)
+                            + TextColors.RED
+                            + " mana (you have "
+                            + champ.getMana() + ").")
                             .builder().color(TextColors.RED).build();
                     source.sendMessage(message);
                     break;
@@ -183,8 +183,8 @@ public class RPGSkillCommand implements CommandCallable {
                                     + TextColors.YELLOW
                                     + this.plugin.getSkillConfigManager()
                                     .getUsedIntSetting(champ,
-                                                       sk,
-                                                       SkillSetting.STAMINA_COST)
+                                            sk,
+                                            SkillSetting.STAMINA_COST)
                                     + TextColors.RED
                                     + " quarter-food bars (you have " + champ
                                     .getStamina()
@@ -227,20 +227,20 @@ public class RPGSkillCommand implements CommandCallable {
                     break;
                 case ON_COOLDOWN:
                     source.sendMessage(TextColors.RED + "The skill " + skillName
-                                               + " is on cooldown. " + (
+                            + " is on cooldown. " + (
                             (champ.getCooldown(skillName).get()
                                     - System.currentTimeMillis()) / 1000)
-                                               + " seconds left.");
+                            + " seconds left.");
                     break;
                 case ON_GLOBAL_COOLDOWN:
                     message = Messages.of("You must wait "
-                                                  + (
+                            + (
                             (champ.getGlobalCooldown() - System
                                     .currentTimeMillis())
                                     / 1000)
-                                                  + " seconds before "
-                                                  + "using another skill"
-                                                  + ".").builder()
+                            + " seconds before "
+                            + "using another skill"
+                            + ".").builder()
                             .color(TextColors.RED).build();
                     source.sendMessage(message);
                     break;
@@ -249,8 +249,8 @@ public class RPGSkillCommand implements CommandCallable {
                     break;
                 case STALLING_FAILURE:
                     message = Messages.of("Could not use skill due to "
-                                                  + "your currently"
-                                                  + " pending skill.").builder()
+                            + "your currently"
+                            + " pending skill.").builder()
                             .color(TextColors.RED).build();
                     source.sendMessage(message);
                     break;
@@ -258,10 +258,10 @@ public class RPGSkillCommand implements CommandCallable {
                     break;
                 case SYNTAX_ERROR:
                     source.sendMessage(TextColors.RED
-                                               + "You have a syntax error in your command. Try "
-                                               + TextColors.LIGHT_PURPLE
-                                               + "/skill ? " + skillName
-                                               + TextColors.RED + " .");
+                            + "You have a syntax error in your command. Try "
+                            + TextColors.LIGHT_PURPLE
+                            + "/skill ? " + skillName
+                            + TextColors.RED + " .");
                     break;
                 case UNTARGETABLE_TARGET:
                     source.sendMessage(
@@ -323,9 +323,9 @@ public class RPGSkillCommand implements CommandCallable {
                 return skill.tabComplete(champ, arguments.split(" "), 1);
             } catch (Throwable t) {
                 this.plugin.getLogger().error("Error tab completing the "
-                                                      + "skill: " + sk.get()
+                        + "skill: " + sk.get()
                         .getName() + "tab "
-                                                      + "completing", t, new
+                        + "completing", t, new
                         Object[]
                         {source, arguments});
                 return Lists.newArrayList();

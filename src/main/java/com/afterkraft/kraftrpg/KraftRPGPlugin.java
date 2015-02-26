@@ -126,7 +126,7 @@ public final class KraftRPGPlugin implements RPGPlugin {
     @Subscribe
     public void onPreInit(PreInitializationEvent event) {
         this.configManager = new RPGConfigManager(this, this.mainConfig,
-                                                  this.configLoader);
+                this.configLoader);
         this.properties = new RPGPluginProperties();
 
     }
@@ -209,7 +209,7 @@ public final class KraftRPGPlugin implements RPGPlugin {
     private void registerCommandExecutors() {
         CommandService service = RpgCommon.getGame().getCommandDispatcher();
         service.register(this, new RPGSkillCommand(this), "skill", "skills",
-                         "cast");
+                "cast");
 
     }
 
