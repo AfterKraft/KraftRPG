@@ -34,6 +34,7 @@ import org.spongepowered.api.event.state.ServerAboutToStartEvent;
 import org.spongepowered.api.event.state.ServerStartingEvent;
 import org.spongepowered.api.event.state.ServerStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.config.DefaultConfig;
 import org.spongepowered.api.util.event.Subscribe;
@@ -92,6 +93,9 @@ public final class KraftRPGPlugin implements RPGPlugin {
     @Inject
     @DefaultConfig(sharedRoot = false)
     private ConfigurationLoader<CommentedConfigurationNode> configLoader;
+
+    @Inject
+    private PluginContainer pluginContainer;
 
     private RPGSkillManager skillManager;
     private RPGSkillConfigManager skillConfigManager;
@@ -307,5 +311,9 @@ public final class KraftRPGPlugin implements RPGPlugin {
 
     public ConfigurationLoader<CommentedConfigurationNode> getConfigLoader() {
         return this.configLoader;
+    }
+
+    public PluginContainer getPluginContainer() {
+        return this.pluginContainer;
     }
 }

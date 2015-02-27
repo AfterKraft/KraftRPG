@@ -49,6 +49,7 @@ import com.afterkraft.kraftrpg.api.skills.common.Permissible;
 import com.afterkraft.kraftrpg.api.util.DirectedGraph;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
 import com.afterkraft.kraftrpg.entity.RPGEntityManager;
+import com.afterkraft.kraftrpg.util.RPGConfigManager;
 
 /**
  * Default implementation of RoleManager
@@ -327,21 +328,24 @@ public class RPGRoleManager implements RoleManager {
 
     @Override
     public void initialize() {
-        if (!rolesDirectory.exists()) {
-            rolesDirectory.mkdirs();
+        RPGRoleManager.rolesDirectory = new File(this.plugin
+                .getConfigurationManager()
+                .getConfigDirectory() + File.separator + "roles");
+        if (!RPGRoleManager.rolesDirectory.exists()) {
+            RPGRoleManager.rolesDirectory.mkdirs();
             this.plugin.getConfigurationManager()
-                    .checkForConfig(new File(rolesDirectory, "admin.hocon"));
+                    .checkForConfig(new File(RPGRoleManager.rolesDirectory, "admin.hocon"));
             this.plugin.getConfigurationManager()
-                    .checkForConfig(new File(rolesDirectory, "weakling.hocon"));
+                    .checkForConfig(new File(RPGRoleManager.rolesDirectory, "weakling.hocon"));
             this.plugin.getConfigurationManager()
                     .checkForConfig(
-                            new File(rolesDirectory, "swordsman.hocon"));
+                            new File(RPGRoleManager.rolesDirectory, "swordsman.hocon"));
             this.plugin.getConfigurationManager()
-                    .checkForConfig(new File(rolesDirectory, "healer.hocon"));
+                    .checkForConfig(new File(RPGRoleManager.rolesDirectory, "healer.hocon"));
             this.plugin.getConfigurationManager()
-                    .checkForConfig(new File(rolesDirectory, "mage.hocon"));
+                    .checkForConfig(new File(RPGRoleManager.rolesDirectory, "mage.hocon"));
             this.plugin.getConfigurationManager()
-                    .checkForConfig(new File(rolesDirectory, "archer.hocon"));
+                    .checkForConfig(new File(RPGRoleManager.rolesDirectory, "archer.hocon"));
         }
     }
 

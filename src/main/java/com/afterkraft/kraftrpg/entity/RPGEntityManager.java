@@ -36,6 +36,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.service.scheduler.Task;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -282,13 +283,29 @@ public class RPGEntityManager implements EntityManager {
 
     @Override
     public void initialize() {
-        this.entityTaskID = RpgCommon.getGame().getSyncScheduler()
-                .runRepeatingTask(this.plugin, new RPGEntityTask(), 1000)
-                .get().getUniqueId();
-        this.potionTaskID = RpgCommon.getGame().getSyncScheduler()
-                .runRepeatingTask(this.plugin,
-                        new RPGInsentientPotionEffectTask(),
-                        100).get().getUniqueId();
+
+        Optional<Task> optional = RpgCommon.getGame()
+                .getSyncScheduler()
+                .runRepeatingTask(KraftRPGPlugin.getInstance().getPluginContainer(),
+                        new RPGEntityTask(), 1000);
+        if (optional.isPresent()) {
+            this.entityTaskID = optional.get().getUniqueId();
+        } else {
+            this.plugin.getLogger().error("[KraftRPG|Entities] Unable to "
+                    + "schedule entities task. Expect entity expiration to "
+                    + "break....");
+        }
+        Optional<Task> potionTask =  RpgCommon.getGame()
+                .getSyncScheduler()
+                .runRepeatingTask(KraftRPGPlugin.getInstance().getPluginContainer(),
+                        new RPGInsentientPotionEffectTask(), 100);
+        if (potionTask.isPresent()) {
+            this.potionTaskID = potionTask.get().getUniqueId();
+        } else {
+            this.plugin.getLogger().error("[KraftRPG|Entities] Unable to "
+                    + "schedule potion effects task. Expect entity potions "
+                    + "to break....");
+        }
 
     }
 

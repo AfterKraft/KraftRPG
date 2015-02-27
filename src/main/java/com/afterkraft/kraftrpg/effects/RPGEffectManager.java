@@ -82,7 +82,7 @@ public class RPGEffectManager implements EffectManager {
         }
         Optional<Task> optional = RpgCommon.getGame()
                 .getSyncScheduler()
-                .runRepeatingTask(this.plugin,
+                .runRepeatingTask(KraftRPGPlugin.getInstance().getPluginContainer(),
                         new EffectUpdater(),
                         EFFECT_INTERVAL);
         if (optional.isPresent()) {
