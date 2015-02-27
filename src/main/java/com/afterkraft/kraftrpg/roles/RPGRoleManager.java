@@ -79,7 +79,8 @@ public class RPGRoleManager implements RoleManager {
     public boolean setDefaultPrimaryRole(Role role) {
         checkNotNull(role, "Cannot set the a default Primary null Role!");
         checkArgument(role.getType() == RoleType.PRIMARY,
-                "Cannot have a non Primary RoleType as the default Primary Role!");
+                "Cannot have a non Primary RoleType as the default Primary "
+                        + "Role!");
         this.defaultPrimaryRole = role;
         return true;
     }
@@ -202,7 +203,8 @@ public class RPGRoleManager implements RoleManager {
                     tempGraph.addEdge(parent, role);
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
-                            .error("Could not add a Role dependency from parent: "
+                            .error("Could not add a Role dependency from "
+                                    + "parent: "
                                     + parent
                                     .getName() + " to child: " + role
                                     .getName());
@@ -215,7 +217,8 @@ public class RPGRoleManager implements RoleManager {
                     tempGraph.addEdge(role, child);
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
-                            .error("Could not add a Role dependency from parent: "
+                            .error("Could not add a Role dependency from "
+                                    + "parent: "
                                     + role.getName()
                                     + " to child: " + child.getName());
                     e.printStackTrace();
@@ -235,7 +238,8 @@ public class RPGRoleManager implements RoleManager {
                     this.roleGraph.addEdge(parent, role);
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
-                            .error("Could not add a Role dependency from parent: "
+                            .error("Could not add a Role dependency from "
+                                    + "parent: "
                                     + "" + parent
                                     .getName() + " to child: " + role
                                     .getName());
@@ -247,7 +251,8 @@ public class RPGRoleManager implements RoleManager {
                     this.roleGraph.addEdge(role, child);
                 } catch (CircularDependencyException e) {
                     this.plugin.getLogger()
-                            .error("Could not add a Role dependency from parent: "
+                            .error("Could not add a Role dependency from "
+                                    + "parent: "
                                     + role.getName()
                                     + " to child: " + child.getName());
                     e.printStackTrace();

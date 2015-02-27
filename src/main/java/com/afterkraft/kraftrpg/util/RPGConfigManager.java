@@ -28,13 +28,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.spongepowered.api.service.config.ConfigService;
-
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
-import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.util.ConfigManager;
 
 /**
@@ -53,35 +50,38 @@ public class RPGConfigManager implements ConfigManager {
 
 
     public RPGConfigManager(KraftRPGPlugin plugin, File mainConfig,
-                            ConfigurationLoader<CommentedConfigurationNode>
-                                    configurationLoader) {
+            ConfigurationLoader<CommentedConfigurationNode>
+                    configurationLoader) {
         this.plugin = plugin;
 
-        RPGConfigManager.pluginDirectory = getConfigurationDirectory();
+        RPGConfigManager.pluginDirectory =
+                getConfigurationDirectory(mainConfig);
+
         RPGConfigManager.expConfigFile =
-                new File(pluginDirectory, "experience.yml");
+                new File(pluginDirectory, "experience.hocon");
         RPGConfigManager.damageConfigFile =
-                new File(pluginDirectory, "damages.yml");
-        RPGConfigManager.recipesConfigFile =
-                new File(pluginDirectory, "recipes.yml");
+                new File(pluginDirectory, "damages.hocon");
         RPGConfigManager.storageConfigFile =
-                new File(pluginDirectory, "storage.yml");
+                new File(pluginDirectory, "storage.hocon");
     }
 
-    private static File getConfigurationDirectory() {
-        return RpgCommon.getGame().getServiceManager()
-                .provide(ConfigService.class)
-                .get().getSharedConfig(RpgCommon.getPlugin()).getDirectory();
+    private static File getConfigurationDirectory(File mainConfig) {
+        File parentDir = mainConfig.getParentFile();
+        if (parentDir == null) {
+            throw new IllegalStateException(
+                    "The configuration service is not available!");
+        }
+        pluginDirectory = parentDir;
+        pluginDirectory.mkdir();
+        return pluginDirectory;
     }
 
     @Override
     public void checkForConfig(File config) {
         if (!config.exists()) {
             try {
-                this.plugin.getLogger()
-                        .warn("File " + config.getName() + " not "
-                                + "found - "
-                                + "generating defaults.");
+                this.plugin.getLogger().warn("File " + config.getName()
+                        + " not found - generating defaults.");
                 config.getParentFile().mkdir();
                 config.createNewFile();
                 final OutputStream output = new FileOutputStream(config, false);
@@ -104,6 +104,11 @@ public class RPGConfigManager implements ConfigManager {
         }
     }
 
+    /**
+     * Gets the configuration directory.
+     *
+     * @return The configuration directory
+     */
     public File getConfigDirectory() {
         return RPGConfigManager.pluginDirectory;
     }

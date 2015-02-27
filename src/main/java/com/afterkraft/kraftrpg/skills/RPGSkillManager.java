@@ -25,7 +25,6 @@ package com.afterkraft.kraftrpg.skills;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -36,14 +35,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.DataView;
-import org.spongepowered.api.util.event.Order;
-import org.spongepowered.api.util.event.Subscribe;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.ExternalProviderRegistration;
@@ -64,6 +60,7 @@ import com.afterkraft.kraftrpg.common.skills.common.PermissionSkill;
  * Default implementation of SkillManager for KraftRPG.
  */
 public class RPGSkillManager implements SkillManager {
+
     private static final Set<DataQuery> DEFAULT_ALLOWED_NODES;
 
     static {
@@ -91,11 +88,17 @@ public class RPGSkillManager implements SkillManager {
      */
     @Override
     public void initialize() {
-        for (ISkill skill : ExternalProviderRegistration.getRegisteredSkills()) {
+        for (ISkill skill : ExternalProviderRegistration
+                .getRegisteredSkills()) {
             addSkill(skill);
         }
         RpgCommon.getGame().getEventManager()
                 .register(this.plugin, new SkillManagerListener());
+    }
+
+    @Override
+    public void shutdown() {
+
     }
 
     @Override
@@ -113,7 +116,8 @@ public class RPGSkillManager implements SkillManager {
     @Override
     public boolean hasSkill(String skillName) {
         checkNotNull(skillName, "Cannot check a null skill name!");
-        checkArgument(!skillName.isEmpty(), "Cannot check an empty skill name!");
+        checkArgument(!skillName.isEmpty(),
+                "Cannot check an empty skill name!");
         return false;
     }
 
@@ -133,11 +137,13 @@ public class RPGSkillManager implements SkillManager {
 
         final PermissionSkill oSkill = new PermissionSkill(this.plugin, name);
         /*
-        final ConfigurationSection config = RPGSkillConfigManager.outsourcedSkillConfig
+        final ConfigurationSection config = RPGSkillConfigManager
+        .outsourcedSkillConfig
                 .getConfigurationSection(oSkill.getName());
         final Map<String, Boolean> perms = new HashMap<>();
         if (config != null) {
-            final ConfigurationSection permConfig = config.getConfigurationSection("permissions");
+            final ConfigurationSection permConfig = config
+            .getConfigurationSection("permissions");
             for (String key : permConfig.getKeys(true)) {
                 perms.put(key, permConfig.getBoolean(key));
             }
@@ -170,7 +176,8 @@ public class RPGSkillManager implements SkillManager {
     @Override
     public void removeSkill(ISkill skill) {
         checkNotNull(skill, "Cannot remove a null skill!");
-        this.skillMap.remove(skill.getName().toLowerCase().replace("skill", ""));
+        this.skillMap
+                .remove(skill.getName().toLowerCase().replace("skill", ""));
     }
 
     @Override
@@ -206,7 +213,8 @@ public class RPGSkillManager implements SkillManager {
     }
 
     @Override
-    public void removeSkillTarget(Entity entity, SkillCaster caster, ISkill skill) {
+    public void removeSkillTarget(Entity entity, SkillCaster caster,
+            ISkill skill) {
         checkNotNull(entity, "Cannot remove a null entity skill target!");
         checkNotNull(caster, "Cannot remove a null caster skill target!");
         checkNotNull(skill, "Cannot remove a null skill from a skill target!");
@@ -214,10 +222,12 @@ public class RPGSkillManager implements SkillManager {
     }
 
     private boolean checkSkillConfig(ISkill skill) {
-        if (skill.getUsedConfigNodes() == null || skill.getUsedConfigNodes().isEmpty()) {
+        if (skill.getUsedConfigNodes() == null || skill.getUsedConfigNodes()
+                .isEmpty()) {
             return true;
         }
-        Set<SkillSetting> settings = ImmutableSet.copyOf(skill.getUsedConfigNodes());
+        Set<SkillSetting> settings =
+                ImmutableSet.copyOf(skill.getUsedConfigNodes());
         DataView section = skill.getDefaultConfig();
 
         Set<DataQuery> allowedKeys = new HashSet<>(DEFAULT_ALLOWED_NODES);
@@ -250,11 +260,6 @@ public class RPGSkillManager implements SkillManager {
             }
         }
         return true;
-    }
-
-    @Override
-    public void shutdown() {
-
     }
 
     private class SkillManagerListener {

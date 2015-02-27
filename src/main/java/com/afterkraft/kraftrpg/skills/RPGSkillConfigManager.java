@@ -82,17 +82,6 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     @Override
-    public void initialize() {
-        // TODO
-    }
-
-    @Override
-    public void shutdown() {
-        this.customSettings.clear();
-        roleSkillConfigurations.clear();
-    }
-
-    @Override
     public void saveSkillConfig() {
 
     }
@@ -104,7 +93,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public void addRoleSkillSettings(String roleName, String skillName,
-                                     DataView section) {
+            DataView section) {
         // TODO
     }
 
@@ -118,8 +107,8 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public void addTemporarySkillConfigurations(ISkill skill,
-                                                SkillCaster caster,
-                                                DataView section) {
+            SkillCaster caster,
+            DataView section) {
         // TODO
     }
 
@@ -132,7 +121,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public void clearTemporarySkillConfigurations(SkillCaster caster,
-                                                  ISkill skill) {
+            ISkill skill) {
         checkNotNull(caster, "Cannot clear configurations of a null caster!");
         checkNotNull(skill, "Cannot clear configurations of a null "
                 + "skill!");
@@ -313,7 +302,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> getRawStringListSetting(ISkill skill,
-                                                DataQuery setting) {
+            DataQuery setting) {
         check(skill, setting);
         final Object val = getRawSetting(skill, setting);
         if (val == null || !(val instanceof List)) {
@@ -328,7 +317,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public List<String> getRawStringListSetting(ISkill skill,
-                                                SkillSetting setting) {
+            SkillSetting setting) {
         check(skill, setting);
         return getRawStringListSetting(skill, setting.node());
     }
@@ -349,7 +338,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public ItemStack getRawItemStackSetting(ISkill skill,
-                                            SkillSetting setting) {
+            SkillSetting setting) {
         check(skill, setting);
         return getRawItemStackSetting(skill, setting.node());
     }
@@ -409,7 +398,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public double getDoubleSetting(Role role, ISkill skill,
-                                   SkillSetting setting) {
+            SkillSetting setting) {
         check(role, skill, setting);
         return getDoubleSetting(role, skill, setting.node());
     }
@@ -430,7 +419,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public String getStringSetting(Role role, ISkill skill,
-                                   SkillSetting setting) {
+            SkillSetting setting) {
         check(role, skill, setting);
         return getStringSetting(role, skill, setting.node());
     }
@@ -450,14 +439,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public Boolean getBooleanSetting(Role role, ISkill skill,
-                                     SkillSetting setting) {
+            SkillSetting setting) {
         check(role, skill, setting);
         return getBooleanSetting(role, skill, setting.node());
     }
 
     @Override
     public Boolean getBooleanSetting(Role role, ISkill skill,
-                                     DataQuery setting) {
+            DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null) {
@@ -472,7 +461,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public List<String> getStringListSetting(Role role, ISkill skill,
-                                             SkillSetting setting) {
+            SkillSetting setting) {
         check(role, skill, setting);
         return getStringListSetting(role, skill, setting.node());
     }
@@ -480,7 +469,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> getStringListSetting(Role role, ISkill skill,
-                                             DataQuery setting) {
+            DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (val == null || !(val instanceof List)) {
@@ -495,14 +484,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public ItemStack getItemStackSetting(Role role, ISkill skill,
-                                         SkillSetting setting) {
+            SkillSetting setting) {
         check(role, skill, setting);
         return getItemStackSetting(role, skill, setting.node());
     }
 
     @Override
     public ItemStack getItemStackSetting(Role role, ISkill skill,
-                                         DataQuery setting) {
+            DataQuery setting) {
         check(role, skill, setting);
         final Object val = getSetting(role, skill, setting);
         if (!(val instanceof ItemStack)) {
@@ -522,14 +511,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public Object getUsedSetting(SkillCaster caster, ISkill skill,
-                                 SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedSetting(caster, skill, setting.node());
     }
 
     @Override
     public Object getUsedSetting(SkillCaster caster, ISkill skill,
-                                 DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         if (this.customSettings.containsKey(caster) && this.customSettings
                 .get(caster)
@@ -564,42 +553,42 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public int getUsedIntSetting(SkillCaster caster, ISkill skill,
-                                 SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedIntSetting(caster, skill, setting.node());
     }
 
     @Override
     public int getUsedIntSetting(SkillCaster caster, ISkill skill,
-                                 DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         return getUsedNumberSetting(caster, skill, setting).intValue();
     }
 
     @Override
     public double getUsedDoubleSetting(SkillCaster caster, ISkill skill,
-                                       SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedDoubleSetting(caster, skill, setting.node());
     }
 
     @Override
     public double getUsedDoubleSetting(SkillCaster caster, ISkill skill,
-                                       DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         return getUsedNumberSetting(caster, skill, setting).doubleValue();
     }
 
     @Override
     public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill,
-                                         SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedBooleanSetting(caster, skill, setting.node());
     }
 
     @Override
     public boolean getUsedBooleanSetting(SkillCaster caster, ISkill skill,
-                                         DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof Boolean) {
@@ -612,14 +601,14 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public String getUsedStringSetting(SkillCaster caster, ISkill skill,
-                                       SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         return getUsedStringSetting(caster, skill, setting.node());
     }
 
     @Override
     public String getUsedStringSetting(SkillCaster caster, ISkill skill,
-                                       DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         return val instanceof String ? (String) val : val.toString();
@@ -627,7 +616,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public List<?> getUsedListSetting(SkillCaster caster, ISkill skill,
-                                      SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -639,7 +628,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public List<?> getUsedListSetting(SkillCaster caster, ISkill skill,
-                                      DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -652,8 +641,8 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> getUsedStringListSetting(SkillCaster caster,
-                                                 ISkill skill,
-                                                 SkillSetting setting) {
+            ISkill skill,
+            SkillSetting setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -666,8 +655,8 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> getUsedStringListSetting(SkillCaster caster,
-                                                 ISkill skill,
-                                                 DataQuery setting) {
+            ISkill skill,
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof List) {
@@ -679,7 +668,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public ItemStack getUsedItemStackSetting(SkillCaster caster, ISkill skill,
-                                             SkillSetting setting) {
+            SkillSetting setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof ItemStack) {
@@ -692,7 +681,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
 
     @Override
     public ItemStack getUsedItemStackSetting(SkillCaster caster, ISkill skill,
-                                             DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof ItemStack) {
@@ -701,6 +690,17 @@ public class RPGSkillConfigManager implements SkillConfigManager {
         }
         throw new IllegalStateException(
                 "Illegal default for the following skill: " + skill.getName());
+    }
+
+    @Override
+    public void initialize() {
+        // TODO
+    }
+
+    @Override
+    public void shutdown() {
+        this.customSettings.clear();
+        roleSkillConfigurations.clear();
     }
 
     private void check(SkillCaster caster, ISkill skill, SkillSetting setting) {
@@ -722,7 +722,7 @@ public class RPGSkillConfigManager implements SkillConfigManager {
     }
 
     private Number getUsedNumberSetting(SkillCaster caster, ISkill skill,
-                                        DataQuery setting) {
+            DataQuery setting) {
         check(caster, skill, setting);
         Object val = getUsedSetting(caster, skill, setting);
         if (val instanceof Number) {

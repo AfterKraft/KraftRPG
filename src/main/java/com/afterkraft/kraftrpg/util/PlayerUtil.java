@@ -46,7 +46,7 @@ public final class PlayerUtil {
     }
 
     public static boolean moveItem(Champion champion, int itemSlot,
-                                   ItemStack item) {
+            ItemStack item) {
         return true; // TODO
     }
 }

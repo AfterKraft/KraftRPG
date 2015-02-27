@@ -61,19 +61,14 @@ public class MathUtil {
     }
 
     public static double getModulatedDistance(final Location from,
-                                              final Location to) {
+            final Location to) {
         return (from.getPosition().distance(to.getPosition())) - (from
                 .getPosition().distance(to.getPosition())
-                % RPGPluginProperties.distanceTierModifier);
+                % RPGPluginProperties.getInstance().getDistanceTierModifier());
     }
 
     public static int getLevel(FixedPoint exp) {
-        for (int i = RPGPluginProperties.maxLevel - 1; i >= 0; i--) {
-            if (exp.doubleValue() >= RPGPluginProperties.levels[i]) {
-                return i + 1;
-            }
-        }
-        return -1;
+        return -1; // TODO
     }
 
     public static int toInt(Object object) {

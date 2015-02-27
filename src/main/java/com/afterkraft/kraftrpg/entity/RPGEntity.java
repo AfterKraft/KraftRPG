@@ -24,14 +24,13 @@
 package com.afterkraft.kraftrpg.entity;
 
 
+import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-
-import javax.annotation.Nullable;
 
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
@@ -147,7 +146,7 @@ public class RPGEntity implements IEntity {
 
     @Override
     public List<Entity> getNearbyEntities(final double x, final double y,
-                                          final double z) {
+            final double z) {
         check();
         if (isEntityValid()) {
             return ImmutableList.<Entity>builder()

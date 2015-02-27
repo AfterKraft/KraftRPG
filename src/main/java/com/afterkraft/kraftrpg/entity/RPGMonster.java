@@ -185,6 +185,11 @@ public class RPGMonster extends RPGInsentient implements Monster {
     }
 
     @Override
+    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
+        return null;
+    }
+
+    @Override
     public void updateInventory() {
         // Nope! no updating inventories
     }
@@ -197,11 +202,6 @@ public class RPGMonster extends RPGInsentient implements Monster {
     @Override
     public Inventory getInventory() {
         // TODO
-        return null;
-    }
-
-    @Override
-    public <T extends Resource> Optional<T> getResource(Class<T> clazz) {
         return null;
     }
 }

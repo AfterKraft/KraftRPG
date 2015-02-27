@@ -31,6 +31,7 @@ import com.afterkraft.kraftrpg.api.util.Properties;
  * Listener for Entity events
  */
 public class EntityListener extends AbstractListener {
+
     public static final String SPAWNREASON_META_KEY = "KraftRPG: Spawn Reason";
     private final Properties properties;
 

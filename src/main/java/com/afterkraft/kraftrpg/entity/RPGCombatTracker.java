@@ -41,6 +41,7 @@ import com.afterkraft.kraftrpg.api.entity.LeaveCombatReason;
  * Default implementation of the Combat Tracker.
  */
 public class RPGCombatTracker implements CombatTracker {
+
     private RPGPlugin plugin;
     private WeakHashMap<Insentient, WeakHashMap<Insentient, EnterCombatReason>>
             masterCombatMap;
@@ -65,7 +66,8 @@ public class RPGCombatTracker implements CombatTracker {
         checkNotNull(target, "Cannot get the combatants for a null target!");
         ImmutableMap.Builder<Insentient, EnterCombatReason> builder =
                 ImmutableMap.builder();
-        for (Entry<Insentient, WeakHashMap<Insentient, EnterCombatReason>> entry :
+        for (Entry<Insentient, WeakHashMap<Insentient, EnterCombatReason>>
+                entry :
                 this.masterCombatMap.entrySet()) {
             if (entry.getValue().containsKey(target)) {
                 builder.put(entry.getKey(), entry.getValue().get(target));
@@ -76,7 +78,7 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public void enterCombatWith(Insentient target, Insentient attacker,
-                                EnterCombatReason reason) {
+            EnterCombatReason reason) {
         checkNotNull(target, "Cannot enter combat with a null target!");
         checkNotNull(attacker, "Cannot enter combat with a null attacker!");
         checkNotNull(reason, "Cannot enter combat with a null reason!");
@@ -91,7 +93,7 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public void leaveCombatWith(Insentient target, Insentient attacker,
-                                LeaveCombatReason reason) {
+            LeaveCombatReason reason) {
         checkNotNull(target, "Cannot enter combat with a null target!");
         checkNotNull(attacker, "Cannot enter combat with a null attacker!");
         checkNotNull(reason, "Cannot enter combat with a null reason!");
@@ -116,7 +118,7 @@ public class RPGCombatTracker implements CombatTracker {
 
     @Override
     public boolean isInCombatWith(Insentient target,
-                                  Insentient potentialAttacker) {
+            Insentient potentialAttacker) {
         // TODO Auto-generated method stub
         return false;
     }

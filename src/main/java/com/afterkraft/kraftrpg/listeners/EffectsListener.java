@@ -24,11 +24,6 @@
 package com.afterkraft.kraftrpg.listeners;
 
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.effects.EffectType;
-import com.afterkraft.kraftrpg.api.effects.IEffect;
-import com.afterkraft.kraftrpg.api.effects.common.ProjectileShot;
-import com.afterkraft.kraftrpg.api.entity.IEntity;
-import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
 
 /**
@@ -59,7 +54,8 @@ public class EffectsListener extends AbstractListener {
             if (being.hasEffectType(EffectType.IMBUE)) {
                 for (IEffect effect : being.getEffects()) {
                     if (effect instanceof ProjectileShot) {
-                        ((ProjectileShot) effect).applyToProjectile(event.getEntity());
+                        ((ProjectileShot) effect).applyToProjectile(event
+                        .getEntity());
                         return;
                     }
                 }
@@ -75,8 +71,12 @@ public class EffectsListener extends AbstractListener {
             if (being.hasEffectType(EffectType.IMBUE)) {
                 for (IEffect effect : being.getEffects()) {
                     if (effect instanceof ProjectileShot) {
-                        ((ProjectileShot) effect).onProjectileLand(event.getEntity(),
-                                                                   event.getEntity().getLocation());
+                        ((ProjectileShot) effect).onProjectileLand(event
+                        .getEntity(),
+                                                                   event
+                                                                   .getEntity
+                                                                   ()
+                                                                   .getLocation());
                         return;
                     }
                 }
@@ -86,7 +86,8 @@ public class EffectsListener extends AbstractListener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager())
+        if (event.getDamager() instanceof Projectile && ((Projectile) event
+        .getDamager())
                 .getShooter() instanceof LivingEntity) {
             Projectile projectile = (Projectile) event.getDamager();
             Insentient being = (Insentient) this.plugin.getEntityManager()
@@ -95,10 +96,12 @@ public class EffectsListener extends AbstractListener {
                 for (IEffect effect : being.getEffects()) {
                     if (effect instanceof ProjectileShot) {
                         IEntity rpgEntity =
-                                this.plugin.getEntityManager().getEntity(event.getEntity());
+                                this.plugin.getEntityManager().getEntity
+                                (event.getEntity());
                         if (rpgEntity instanceof Insentient) {
                             ((ProjectileShot) effect)
-                                    .onProjectileDamage(projectile, (Insentient) rpgEntity);
+                                    .onProjectileDamage(projectile,
+                                    (Insentient) rpgEntity);
                         }
                         return;
                     }

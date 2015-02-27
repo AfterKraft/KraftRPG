@@ -192,11 +192,13 @@ public class RPGEntityManager implements EntityManager {
             if (this.champions.containsKey(entity.getUniqueID())) {
                 if (this.champions.get(entity.getUniqueID()).equals(entity)) {
                     throw new IllegalArgumentException(
-                            "Third Party Plugins can't add duplicate Champions!");
+                            "Third Party Plugins can't add duplicate "
+                                    + "Champions!");
                 } else {
                     throw new IllegalArgumentException(
                             "The provided players differ in their ID! "
-                                    + "Can't add custom Champions with duplicate ID's!");
+                                    + "Can't add custom Champions with "
+                                    + "duplicate ID's!");
                 }
             } else {
                 this.champions.put(entity.getUniqueID(), (Champion) entity);
@@ -206,14 +208,16 @@ public class RPGEntityManager implements EntityManager {
                 .containsKey(entity.getUniqueID())) {
             if (this.entities.containsKey(entity.getUniqueID())) {
                 throw new IllegalArgumentException(
-                        "The provided custom entity is already registered with KraftRPG!");
+                        "The provided custom entity is already registered "
+                                + "with KraftRPG!");
             }
             this.monsters.put(entity.getUniqueID(), (Monster) entity);
             return true;
         } else if (entity instanceof Summon) {
             if (this.summons.containsKey(entity.getUniqueID())) {
                 throw new IllegalArgumentException(
-                        "The provided custom entity is alraedy registered with KraftRPG!");
+                        "The provided custom entity is alraedy registered "
+                                + "with KraftRPG!");
             }
             this.summons.put(entity.getUniqueID(), (Summon) entity);
             return true;
@@ -418,6 +422,7 @@ public class RPGEntityManager implements EntityManager {
     }
 
     private class RPGInsentientPotionEffectTask implements Runnable {
+
         @Override
         public void run() {
             Map<UUID, Champion> rpgPlayerMap = RPGEntityManager.this.champions;

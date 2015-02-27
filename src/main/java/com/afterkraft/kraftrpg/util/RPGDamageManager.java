@@ -49,13 +49,13 @@ public class RPGDamageManager implements DamageManager {
 
     @Override
     public double getHighestItemDamage(Insentient attacker, Insentient defender,
-                                       double defaultDamage) {
+            double defaultDamage) {
         return 4;
     }
 
     @Override
     public double getHighestProjectileDamage(Insentient champion,
-                                             ProjectileType type) {
+            ProjectileType type) {
         return 4; // TODO
     }
 
@@ -96,14 +96,14 @@ public class RPGDamageManager implements DamageManager {
 
     @Override
     public double getEnchantmentDamage(Enchantment enchantment,
-                                       int enchantmentLevel) {
+            int enchantmentLevel) {
         return 4; // TODO
     }
 
     @Override
     public double getItemEnchantmentDamage(Insentient being,
-                                           Enchantment enchantment,
-                                           ItemStack item) {
+            Enchantment enchantment,
+            ItemStack item) {
         return 4; // TODO
     }
 
@@ -114,8 +114,8 @@ public class RPGDamageManager implements DamageManager {
 
     @Override
     public double getModifiedEntityDamage(Monster monster, Location location,
-                                          double baseDamage,
-                                          Cause fromSpawner) {
+            double baseDamage,
+            Cause fromSpawner) {
         return 4; // TODO
     }
 
@@ -137,7 +137,7 @@ public class RPGDamageManager implements DamageManager {
 
     @Override
     public void setEntityToDealVaryingDamage(EntityType type,
-                                             boolean dealsVaryingDamage) {
+            boolean dealsVaryingDamage) {
 
     }
 

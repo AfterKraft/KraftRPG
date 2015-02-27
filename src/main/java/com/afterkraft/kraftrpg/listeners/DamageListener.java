@@ -23,46 +23,8 @@
  */
 package com.afterkraft.kraftrpg.listeners;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.entity.projectile.Projectile;
-import org.spongepowered.api.event.entity.EntityChangeHealthEvent;
-import org.spongepowered.api.item.Enchantment;
-import org.spongepowered.api.item.Enchantments;
-import org.spongepowered.api.item.ItemTypes;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.util.event.Order;
-import org.spongepowered.api.util.event.Subscribe;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-
 import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.RpgCommon;
-import com.afterkraft.kraftrpg.api.effects.EffectType;
-import com.afterkraft.kraftrpg.api.effects.IEffect;
-import com.afterkraft.kraftrpg.api.entity.Champion;
-import com.afterkraft.kraftrpg.api.entity.IEntity;
-import com.afterkraft.kraftrpg.api.entity.Insentient;
-import com.afterkraft.kraftrpg.api.entity.Monster;
-import com.afterkraft.kraftrpg.api.entity.PartyMember;
-import com.afterkraft.kraftrpg.api.entity.SkillCaster;
-import com.afterkraft.kraftrpg.api.entity.Summon;
 import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
-import com.afterkraft.kraftrpg.api.listeners.DamageWrapper;
-import com.afterkraft.kraftrpg.api.listeners.SkillDamageWrapper;
-import com.afterkraft.kraftrpg.api.skills.ISkill;
-import com.afterkraft.kraftrpg.api.skills.SkillUseObject;
-import com.afterkraft.kraftrpg.api.util.DamageManager;
-import com.afterkraft.kraftrpg.api.util.DamageManager.ProjectileType;
-import com.afterkraft.kraftrpg.entity.party.RPGPartyManager;
-import com.afterkraft.kraftrpg.util.Messaging;
 
 /**
  * DamageListener to handle all Damage related events.
@@ -140,7 +102,8 @@ public class DamageListener extends AbstractListener {
 
         // TODO Somewhere... write some armor/item damage
         // handling that may ignore some of these damages
-        // TODO Somehow, we should create and apply our own functions for these new DamageModifiers.
+        // TODO Somehow, we should create and apply our own functions for
+        these new DamageModifiers.
         final double initialDamage =
                 event.getOriginalDamage(DamageModifier.BASE);
         final double initialArmor =
@@ -159,7 +122,8 @@ public class DamageListener extends AbstractListener {
         double magicPercentage = (initialMagic / initialDamage);
         double resistancePercentage = (initialResistance / initialResistance);
         double damage = event.getDamage();
-        // We need to check if any exterior plugin added an IEntity to our EntityManager
+        // We need to check if any exterior plugin added an IEntity to our
+        EntityManager
         // as a SkillCaster or just plain special Monster
         // We use this val for other purposes in the remaining listeners
         final boolean isManaged =
@@ -203,7 +167,8 @@ public class DamageListener extends AbstractListener {
                 // in creative mode. Otherwise, we risk damaging a player
                 // while in Creative mode
                 if (player.getGameMode().equals(GameMode.CREATIVE)) {
-                    // TODO Maybe add an override option so that it can be toggled
+                    // TODO Maybe add an override option so that it can be
+                    toggled
                     event.setCancelled(true);
                     return;
                 }
@@ -250,7 +215,8 @@ public class DamageListener extends AbstractListener {
                     attackingEntity instanceof Player
                             || attackingIEntity instanceof Champion)) {
                 event.setCancelled(true);
-                // By default, a player is always a Champion. If not, then there's a serious error.
+                // By default, a player is always a Champion. If not, then
+                there's a serious error.
                 ((Insentient) attackingIEntity)
                         .sendMessage(ChatColor.RED + Messaging
                                 .getMessage("pvp_disabled"));
@@ -304,9 +270,11 @@ public class DamageListener extends AbstractListener {
 
         // TODO Rewrite this all for a new InsentientPreDamageEvent
         // to handle damage modification functions
-        // TODO Handle all through a new proxy event. Do not use EntityDamageEvent anymore.
+        // TODO Handle all through a new proxy event. Do not use
+        EntityDamageEvent anymore.
 
-        // SkillTarget checks, since we need to see if any skills targeted the defending entity.
+        // SkillTarget checks, since we need to see if any skills targeted
+        the defending entity.
         if (this.plugin.getSkillManager().isSkillTarget(defendingEntity)) {
             alreadyProcessed = true;
             // Need to handle the damage to armor
@@ -327,7 +295,8 @@ public class DamageListener extends AbstractListener {
                             (LivingEntity) defendingEntity;
                     if ((livingEntity.getLastDamageCause() != null)
                             && (livingEntity
-                            .getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
+                            .getLastDamageCause() instanceof
+                            EntityDamageByEntityEvent)) {
                         final Entity tempDamager =
                                 ((EntityDamageByEntityEvent) livingEntity
                                         .getLastDamageCause())
@@ -341,7 +310,8 @@ public class DamageListener extends AbstractListener {
                         livingEntity.setLastDamageCause(
                                 new EntityDamageByEntityEvent(tempDamager,
                                                               livingEntity,
-                                                              DamageCause.ENTITY_ATTACK,
+                                                              DamageCause
+                                                              .ENTITY_ATTACK,
                                                               modifiers,
                                                               uselessMap));
                         livingEntity.damage(1000, tempDamager);
@@ -353,7 +323,8 @@ public class DamageListener extends AbstractListener {
                 }
             } else if (cause == DamageCause.ENTITY_ATTACK
                     || cause == DamageCause.PROJECTILE) {
-                // When the attack is guaranteed to have been caused by an enemy entity
+                // When the attack is guaranteed to have been caused by an
+                enemy entity
                 alreadyProcessed = true;
                 if (event.getDamage() == 0) {
                     damage = 0;
@@ -503,7 +474,8 @@ public class DamageListener extends AbstractListener {
 
             // Check for possible resistances
             if (resistanceCheck(defender, skillInfo.getSkill())) {
-                // Send the resist messages to all players in the location radius
+                // Send the resist messages to all players in the location
+                radius
                 final Collection<? extends Player> players =
                         this.plugin.getServer().getOnlinePlayers();
                 ISkill skill = skillInfo.getSkill();
@@ -575,8 +547,10 @@ public class DamageListener extends AbstractListener {
                 event.setCancelled(true);
                 return 0;
             }
-            // We must check the item in hand and for all possible damages it may have.
-            // This needs to be improved later on as we need to handle customized damages
+            // We must check the item in hand and for all possible damages it
+             m ay have.
+            // This needs to be improved later on as we need to handle
+            customized damages
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
             if (event.getCause() == DamageCause.PROJECTILE
                     && damager instanceof Projectile) {
@@ -590,7 +564,8 @@ public class DamageListener extends AbstractListener {
                         new ProjectileDamageEvent(attackingInsentient,
                                                   (Insentient) defendingIEntity,
                                                   (Projectile) damager,
-                                                  (EntityDamageByEntityEvent) event,
+                                                  (EntityDamageByEntityEvent)
+                                                   event,
                                                   attackingInsentient
                                                           .getItemInHand(),
                                                   modifiers,
@@ -624,7 +599,8 @@ public class DamageListener extends AbstractListener {
                                                       .getItemInHand(),
                                               modifiers,
                                               this.plugin.getProperties()
-                                                      .isVaryingDamageEnabled());
+                                                      .isVaryingDamageEnabled
+                                                      ());
                 Bukkit.getPluginManager().callEvent(weaponEvent);
                 if (weaponEvent.isCancelled()) {
                     damage = 0D;
@@ -641,7 +617,8 @@ public class DamageListener extends AbstractListener {
                         ImmutableMap.of(DamageType.PHYSICAL, damage));
                 final InsentientDamageInsentientEvent insentientEvent =
                         new InsentientDamageInsentientEvent(attackingInsentient,
-                                                            (Insentient) defendingIEntity,
+                                                            (Insentient)
+                                                            defendingIEntity,
                                                             (EntityDamageByEntityEvent) event,
                                                             modifiers,
                                                             this.plugin

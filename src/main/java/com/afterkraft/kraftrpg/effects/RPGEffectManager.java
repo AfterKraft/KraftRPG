@@ -28,6 +28,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.spongepowered.api.service.scheduler.Task;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+
 import com.afterkraft.kraftrpg.KraftRPGPlugin;
 import com.afterkraft.kraftrpg.api.RpgCommon;
 import com.afterkraft.kraftrpg.api.effects.EffectManager;
@@ -75,11 +80,17 @@ public class RPGEffectManager implements EffectManager {
             throw new IllegalStateException(
                     "RPGEffectManager is already initalized!");
         }
-        this.taskID = RpgCommon.getGame()
+        Optional<Task> optional = RpgCommon.getGame()
                 .getSyncScheduler()
                 .runRepeatingTask(this.plugin,
                         new EffectUpdater(),
-                        EFFECT_INTERVAL).get().getUniqueId();
+                        EFFECT_INTERVAL);
+        if (optional.isPresent()) {
+            this.taskID = optional.get().getUniqueId();
+        } else {
+            this.plugin.getLogger().error("[KraftRPG|Effects] Unable to "
+                    + "schedule effects task. Expect effects to break....");
+        }
     }
 
     @Override
@@ -96,20 +107,29 @@ public class RPGEffectManager implements EffectManager {
 
         @Override
         public void run() {
-            final Set<Managed> removals =
-                    new HashSet<>(RPGEffectManager.this.pendingRemovals);
+            final Set<Managed> removals = ImmutableSet
+                    .copyOf(RPGEffectManager.this.pendingRemovals);
+
+            // Clear the pending removals now that it's copied
             RPGEffectManager.this.pendingRemovals.clear();
+
+            // Actually removed the managed effects
             for (final Managed managed : removals) {
                 RPGEffectManager.this.managedEffects.remove(managed);
             }
 
-            final Set<Managed> additions =
-                    new HashSet<>(RPGEffectManager.this.pendingAdditions);
+            final Set<Managed> additions = ImmutableSet
+                    .copyOf(RPGEffectManager.this.pendingAdditions);
+
+            // Clear the pending additions
             RPGEffectManager.this.pendingAdditions.clear();
+
+            // Add the managed effects
             for (final Managed managed : additions) {
                 RPGEffectManager.this.managedEffects.add(managed);
             }
 
+            // Now manage the effect!
             for (final Managed managed : RPGEffectManager.this.managedEffects) {
                 if (managed.getEffect() instanceof Expirable) {
                     if (((Expirable) managed.getEffect()).isExpired()) {
@@ -136,7 +156,8 @@ public class RPGEffectManager implements EffectManager {
                     } catch (final Exception e) {
                         RPGEffectManager.this
                                 .plugin.getLogger()
-                                .error("There was an error attempting to "
+                                .error("[KraftRPG] There was an error "
+                                        + "attempting to "
                                         + "tick effect: "
                                         + managed.getEffect().getName());
                         e.printStackTrace();

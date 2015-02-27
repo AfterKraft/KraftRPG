@@ -42,13 +42,14 @@ import com.afterkraft.kraftrpg.api.util.FixedPoint;
  * Standard implementation of a Summon. Can be extended and overridden.
  */
 public class RPGSummon extends RPGInsentient implements Summon {
+
     protected final SkillCaster owner;
     private int maxMana;
     private FixedPoint experience;
     private DamageWrapper wrapper;
 
     public RPGSummon(RPGPlugin plugin, SkillCaster owner, Living livingEntity,
-                     String name) {
+            String name) {
         super(plugin, livingEntity, name);
         this.owner = owner;
     }

@@ -23,10 +23,10 @@
  */
 package com.afterkraft.kraftrpg;
 
+import javax.inject.Inject;
 import java.io.File;
 
 import org.slf4j.Logger;
-import org.spongepowered.api.entity.player.Player;
 import org.spongepowered.api.event.state.ConstructionEvent;
 import org.spongepowered.api.event.state.PostInitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
@@ -38,9 +38,6 @@ import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.config.DefaultConfig;
 import org.spongepowered.api.util.event.Subscribe;
 
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -116,30 +113,39 @@ public final class KraftRPGPlugin implements RPGPlugin {
 
     @Subscribe
     public void onConstruction(ConstructionEvent event) {
-        RpgCommon.setPlugin(this);
-        ExternalProviderRegistration.pluginLoaded(this);
-        this.logger.info("Construct");
-        instance = this;
+        this.logger.info("[KraftRPG] Construct START");
+        // This event is never actually reached. So....
+        // ONTO THE NEXT EVENT!!
+
+        this.logger.info("[KraftRPG] Construct DONE");
     }
 
     @Subscribe
     public void onPreInit(PreInitializationEvent event) {
+        this.logger.info("[KraftRPG] Pre-Init START");
         RpgCommon.setGame(event.getGame());
+        ExternalProviderRegistration.pluginLoaded(this);
+        KraftRPGPlugin.instance = this;
+        RpgCommon.setPlugin(this);
         this.configManager = new RPGConfigManager(this, this.mainConfig,
                 this.configLoader);
-        this.properties = new RPGPluginProperties();
-        this.logger.info("pre-init");
+        this.logger.info("[KraftRPG] Config file directory is: " + this
+                .configManager.getConfigDirectory());
+        this.logger.info("[KraftRPG] Pre-Init DONE");
 
     }
 
     @Subscribe
     public void onPostInit(PostInitializationEvent event) {
-        this.logger.info("post-init");
+        this.logger.info("[KraftRPG] Post-Init START");
+        this.properties = new RPGPluginProperties();
+        this.properties.initialize();
+        this.logger.info("[KraftRPG] Post-Init DONE");
     }
 
     @Subscribe
     public void onPreStart(ServerAboutToStartEvent event) {
-        this.logger.info("about-to-start");
+        this.logger.info("[KraftRPG] ServerAboutToStart START");
         RpgCommon.setCommonServer(event.getGame().getServer().get());
         ExternalProviderRegistration.finish();
         this.storageManager = new RPGStorageManager(this);
@@ -153,6 +159,7 @@ public final class KraftRPGPlugin implements RPGPlugin {
         this.roleManager = new RPGRoleManager(this);
         this.combatTracker = new RPGCombatTracker(this);
         this.entityManager = new RPGEntityManager(this);
+
         // We need this registration check for external providers
         if (ExternalProviderRegistration.getPartyManager() != null) {
             this.partyManager = ExternalProviderRegistration.getPartyManager();
@@ -160,7 +167,8 @@ public final class KraftRPGPlugin implements RPGPlugin {
             // If not, let's just use the default.
             this.partyManager = new RPGPartyManager(this);
         }
-        // Initialize managers in order.
+
+        // Initialize managers in precise order
         this.storageManager.initialize();
         this.skillConfigManager.initialize();
         this.skillManager.initialize();
@@ -170,21 +178,27 @@ public final class KraftRPGPlugin implements RPGPlugin {
         this.combatTracker.initialize();
         this.entityManager.initialize();
         this.partyManager.initialize();
+
         // Start up the RPGListener
         this.listenerManager = new RPGListenerManager(this);
         this.listenerManager.initialize();
         RpgCommon.finish();
         this.enabled = true;
+        this.logger.info("[KraftRPG] ServerAboutToStart DONE");
     }
 
     @Subscribe
     public void onStarting(ServerStartingEvent event) {
-        this.logger.info("Starting");
+        this.logger.info("[KraftRPG] ServerStarting START");
+
+        this.logger.info("[KraftRPG] ServerStarting DONE");
+
     }
 
     @Subscribe
     public void onDisable(ServerStoppingEvent event) {
-        this.logger.info("stopping");
+        this.logger.info("[KraftRPG] ServerStopping START");
+
         try {
             this.listenerManager.shutdown();
             this.entityManager.shutdown();
@@ -206,6 +220,8 @@ public final class KraftRPGPlugin implements RPGPlugin {
             this.logger
                     .warn("------------------------------------------------");
         }
+        this.logger.info("[KraftRPG] ServerStopping DONE");
+
     }
 
     private void registerCommandExecutors() {
@@ -287,5 +303,9 @@ public final class KraftRPGPlugin implements RPGPlugin {
 
     public Logger getLogger() {
         return this.logger;
+    }
+
+    public ConfigurationLoader<CommentedConfigurationNode> getConfigLoader() {
+        return this.configLoader;
     }
 }

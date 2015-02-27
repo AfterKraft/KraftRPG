@@ -23,6 +23,7 @@
  */
 package com.afterkraft.kraftrpg.entity;
 
+import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,8 +54,6 @@ import com.afterkraft.kraftrpg.api.effects.Timed;
 import com.afterkraft.kraftrpg.api.entity.Insentient;
 import com.afterkraft.kraftrpg.api.entity.resource.Resource;
 
-import javax.annotation.Nullable;
-
 /**
  * Default implementation of an Insentient being. By default, this is a Living.
  * It can overridden by creating a new implementation of RPGInsentient for
@@ -69,7 +68,7 @@ public abstract class RPGInsentient extends RPGEntity implements Insentient {
     protected Map<String, Double> healthMap = new ConcurrentHashMap<>();
 
     protected RPGInsentient(RPGPlugin plugin, Living livingEntity,
-                            String name) {
+            String name) {
         super(plugin, livingEntity, name);
     }
 

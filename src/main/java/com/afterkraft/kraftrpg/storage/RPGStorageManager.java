@@ -33,6 +33,7 @@ import com.afterkraft.kraftrpg.api.storage.StorageFrontend;
  * Default StorageManager
  */
 public class RPGStorageManager implements Manager {
+
     private final KraftRPGPlugin plugin;
     private StorageFrontend storage;
 
@@ -53,7 +54,8 @@ public class RPGStorageManager implements Manager {
                     + "' storage type,"
                     + " but that storage "
                     + "type is not available.");
-            StringBuilder sb = new StringBuilder("Available storage types are:");
+            StringBuilder sb =
+                    new StringBuilder("Available storage types are:");
             for (String str : ExternalProviderRegistration
                     .getStorageBackendMap().keySet()) {
                 sb.append(" '").append(str).append("'");

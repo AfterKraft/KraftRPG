@@ -24,7 +24,6 @@
 package com.afterkraft.kraftrpg.entity;
 
 import javax.annotation.Nullable;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -92,18 +91,18 @@ public class RPGChampion extends RPGInsentient implements Champion {
         this.party = party;
     }
 
+    @Override
+    public void leaveParty() {
+        this.check();
+        this.party = null;
+    }
+
     private boolean check() {
         if (!this.isValid()) {
             throw new IllegalStateException(
                     "A Champion is not linked to a valid Player!");
         }
         return true;
-    }
-
-    @Override
-    public void leaveParty() {
-        this.check();
-        this.party = null;
     }
 
     @Override
@@ -115,6 +114,199 @@ public class RPGChampion extends RPGInsentient implements Champion {
         } else {
             return Optional.absent();
         }
+    }
+
+    @Override
+    public long getGlobalCooldown() {
+        return getCooldown(RPGChampion.GLOBAL_COOLDOWN_KEY).get();
+    }
+
+    @Override
+    public void setGlobalCooldown(long duration) {
+        checkArgument(duration < Long.MAX_VALUE - System.currentTimeMillis(),
+                "Cannot set the duration longer than the maximum time of the "
+                        + "system!");
+        this.data.cooldowns.put(RPGChampion.GLOBAL_COOLDOWN_KEY, duration);
+    }
+
+    @Override
+    public void setCooldown(String key, long duration) {
+        checkNotNull(key, "Cannot set the cooldown of a null key!");
+        checkArgument(!key.isEmpty(),
+                "Cannot set the cooldown of an empty key!");
+        checkArgument(duration < Long.MAX_VALUE - System.currentTimeMillis(),
+                "Cannot set the duration longer than the maximum time of the "
+                        + "system!");
+        this.data.cooldowns.put(key, duration);
+    }
+
+    @Override
+    public Optional<Integer> getHighestSkillLevel(ISkill skill) {
+        checkNotNull(skill, "Cannot get the highest null skill level!");
+        int level = 0;
+
+        for (Role r : this.data.getAllRoles()) {
+            Optional<Integer> optional = getLevel(r);
+            if (optional.isPresent()) {
+                if (r.getAspect(SkillAspect.class).isPresent()) {
+                    SkillAspect aspect = r.getAspect(SkillAspect.class).get();
+                    int roleLevel = optional.get();
+                    if (aspect.hasSkillAtLevel(skill, roleLevel)) {
+                        if (roleLevel > level) {
+                            level = roleLevel;
+                        }
+                    }
+                }
+            }
+        }
+        if (level == 0) {
+            return Optional.absent();
+        }
+        return Optional.of(level);
+    }
+
+    @Override
+    public boolean canUseSkill(ISkill skill) {
+        checkNotNull(skill,
+                "Cannot check whether Champion can use null skill!");
+        for (Role r : this.data.getAllRoles()) {
+            int roleLevel = getLevel(r).get();
+            if (r.getAspect(SkillAspect.class).isPresent()) {
+                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
+                if (aspect.hasSkillAtLevel(skill, roleLevel)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Collection<ISkill> getAvailableSkills() {
+        ImmutableSet.Builder<ISkill> skills = ImmutableSet.builder();
+        for (Role r : this.data.getAllRoles()) {
+            if (r.getAspect(SkillAspect.class).isPresent()) {
+                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
+                skills.addAll(aspect.getAllSkillsAtLevel(getLevel(r).get()));
+            }
+        }
+        return skills.build();
+    }
+
+    @Override
+    public Collection<String> getActiveSkillNames() {
+        // TODO cache results?
+        // this is basically /only/ for tab-completion
+
+        Set<String> skillNames = new HashSet<>();
+        for (Role r : this.data.getAllRoles()) {
+            Optional<SkillAspect> optional = r.getAspect(SkillAspect.class);
+            if (optional.isPresent()) {
+                for (ISkill skill : optional.get().getAllSkillsAtLevel
+                        (getLevel(r).get()
+                        )) {
+                    if (skill instanceof Active) {
+                        skillNames.add(skill.getName());
+                    }
+                }
+            }
+        }
+        return skillNames;
+    }
+
+    @Override
+    public Collection<ISkill> getPossibleSkillsInRoles() {
+        ImmutableSet.Builder<ISkill> skills = ImmutableSet.builder();
+        for (Role r : this.data.getAllRoles()) {
+            if (r.getAspect(SkillAspect.class).isPresent()) {
+                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
+                skills.addAll(aspect.getAllSkills());
+            }
+        }
+        return skills.build();
+    }
+
+    @Override
+    public boolean isSkillRestricted(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+
+        return false;
+    }
+
+    @Override
+    public boolean canPrimaryUseSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        return true;
+    }
+
+    @Override
+    public boolean doesPrimaryRestrictSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        return false; // TODO
+    }
+
+    @Override
+    public boolean canSecondaryUseSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        return false; // TODO
+    }
+
+    @Override
+    public boolean doesSecondaryRestrictSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        return false; // TODO
+    }
+
+    @Override
+    public boolean canAdditionalUseSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        // TODO
+        return false;
+    }
+
+    @Override
+    public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        checkNotNull(role, "Cannot check a null role!");
+        return role.getAspect(SkillAspect.class).isPresent() &&
+                role.getAspect(SkillAspect.class).get()
+                        .hasSkillAtLevel(skill, this.getLevel(role).get());
+    }
+
+    @Override
+    public boolean doesAdditionalRestrictSkill(ISkill skill) {
+        checkNotNull(skill, "Cannot check a null Skill!");
+        if (this.data.additionalRoles.isEmpty()) {
+            return true;
+        } else {
+            for (Role role : this.data.additionalRoles) {
+                /*
+                if (role.isSkillRestricted(skill)) {
+
+                    return true;
+                }
+                */
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public Stalled getStalledSkill() {
+        return this.stalled;
+    }
+
+    @Override
+    public boolean setStalledSkill(Stalled stalledSkill) {
+        checkNotNull(stalledSkill);
+        // TODO
+        this.stalled = stalledSkill;
+        return true;
+    }
+
+    @Override
+    public boolean cancelStalledSkill(boolean forced) {
+        return false;
     }
 
     @Override
@@ -144,18 +336,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     public void setDamageWrapper(DamageWrapper wrapper) {
         check();
         this.damageWrapper = wrapper;
-    }
-
-    @Override
-    public long getGlobalCooldown() {
-        return getCooldown(RPGChampion.GLOBAL_COOLDOWN_KEY).get();
-    }
-
-    @Override
-    public void setGlobalCooldown(long duration) {
-        checkArgument(duration < Long.MAX_VALUE - System.currentTimeMillis(),
-                "Cannot set the duration longer than the maximum time of the system!");
-        this.data.cooldowns.put(RPGChampion.GLOBAL_COOLDOWN_KEY, duration);
     }
 
     @Override
@@ -219,16 +399,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public void setCooldown(String key, long duration) {
-        checkNotNull(key, "Cannot set the cooldown of a null key!");
-        checkArgument(!key.isEmpty(),
-                "Cannot set the cooldown of an empty key!");
-        checkArgument(duration < Long.MAX_VALUE - System.currentTimeMillis(),
-                "Cannot set the duration longer than the maximum time of the system!");
-        this.data.cooldowns.put(key, duration);
-    }
-
-    @Override
     public void sendMessage(String message, Object... args) {
         check();
         Messaging.send(this.getPlayer().get(), message, args);
@@ -259,31 +429,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public Optional<Integer> getHighestSkillLevel(ISkill skill) {
-        checkNotNull(skill, "Cannot get the highest null skill level!");
-        int level = 0;
-
-        for (Role r : this.data.getAllRoles()) {
-            Optional<Integer> optional = getLevel(r);
-            if (optional.isPresent()) {
-                if (r.getAspect(SkillAspect.class).isPresent()) {
-                    SkillAspect aspect = r.getAspect(SkillAspect.class).get();
-                    int roleLevel = optional.get();
-                    if (aspect.hasSkillAtLevel(skill, roleLevel)) {
-                        if (roleLevel > level) {
-                            level = roleLevel;
-                        }
-                    }
-                }
-            }
-        }
-        if (level == 0) {
-            return Optional.absent();
-        }
-        return Optional.of(level);
-    }
-
-    @Override
     public PlayerData getData() {
         return this.data;
     }
@@ -294,29 +439,13 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    Player getUnsafeEntity() {
-        return (Player) super.getUnsafeEntity();
-    }
-
-    @Override
     public final Optional<Player> getEntity() {
         return Optional.of(this.getUnsafeEntity());
     }
 
     @Override
-    public boolean canUseSkill(ISkill skill) {
-        checkNotNull(skill,
-                "Cannot check whether Champion can use null skill!");
-        for (Role r : this.data.getAllRoles()) {
-            int roleLevel = getLevel(r).get();
-            if (r.getAspect(SkillAspect.class).isPresent()) {
-                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
-                if (aspect.hasSkillAtLevel(skill, roleLevel)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    Player getUnsafeEntity() {
+        return (Player) super.getUnsafeEntity();
     }
 
     @Override
@@ -351,18 +480,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public Collection<ISkill> getAvailableSkills() {
-        ImmutableSet.Builder<ISkill> skills = ImmutableSet.builder();
-        for (Role r : this.data.getAllRoles()) {
-            if (r.getAspect(SkillAspect.class).isPresent()) {
-                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
-                skills.addAll(aspect.getAllSkillsAtLevel(getLevel(r).get()));
-            }
-        }
-        return skills.build();
-    }
-
-    @Override
     public Inventory getInventory() {
         return this.getPlayer().get().getInventory();
     }
@@ -392,29 +509,8 @@ public class RPGChampion extends RPGInsentient implements Champion {
 
     @Override
     public FixedPoint gainExperience(FixedPoint exp, ExperienceType type,
-                                     Location location) {
+            Location location) {
         return null;
-    }
-
-    @Override
-    public Collection<String> getActiveSkillNames() {
-        // TODO cache results?
-        // this is basically /only/ for tab-completion
-
-        Set<String> skillNames = new HashSet<>();
-        for (Role r : this.data.getAllRoles()) {
-            Optional<SkillAspect> optional = r.getAspect(SkillAspect.class);
-            if (optional.isPresent()) {
-                for (ISkill skill : optional.get().getAllSkillsAtLevel
-                        (getLevel(r).get()
-                        )) {
-                    if (skill instanceof Active) {
-                        skillNames.add(skill.getName());
-                    }
-                }
-            }
-        }
-        return skillNames;
     }
 
     @Override
@@ -458,18 +554,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public Collection<ISkill> getPossibleSkillsInRoles() {
-        ImmutableSet.Builder<ISkill> skills = ImmutableSet.builder();
-        for (Role r : this.data.getAllRoles()) {
-            if (r.getAspect(SkillAspect.class).isPresent()) {
-                SkillAspect aspect = r.getAspect(SkillAspect.class).get();
-                skills.addAll(aspect.getAllSkills());
-            }
-        }
-        return skills.build();
-    }
-
-    @Override
     public Set<Role> getAdditionalRoles() {
         return ImmutableSet.<Role>builder().addAll(this.data.additionalRoles)
                 .build();
@@ -509,13 +593,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     }
 
     @Override
-    public boolean isSkillRestricted(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-
-        return false;
-    }
-
-    @Override
     public Optional<Integer> getLevel(Role role) {
         checkNotNull(role, "Cannot get the experience of a null Role!");
         return Optional.of(1);
@@ -525,86 +602,6 @@ public class RPGChampion extends RPGInsentient implements Champion {
     public String getDisplayName() {
         check();
         return this.getUnsafeEntity().getDisplayName().toString();
-    }
-
-
-    @Override
-    public boolean canPrimaryUseSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        return true;
-    }
-
-
-    @Override
-    public boolean doesPrimaryRestrictSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        return false; // TODO
-    }
-
-
-    @Override
-    public boolean canSecondaryUseSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        return false; // TODO
-    }
-
-    @Override
-    public boolean doesSecondaryRestrictSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        return false; // TODO
-    }
-
-    @Override
-    public boolean canAdditionalUseSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        // TODO
-        return false;
-    }
-
-    @Override
-    public boolean canSpecificAdditionalUseSkill(Role role, ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        checkNotNull(role, "Cannot check a null role!");
-        return role.getAspect(SkillAspect.class).isPresent() &&
-                role.getAspect(SkillAspect.class).get()
-                        .hasSkillAtLevel(skill, this.getLevel(role).get());
-    }
-
-    @Override
-    public boolean doesAdditionalRestrictSkill(ISkill skill) {
-        checkNotNull(skill, "Cannot check a null Skill!");
-        if (this.data.additionalRoles.isEmpty()) {
-            return true;
-        } else {
-            for (Role role : this.data.additionalRoles) {
-                /*
-                if (role.isSkillRestricted(skill)) {
-
-                    return true;
-                }
-                */
-            }
-            return true;
-        }
-    }
-
-
-    @Override
-    public Stalled getStalledSkill() {
-        return this.stalled;
-    }
-
-    @Override
-    public boolean setStalledSkill(Stalled stalledSkill) {
-        checkNotNull(stalledSkill);
-        // TODO
-        this.stalled = stalledSkill;
-        return true;
-    }
-
-    @Override
-    public boolean cancelStalledSkill(boolean forced) {
-        return false;
     }
 
 }

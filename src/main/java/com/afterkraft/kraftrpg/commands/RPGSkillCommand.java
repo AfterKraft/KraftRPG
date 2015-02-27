@@ -31,7 +31,6 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.message.Message;
 import org.spongepowered.api.text.message.Messages;
 import org.spongepowered.api.util.command.CommandCallable;
-import org.spongepowered.api.util.command.CommandException;
 import org.spongepowered.api.util.command.CommandSource;
 
 import com.google.common.base.Optional;
@@ -51,6 +50,7 @@ import com.afterkraft.kraftrpg.skills.ActiveSkillRunner;
  * TODO Add documentation
  */
 public class RPGSkillCommand implements CommandCallable {
+
     private KraftRPGPlugin plugin;
 
     public RPGSkillCommand(KraftRPGPlugin plugin) {
@@ -59,8 +59,7 @@ public class RPGSkillCommand implements CommandCallable {
 
     @Override
     public boolean call(CommandSource source, String arguments,
-                        List<String> parents) throws
-            CommandException {
+            List<String> parents) {
 
         this.plugin.getLogger().info("The arguments: " + arguments);
         this.plugin.getLogger().info("The parents: " + parents.toString());
@@ -82,8 +81,8 @@ public class RPGSkillCommand implements CommandCallable {
                     + " not found.");
             return true;
         }
-        Champion champ =
-                this.plugin.getEntityManager().getChampion((Player) source).get();
+        Champion champ = this.plugin.getEntityManager()
+                .getChampion((Player) source).get();
 
         ISkill sk = optionalSkill.get();
         if (!champ.canUseSkill(sk)) {
@@ -298,9 +297,7 @@ public class RPGSkillCommand implements CommandCallable {
     }
 
     @Override
-    public List<String> getSuggestions(CommandSource source,
-                                       String arguments) throws
-            CommandException {
+    public List<String> getSuggestions(CommandSource source, String arguments) {
         if (!(source instanceof Player)) {
             return Lists.newArrayList();
         }
