@@ -21,18 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.afterkraft.kraftrpg.entity;
+package com.afterkraft.kraftrpg.effects
 
-import org.spongepowered.api.potion.PotionEffect;
+import java.util.concurrent.{Delayed, TimeUnit}
 
-class RPGPotionEffect {
+import com.afterkraft.kraftrpg.api.effects.{Effect, Managed, Timed}
+import com.afterkraft.kraftrpg.api.entity.Insentient
+import com.google.common.base.{Preconditions, Objects}
 
-    final PotionEffect potion;
-    final boolean adding;
+/**
+ * Default implementatino of a Managed Effect.
+ */
+class RPGManagedEffect(final val entity: Insentient, final val effect: Timed) extends Managed {
+  Preconditions.checkNotNull(effect)
+  Preconditions.checkNotNull(entity)
 
-    RPGPotionEffect(PotionEffect potion, boolean adding) {
-        this.potion = potion;
-        this.adding = adding;
+  def getEffect: Effect = this.effect.asInstanceOf[Effect]
+
+  def getSentientBeing: Insentient = this.entity
+
+  override def hashCode: Int = Objects.hashCode(this.effect, this.entity)
+
+  override def equals(obj: Any): Boolean = {
+    var result = false
+    obj match {
+      case effect: RPGManagedEffect =>
+        result = effect.effect.eq(this.effect) && effect.entity.eq(this.entity)
+      case _ =>
     }
+    result
+  }
 
+  def getDelay(timeUnit: TimeUnit): Long = this.effect.getDelay(timeUnit)
+
+  def compareTo(o: Delayed): Int = this.effect.compareTo(o)
 }

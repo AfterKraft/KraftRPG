@@ -43,13 +43,11 @@ import com.afterkraft.kraftrpg.api.roles.Role;
 import com.afterkraft.kraftrpg.api.roles.Role.RoleType;
 import com.afterkraft.kraftrpg.api.roles.RoleManager;
 import com.afterkraft.kraftrpg.api.roles.aspects.SkillAspect;
-import com.afterkraft.kraftrpg.api.skills.ISkill;
+import com.afterkraft.kraftrpg.api.skills.Skill;
 import com.afterkraft.kraftrpg.api.skills.Passive;
 import com.afterkraft.kraftrpg.api.skills.common.Permissible;
 import com.afterkraft.kraftrpg.api.util.DirectedGraph;
 import com.afterkraft.kraftrpg.api.util.FixedPoint;
-import com.afterkraft.kraftrpg.entity.RPGEntityManager;
-import com.afterkraft.kraftrpg.util.RPGConfigManager;
 
 /**
  * Default implementation of RoleManager
@@ -275,6 +273,7 @@ public class RPGRoleManager implements RoleManager {
             skillChanged = skillAspectOptional.get().getAllSkills().size() ==
                     newSkillAspectOptional.get().getAllSkills().size();
         }
+        /*
         if (this.plugin.getEntityManager() instanceof RPGEntityManager) {
             RPGEntityManager entityManager =
                     (RPGEntityManager) this.plugin.getEntityManager();
@@ -294,7 +293,7 @@ public class RPGRoleManager implements RoleManager {
                 if (hasChanged) {
                     // We need to now try and unapply and re-apply all skills
                     if (skillChanged) {
-                        for (ISkill skill : skillAspectOptional.get()
+                        for (Skill skill : skillAspectOptional.get()
                                 .getAllSkills
                                         ()) {
                             if (skill instanceof Permissible) {
@@ -305,7 +304,7 @@ public class RPGRoleManager implements RoleManager {
                                 ((Passive) skill).remove((SkillCaster) being);
                             }
                         }
-                        for (ISkill skill : newSkillAspectOptional.get()
+                        for (Skill skill : newSkillAspectOptional.get()
                                 .getAllSkills()) {
                             if (skill instanceof Permissible) {
                                 ((Permissible) skill).tryLearning(being);
@@ -323,7 +322,9 @@ public class RPGRoleManager implements RoleManager {
                     being.recalculateMaxHealth();
                 }
             }
+
         }
+        */
     }
 
     @Override

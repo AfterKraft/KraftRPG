@@ -22,5 +22,27 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package com.afterkraft.kraftrpg.entity.party;
+package com.afterkraft.kraftrpg.util
+
+import com.flowpowered.math.vector.Vector3d
+import com.google.common.base.Predicate
+import org.spongepowered.api.entity.Entity
+import org.spongepowered.api.world.Location
+
+object Predicates {
+
+  def nearbyOf(location: Location, vector3d: Vector3d): Predicate[Entity] = {
+    new Predicate[Entity] {
+      override def apply(input: Entity) = {
+        val pos = location.getPosition
+        val other = input.getLocation.getPosition
+        pos.getX + vector3d.getX <= other.getX && pos.getY + vector3d.getY <= other.getY && pos.getZ + vector3d.getZ <= other.getZ
+      }
+    }
+  }
+
+}
+
+class Predicates private() {
+
+}
