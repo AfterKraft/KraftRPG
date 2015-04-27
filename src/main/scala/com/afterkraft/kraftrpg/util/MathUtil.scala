@@ -22,5 +22,44 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package com.afterkraft.kraftrpg.util;
+package com.afterkraft.kraftrpg.util
+
+import com.afterkraft.kraftrpg.api.util.FixedPoint
+import org.spongepowered.api.world.Location
+
+/**
+ * Standard Math util for KraftRPG.
+ */
+object MathUtil {
+
+  def asInt(obj: AnyRef): Integer = {
+    obj match {
+      case s: String =>
+        try {
+          Integer.valueOf(s)
+        }
+        catch {
+          case e: NumberFormatException => {
+            null
+          }
+        }
+      case _ => if (!obj.isInstanceOf[Number]) {
+        null
+      }
+      else {
+        obj.asInstanceOf[Number].intValue
+      }
+    }
+  }
+
+
+  def getModulatedDistance(from: Location, to: Location): Double = {
+    from.getPosition.distance(to.getPosition) -
+           (from.getPosition.distance(to.getPosition) % RPGPluginProperties.getInstance.getDistanceTierModifier)
+  }
+
+  def getLevel(exp: FixedPoint): Int = {
+    -1
+  }
+
+}

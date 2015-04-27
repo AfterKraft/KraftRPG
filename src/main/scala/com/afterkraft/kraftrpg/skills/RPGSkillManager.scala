@@ -26,16 +26,13 @@ package com.afterkraft.kraftrpg.skills
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin
 import com.afterkraft.kraftrpg.api.entity.SkillCaster
-import com.afterkraft.kraftrpg.api.skills.common.Permissible
-import com.afterkraft.kraftrpg.api.skills.{Passive, Skill, SkillManager, SkillSetting, SkillUseObject, Stalled}
+import com.afterkraft.kraftrpg.api.skills._
 import com.afterkraft.kraftrpg.api.{ExternalProviderRegistration, RpgCommon}
-import com.afterkraft.kraftrpg.common.skills.PassiveSkill
-import com.afterkraft.kraftrpg.common.skills.common.PermissionSkill
 import com.afterkraft.kraftrpg.conversions.OptionalConversions._
 import com.google.common.base.Optional
 import com.google.common.base.Preconditions.{checkArgument, checkNotNull}
 import org.spongepowered.api.entity.Entity
-import org.spongepowered.api.service.persistence.data.{DataQuery, DataView}
+import org.spongepowered.api.data.{DataQuery, DataView}
 
 import scala.collection.immutable.HashSet
 import scala.util.control.Breaks._
@@ -57,6 +54,9 @@ object RPGSkillManager {
         }
       }
       set
+    } catch {
+      case e: Exception =>
+        new HashSet[DataQuery]
     }
   }
 }
@@ -66,9 +66,10 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
   private val permissive = new collection.mutable.HashMap[String, Permissible]();
   private val passiveTemp = new collection.mutable.HashMap[String, Passive]();
 
+  import scala.collection.JavaConversions._
   for (skill <- ExternalProviderRegistration.getRegisteredSkills) {
     def addInitSkill(skill: Skill): Unit = {
-      checkNotNull(skill, "Cannot add a null skill!")
+      checkNotNull(skill, "Cannot add a null skill!", "")
       if (checkSkillConfig(skill)) {
         skill match {
           case permissible: Permissible =>
@@ -104,18 +105,18 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
   }
 
   def hasSkill(skillName: String): Boolean = {
-    checkNotNull(skillName, "Cannot check a null skill name!")
-    checkArgument(!skillName.isEmpty, "Cannot check an empty skill name!")
+    checkNotNull(skillName, "Cannot check a null skill name!", "")
+    checkArgument(!skillName.isEmpty, "Cannot check an empty skill name!", "")
     false
   }
 
   def getSkill(name: String): Opt[Skill] = {
-    checkNotNull(name, "Cannot get a null skill name!")
+    checkNotNull(name, "Cannot get a null skill name!", "")
     this.skillMap.get(name.toLowerCase)
   }
 
   def loadPermissionSkill(name: String): Boolean = { // TODO Reorder this somewhere else before this is instantiated
-    checkNotNull(name, "Cannot load a null permission skill name!")
+    checkNotNull(name, "Cannot load a null permission skill name!", "")
     if ((name == null) || (this.skillMap.get(name.toLowerCase) != null)) {
       return true
     }
@@ -129,45 +130,45 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
   }
 
   def isLoaded(name: String): Boolean = {
-    checkNotNull(name, "Cannot check if a null skill name is loaded!")
+    checkNotNull(name, "Cannot check if a null skill name is loaded!", "")
     this.skillMap.contains(name.toLowerCase)
   }
 
   def removeSkill(skill: Skill) {
-    checkNotNull(skill, "Cannot remove a null skill!")
+    checkNotNull(skill, "Cannot remove a null skill!", "")
   }
 
   def getDelayedSkill(caster: SkillCaster): Optional[Stalled] = {
-    checkNotNull(caster, "Cannot get the stalled skill of a null caster!")
+    checkNotNull(caster, "Cannot get the stalled skill of a null caster!", "")
     Optional.absent[Stalled] // TODO
   }
 
   def setCompletedSkill(caster: SkillCaster) {
-    checkNotNull(caster, "Cannot set a null caster to complete a skill!")
+    checkNotNull(caster, "Cannot set a null caster to complete a skill!", "")
   }
 
   def addSkillTarget(o: Entity, caster: SkillCaster, skill: Skill) {
-    checkNotNull(o, "Cannot add a null entity as a skill target!")
-    checkNotNull(caster, "Cannot add a null caster!")
-    checkNotNull(skill, "Cannot add a skill target to a null skill!")
+    checkNotNull(o, "Cannot add a null entity as a skill target!", "")
+    checkNotNull(caster, "Cannot add a null caster!", "")
+    checkNotNull(skill, "Cannot add a skill target to a null skill!", "")
     Optional.absent[Stalled] // TODO
 
   }
 
   def getSkillTargetInfo(o: Entity): Optional[SkillUseObject] = {
-    checkNotNull(o, "Cannot get the skill target info on a null entity!")
+    checkNotNull(o, "Cannot get the skill target info on a null entity!", "")
     Optional.absent[SkillUseObject] // TODO
   }
 
   def isSkillTarget(o: Entity): Boolean = {
-    checkNotNull(o, "Cannot check a null skill target!")
+    checkNotNull(o, "Cannot check a null skill target!", "")
     false // TODO
   }
 
   def removeSkillTarget(entity: Entity, caster: SkillCaster, skill: Skill) {
-    checkNotNull(entity, "Cannot remove a null entity skill target!")
-    checkNotNull(caster, "Cannot remove a null caster skill target!")
-    checkNotNull(skill, "Cannot remove a null skill from a skill target!")
+    checkNotNull(entity, "Cannot remove a null entity skill target!", "")
+    checkNotNull(caster, "Cannot remove a null caster skill target!", "")
+    checkNotNull(skill, "Cannot remove a null skill from a skill target!", "")
     // TODO
   }
 
@@ -178,7 +179,6 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
     import scala.collection.JavaConversions._
     val settings: Iterable[SkillSetting] = skill.getUsedConfigNodes
     val section: DataView = skill.getDefaultConfig
-    val allowedKeys: Iterable[DataQuery] = setupKeys(skill)
     def setupKeys(skill: Skill) = {
       val builder = Iterable.newBuilder[DataQuery]
       for (setting <- settings) {
@@ -188,7 +188,7 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
                         break()
                       case SkillSetting.CUSTOM =>
                         break()
-                      case _ => setting.scalingNode() match {
+                      case _ => setting.scalingNode().isPresent match {
                         case true => builder += setting.node(); builder += setting.scalingNode().get()
                         case false => builder += setting.node()
                       }
@@ -197,6 +197,7 @@ class RPGSkillManager(private final val plugin: KraftRPGPlugin) extends SkillMan
       }
       builder.result()
     }
+    val allowedKeys: Iterable[DataQuery] = setupKeys(skill)
     for (configKey <- section.getKeys(false)) {
       if (!allowedKeys.contains(configKey)) {
         this.plugin.getLogger.error("Error in skill " + skill.getName + ":")

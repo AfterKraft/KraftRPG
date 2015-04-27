@@ -21,27 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.afterkraft.kraftrpg.listeners;
 
-import com.afterkraft.kraftrpg.api.RPGPlugin;
-import com.afterkraft.kraftrpg.api.listeners.AbstractListener;
+package com.afterkraft.kraftrpg.entities.components
 
-/**
- * Inventory related listener
- */
-public class InventoryListener extends AbstractListener {
+import com.afterkraft.kraftrpg.api.entity.component.Component
+import com.afterkraft.kraftrpg.conversions.OptionalConversions.Opt
+import org.spongepowered.api.data.{DataContainer, DataHolder, DataPriority}
 
-    protected InventoryListener(RPGPlugin plugin) {
-        super(plugin);
-    }
+abstract class AbstarctComponent[T <: Component[T]](private val id: String) extends Component[T] {
 
-    @Override
-    public void initialize() {
+  override final def getId = id
 
-    }
+  override def from(container: DataContainer): Opt[T] = ???
 
-    @Override
-    public void shutdown() {
+  override def fill(dataHolder: DataHolder): Opt[T] = ???
 
-    }
+  override def fill(dataHolder: DataHolder, overlap: DataPriority): Opt[T] = ???
+
+
 }

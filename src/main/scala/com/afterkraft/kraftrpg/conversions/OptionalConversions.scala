@@ -59,10 +59,16 @@ object OptionalConversions {
     }
   }
 
+  implicit def jbool2sbool(bool: JBool): scala.Boolean = bool.booleanValue
+
+  implicit def sbool2jbool(bool: Boolean): JBool = bool.asInstanceOf[java.lang.Boolean]
+
   // Because we can't be bothered to write these generics.
   type ExOpt[A] = GuavaOptional[_ <: A]
 
   // I just hate importing Optional.
   type Opt[A] = GuavaOptional[A]
+
+  type JBool = java.lang.Boolean
 
 }

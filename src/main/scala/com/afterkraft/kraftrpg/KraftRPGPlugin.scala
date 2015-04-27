@@ -26,13 +26,13 @@ package com.afterkraft.kraftrpg
 import java.io.File
 import javax.inject.Inject
 
+import com.afterkraft.kraftrpg.api.entity.combat.CombatTracker
 import com.afterkraft.kraftrpg.api.entity.party.PartyManager
-import com.afterkraft.kraftrpg.api.entity.{CombatTracker, EntityManager}
+import com.afterkraft.kraftrpg.api.entity.EntityManager
+import com.afterkraft.kraftrpg.api.listeners.ListenerManager
+import com.afterkraft.kraftrpg.api.roles.RoleManager
 import com.afterkraft.kraftrpg.api.storage.StorageFrontend
 import com.afterkraft.kraftrpg.api.{ExternalProviderRegistration, RPGPlugin, RpgCommon}
-import com.afterkraft.kraftrpg.effects.RPGEffectManager
-import com.afterkraft.kraftrpg.listeners.RPGListenerManager
-import com.afterkraft.kraftrpg.roles.RPGRoleManager
 import com.afterkraft.kraftrpg.skills.{RPGSkillConfigManager, RPGSkillManager}
 import com.afterkraft.kraftrpg.storage.RPGStorageManager
 import com.afterkraft.kraftrpg.util.{RPGConfigManager, RpgDamageManager, RPGPluginProperties}
@@ -44,7 +44,7 @@ import org.spongepowered.api.event.state.{ConstructionEvent, PostInitializationE
 import org.spongepowered.api.plugin.{Plugin, PluginContainer}
 import org.spongepowered.api.service.command.CommandService
 import org.spongepowered.api.service.config.DefaultConfig
-import org.spongepowered.api.util.event.Subscribe
+import org.spongepowered.api.event.Subscribe
 
 object KraftRPGPlugin {
 
@@ -80,10 +80,7 @@ final class KraftRPGPlugin extends RPGPlugin {
   private var properties: RPGPluginProperties = null
   private var damageManager: RpgDamageManager = null
   private var configManager: RPGConfigManager = null
-  private var roleManager: RPGRoleManager = null
   private var partyManager: PartyManager = null
-  private var effectManager: RPGEffectManager = null
-  private var listenerManager: RPGListenerManager = null
   private var enabled: Boolean = false
 
   @Subscribe def onConstruction(event: ConstructionEvent) {
@@ -111,7 +108,7 @@ final class KraftRPGPlugin extends RPGPlugin {
 
   @Subscribe def onPreStart(event: ServerAboutToStartEvent) {
     this.logger.info("[KraftRPG] ServerAboutToStart START")
-    RpgCommon.setCommonServer(event.getGame.getServer.get)
+    RpgCommon.setCommonServer(event.getGame.getServer)
     ExternalProviderRegistration.finish()
     this.storageManager = new RPGStorageManager(this)
     if (KraftRPGPlugin.cancel) {
@@ -119,9 +116,7 @@ final class KraftRPGPlugin extends RPGPlugin {
     }
     this.skillManager = new RPGSkillManager(this)
     this.skillConfigManager = new RPGSkillConfigManager(this)
-    this.effectManager = new RPGEffectManager(this)
     this.damageManager = new RpgDamageManager(this)
-    this.roleManager = new RPGRoleManager(this)
     if (ExternalProviderRegistration.getPartyManager != null) {
       this.partyManager = ExternalProviderRegistration.getPartyManager
     }
@@ -129,12 +124,8 @@ final class KraftRPGPlugin extends RPGPlugin {
     this.storageManager.initialize()
     this.skillConfigManager.initialize()
     this.skillManager.initialize()
-    this.effectManager.initialize()
     this.damageManager.initialize()
-    this.roleManager.initialize()
     this.partyManager.initialize()
-    this.listenerManager = new RPGListenerManager(this)
-    this.listenerManager.initialize()
     RpgCommon.finish()
     this.enabled = true
     this.logger.info("[KraftRPG] ServerAboutToStart DONE")
@@ -148,7 +139,6 @@ final class KraftRPGPlugin extends RPGPlugin {
   @Subscribe def onDisable(event: ServerStoppingEvent) {
     this.logger.info("[KraftRPG] ServerStopping START")
     try {
-      this.listenerManager.shutdown()
     }
     catch {
       case e: Exception =>
@@ -165,35 +155,33 @@ final class KraftRPGPlugin extends RPGPlugin {
     this.logger.info("[KraftRPG] ServerStopping DONE")
   }
 
-  def cancelEnable() {
+  override def cancelEnable() {
     KraftRPGPlugin.cancel = true
   }
 
-  def getSkillConfigManager: RPGSkillConfigManager = this.skillConfigManager
+  override def getSkillConfigManager: RPGSkillConfigManager = this.skillConfigManager
 
-  def getCombatTracker: CombatTracker = null
+  override def getCombatTracker: CombatTracker = null
 
-  def getEntityManager: EntityManager = null
+  override def getEntityManager: EntityManager = null
 
-  def getEffectManager: RPGEffectManager = this.effectManager
+  override def getStorage: StorageFrontend = this.storageManager.getStorage
 
-  def getStorage: StorageFrontend = this.storageManager.getStorage
+  override def getConfigurationManager: RPGConfigManager = this.configManager
 
-  def getConfigurationManager: RPGConfigManager = this.configManager
+  override def getDamageManager: RpgDamageManager = this.damageManager
 
-  def getDamageManager: RpgDamageManager = this.damageManager
+  override def getSkillManager: RPGSkillManager = this.skillManager
 
-  def getSkillManager: RPGSkillManager = this.skillManager
+  override def getListenerManager: ListenerManager = ???
 
-  def getRoleManager: RPGRoleManager = this.roleManager
+  override def getRoleManager: RoleManager = ???
 
-  def getPartyManager: PartyManager = this.partyManager
+  override def getPartyManager: PartyManager = this.partyManager
 
-  def getProperties: RPGPluginProperties = this.properties
+  override def getProperties: RPGPluginProperties = this.properties
 
-  def getListenerManager: RPGListenerManager = this.listenerManager
-
-  def isEnabled: Boolean = this.enabled
+  override def isEnabled: Boolean = this.enabled
 
   def getLogger: Logger = this.logger
 

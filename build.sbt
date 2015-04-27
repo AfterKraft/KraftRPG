@@ -8,9 +8,9 @@ organization := "com.afterkraft"
 
 scalaVersion := "2.11.6"
 
-libraryDependencies += "org.spongepowered" % "spongeapi" % "1.1-SNAPSHOT"
+libraryDependencies += "org.spongepowered" % "spongeapi" % "2.1-SNAPSHOT"
 
-libraryDependencies += "com.afterkraft.kraftrpg" % "KraftRPG-API" % "0.0.4"
+libraryDependencies += "com.afterkraft.kraftrpg" % "KraftRPG-API" % "0.0.5-SNAPSHOT"
 
 resolvers += "SpongePowered" at "http://repo.spongepowered.org/maven"
 

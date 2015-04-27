@@ -25,7 +25,7 @@
 package com.afterkraft.kraftrpg.util
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin
-import com.afterkraft.kraftrpg.api.entity.{Insentient, Monster}
+import com.afterkraft.kraftrpg.api.entity.Insentient
 import com.afterkraft.kraftrpg.api.util.DamageManager
 import ninja.leaping.configurate.ConfigurationNode
 import org.spongepowered.api.entity.EntityType
@@ -68,7 +68,7 @@ class RpgDamageManager(val plugin: KraftRPGPlugin) extends DamageManager {
 
   def getFallReduction(being: Insentient): Double = 4 // TODO
 
-  def getModifiedEntityDamage(monster: Monster, location: Location, baseDamage: Double, fromSpawner: Cause): Double = {
+  def getModifiedEntityDamage(monster: Insentient, location: Location, baseDamage: Double, fromSpawner: Cause): Double = {
     4
   }
 

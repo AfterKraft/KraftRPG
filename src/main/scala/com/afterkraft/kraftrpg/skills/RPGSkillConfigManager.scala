@@ -30,16 +30,17 @@ import com.afterkraft.kraftrpg.KraftRPGPlugin
 import com.afterkraft.kraftrpg.api.RpgCommon
 import com.afterkraft.kraftrpg.api.entity.SkillCaster
 import com.afterkraft.kraftrpg.api.roles.Role
-import com.afterkraft.kraftrpg.api.roles.aspects.SkillAspect
 import com.afterkraft.kraftrpg.api.skills.{Skill, SkillConfigManager, SkillSetting}
-import com.afterkraft.kraftrpg.common.skills.common.PermissionSkill
+import com.afterkraft.kraftrpg.conversions.OptionalConversions.JBool
 import com.afterkraft.kraftrpg.util.MathUtil
-import com.google.common.base.Optional
 import com.google.common.base.Preconditions.checkNotNull
-import com.google.common.collect.{Maps, Sets}
 import ninja.leaping.configurate.ConfigurationNode
 import org.spongepowered.api.item.inventory.ItemStack
-import org.spongepowered.api.service.persistence.data.{DataContainer, DataQuery, DataView}
+import org.spongepowered.api.data.{DataContainer, DataQuery, DataView}
+import org.spongepowered.api.util.Coerce
+import scala.Boolean._
+
+import scala.collection.JavaConversions._
 
 import scala.collection.mutable
 
@@ -48,7 +49,7 @@ import scala.collection.mutable
  */
 class RPGSkillConfigManager extends SkillConfigManager {
 
-  private final val customSettings: mutable.Map[SkillCaster, Map[Skill, ConfigurationNode]] = null
+  private final val customSettings: mutable.Map[SkillCaster, Map[Skill, ConfigurationNode]] = new mutable.HashMap[SkillCaster, Map[Skill, ConfigurationNode]]
   protected var outsourcedSkillConfig: ConfigurationNode = null
   protected var standardSkillConfig: ConfigurationNode = null
   protected var defaultSkillConfig: ConfigurationNode = null
@@ -60,7 +61,6 @@ class RPGSkillConfigManager extends SkillConfigManager {
   def this(plugin: KraftRPGPlugin) {
     this()
     this.plugin = plugin
-    this.customSettings = Maps.newHashMap
   }
 
   def reload() {
@@ -92,13 +92,13 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   def clearTemporarySkillConfigurations(caster: SkillCaster) {
-    checkNotNull(caster, "Cannot remove a null caster's custom " + "configurations!")
+    checkNotNull(caster, "Cannot remove a null caster's custom " + "configurations!", "")
     this.customSettings.remove(caster)
   }
 
   def clearTemporarySkillConfigurations(caster: SkillCaster, skill: Skill) {
-    checkNotNull(caster, "Cannot clear configurations of a null caster!")
-    checkNotNull(skill, "Cannot clear configurations of a null " + "skill!")
+    checkNotNull(caster, "Cannot clear configurations of a null caster!", "")
+    checkNotNull(skill, "Cannot clear configurations of a null " + "skill!", "")
   }
 
   def getRawString(skill: Skill, setting: SkillSetting): String = {
@@ -106,19 +106,19 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   def getRawString(skill: Skill, setting: DataQuery): String = {
-    checkNotNull(skill, "Cannot check the config of a null skill!")
-    checkNotNull(setting, "Cannot check the config with a null path!")
+    checkNotNull(skill, "Cannot check the config of a null skill!", "")
+    checkNotNull(setting, "Cannot check the config with a null path!", "")
     if (outsourcedSkillConfig.getNode(skill.getName + "." + setting).isVirtual) {
       throw new IllegalStateException("The requested skill setting, " + setting + " was not defaulted by the skill: " + skill.getName)
     }
     outsourcedSkillConfig.getString(skill.getName + "." + setting)
   }
 
-  def getRawBoolean(skill: Skill, setting: SkillSetting): Boolean = false // TODO
+  def getRawBoolean(skill: Skill, setting: SkillSetting): JBool = Boolean.box(false) // TODO
 
-  def getRawBoolean(skill: Skill, setting: DataQuery): Boolean = false // TODO
+  def getRawBoolean(skill: Skill, setting: DataQuery): JBool = Boolean.box(false) // TODO
 
-  def getRawKeys(skill: Skill, setting: DataQuery): Set[DataQuery] = Set() // TODO
+  def getRawKeys(skill: Skill, setting: DataQuery): java.util.Set[DataQuery] = new mutable.HashSet[DataQuery] // TODO
 
   def getRawSetting(skill: Skill, setting: SkillSetting): AnyRef = {
     check(skill, setting)
@@ -129,8 +129,8 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   def isSettingConfigured(skill: Skill, setting: SkillSetting): Boolean = {
-    checkNotNull(skill, "Cannot check the use configurations for a null skill!")
-    checkNotNull(setting, "Cannot check the use configurations for a null setting!")
+    checkNotNull(skill, "Cannot check the use configurations for a null skill!", "")
+    checkNotNull(setting, "Cannot check the use configurations for a null setting!", "")
     skill.getDefaultConfig.contains(setting.node) || !outsourcedSkillConfig.getNode(skill.getName + "." + setting.node).isVirtual
   }
 
@@ -143,19 +143,19 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   def isSettingConfigured(skill: Skill, setting: DataQuery): Boolean = {
-    checkNotNull(skill, "Cannot check the use configurations for a null skill!")
-    checkNotNull(setting, "Cannot check the use configurations for a null setting!")
+    checkNotNull(skill, "Cannot check the use configurations for a null skill!", "")
+    checkNotNull(setting, "Cannot check the use configurations for a null setting!", "")
     skill.getDefaultConfig.contains(setting) || !outsourcedSkillConfig.getNode(skill.getName + "." + setting).isVirtual
   }
 
   private def check(skill: Skill, setting: DataQuery) {
-    checkNotNull(skill, "Cannot get a setting for a null skill!")
-    checkNotNull(setting, "Cannot get a setting for a null path!")
+    checkNotNull(skill, "Cannot get a setting for a null skill!", "")
+    checkNotNull(setting, "Cannot get a setting for a null path!", "")
   }
 
   private def check(skill: Skill, setting: SkillSetting) {
-    checkNotNull(skill, "Cannot get a setting for a null skill!")
-    checkNotNull(setting, "Cannot get a setting for a null path!")
+    checkNotNull(skill, "Cannot get a setting for a null skill!", "")
+    checkNotNull(setting, "Cannot get a setting for a null path!", "")
   }
 
   def getRawIntSetting(skill: Skill, setting: SkillSetting): Int = {
@@ -165,12 +165,11 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getRawIntSetting(skill: Skill, setting: DataQuery): Int = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (value == null) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
-    }
-    else {
-      val i: Integer = MathUtil.asInt(`val`)
+    } else {
+      val i: Integer = Coerce.toInteger(value)
       if (i == null) {
         throw new IllegalStateException("The configured setting is not an integer!")
       }
@@ -185,16 +184,12 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getRawDoubleSetting(skill: Skill, setting: DataQuery): Double = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (value == null) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      val i: Double = MathUtil.asDouble(`val`)
-      if (i == null) {
-        throw new IllegalStateException("The configured setting is not an integer!")
-      }
-      i
+      Coerce.toDouble(value)
     }
   }
 
@@ -205,42 +200,43 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getRawStringSetting(skill: Skill, setting: DataQuery): String = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (value == null) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
     }
-    `val`.toString
+    value.toString
   }
 
-  def getRawBooleanSetting(skill: Skill, setting: SkillSetting): Boolean = {
+  def getRawBooleanSetting(skill: Skill, setting: SkillSetting): JBool = {
     check(skill, setting)
     getRawBooleanSetting(skill, setting.node)
   }
 
-  def getRawBooleanSetting(skill: Skill, setting: DataQuery): Boolean = {
+  def getRawBooleanSetting(skill: Skill, setting: DataQuery): JBool = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (value == null) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      `val`.asInstanceOf[Boolean]
+      value.asInstanceOf[JBool]
     }
   }
 
-  def getRawStringListSetting(skill: Skill, setting: SkillSetting): List[String] = {
+  def getRawStringListSetting(skill: Skill, setting: SkillSetting): java.util.List[String] = {
     check(skill, setting)
     getRawStringListSetting(skill, setting.node)
   }
 
-  @SuppressWarnings(Array("unchecked")) def getRawStringListSetting(skill: Skill, setting: DataQuery): List[String] = {
+  @SuppressWarnings(Array("unchecked"))
+  def getRawStringListSetting(skill: Skill, setting: DataQuery): java.util.List[String] = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (`val` == null || !`val`.isInstanceOf[List[_]]) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (value == null || !value.isInstanceOf[List[_]]) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      `val`.asInstanceOf[List[String]]
+      value.asInstanceOf[List[String]]
     }
   }
 
@@ -251,11 +247,11 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getRawItemStackSetting(skill: Skill, setting: DataQuery): ItemStack = {
     check(skill, setting)
-    val `val`: AnyRef = getRawSetting(skill, setting)
-    if (!`val`.isInstanceOf[ItemStack]) {
+    val value: AnyRef = getRawSetting(skill, setting)
+    if (!value.isInstanceOf[ItemStack]) {
       throw new IllegalStateException("There was an issue getting the setting for skill: " + skill.getName + " and setting: " + setting)
     }
-    RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(`val`.asInstanceOf[ItemStack]).build
+    RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(value.asInstanceOf[ItemStack]).build
   }
 
   def getSetting(role: Role, skill: Skill, setting: SkillSetting): AnyRef = {
@@ -267,9 +263,9 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   private def check(role: Role, skill: Skill, setting: SkillSetting) {
-    checkNotNull(role, "Cannot get a setting for a null role!")
-    checkNotNull(skill, "Cannot get a setting for a null skill!")
-    checkNotNull(setting, "Cannot get a setting for a null path!")
+    checkNotNull(role, "Cannot get a setting for a null role!", "")
+    checkNotNull(skill, "Cannot get a setting for a null skill!", "")
+    checkNotNull(setting, "Cannot get a setting for a null path!", "")
   }
 
   def getIntSetting(role: Role, skill: Skill, setting: SkillSetting): Int = {
@@ -279,13 +275,13 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getIntSetting(role: Role, skill: Skill, setting: DataQuery): Int = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (value == null) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      MathUtil.toInt(`val`)
+      Coerce.toInteger(value)
     }
   }
 
@@ -296,13 +292,13 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getDoubleSetting(role: Role, skill: Skill, setting: DataQuery): Double = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (value == null) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      MathUtil.toDouble(`val`)
+      Coerce.toDouble(value)
     }
   }
 
@@ -313,50 +309,51 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getStringSetting(role: Role, skill: Skill, setting: DataQuery): String = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (value == null) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill: " + skill.getName + " and setting: " + setting)
     }
-    `val` match {
+    value match {
       case s: String =>
         s
       case _ =>
-        `val`.toString
+        value.toString
     }
   }
 
-  def getBooleanSetting(role: Role, skill: Skill, setting: SkillSetting): Boolean = {
+  def getBooleanSetting(role: Role, skill: Skill, setting: SkillSetting): JBool = {
     check(role, skill, setting)
     getBooleanSetting(role, skill, setting.node)
   }
 
-  def getBooleanSetting(role: Role, skill: Skill, setting: DataQuery): Boolean = {
+  def getBooleanSetting(role: Role, skill: Skill, setting: DataQuery): JBool = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (`val` == null) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (value == null) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      `val`.asInstanceOf[Boolean]
+      value.asInstanceOf[Boolean]
     }
   }
 
-  def getStringListSetting(role: Role, skill: Skill, setting: SkillSetting): List[String] = {
+  def getStringListSetting(role: Role, skill: Skill, setting: SkillSetting): java.util.List[String] = {
     check(role, skill, setting)
     getStringListSetting(role, skill, setting.node)
   }
 
-  @SuppressWarnings(Array("unchecked")) def getStringListSetting(role: Role, skill: Skill, setting: DataQuery): List[String] = {
+  @SuppressWarnings(Array("unchecked"))
+  def getStringListSetting(role: Role, skill: Skill, setting: DataQuery): java.util.List[String] = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (`val` == null || !`val`.isInstanceOf[List[_]]) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (value == null || !value.isInstanceOf[List[_]]) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill: " + skill.getName + " and setting: " + setting)
     }
     else {
-      `val`.asInstanceOf[List[String]]
+      value.asInstanceOf[List[String]]
     }
   }
 
@@ -367,12 +364,12 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getItemStackSetting(role: Role, skill: Skill, setting: DataQuery): ItemStack = {
     check(role, skill, setting)
-    val `val`: AnyRef = getSetting(role, skill, setting)
-    if (!`val`.isInstanceOf[ItemStack]) {
+    val value: AnyRef = getSetting(role, skill, setting)
+    if (!value.isInstanceOf[ItemStack]) {
       throw new IllegalStateException(
         "There was an issue getting the setting for: " + role.getName + " skill:" + skill.getName + " and setting: " + setting)
     }
-    RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(`val`.asInstanceOf[ItemStack]).build
+    RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(value.asInstanceOf[ItemStack]).build
   }
 
   def getLevel(caster: SkillCaster, skill: Skill): Int = {
@@ -391,12 +388,12 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   private def getUsedNumberSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): Number = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[Number]) {
-      `val`.asInstanceOf[Number]
-    }
-    else {
-      MathUtil.asDouble(`val`)
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case number: Number =>
+        number
+      case _ =>
+        Coerce.toDouble(value)
     }
   }
 
@@ -417,11 +414,13 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getUsedBooleanSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): Boolean = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[Boolean]) {
-      return `val`.asInstanceOf[Boolean]
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case b: JBool =>
+        b
+      case _ =>
+        throw new IllegalStateException("Undefined default for the following skill: " + skill.getName)
     }
-    throw new IllegalStateException("Undefined default for the following skill: " + skill.getName)
   }
 
   def getUsedStringSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): String = {
@@ -431,37 +430,43 @@ class RPGSkillConfigManager extends SkillConfigManager {
 
   def getUsedStringSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): String = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[String]) {
-      `val`.asInstanceOf[String]
-    } else {
-      `val`.toString
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case s: String =>
+        s
+      case _ =>
+        value.toString
     }
   }
 
-  def getUsedListSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): List[_] = {
+  def getUsedListSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): java.util.List[_] = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[List[_]]) {
-      return `val`.asInstanceOf[List[_]]
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case list: List[_] =>
+        list
+      case _ =>
+        throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
     }
-    throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
 
-  def getUsedListSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): List[_] = {
+  def getUsedListSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): java.util.List[_] = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[List[_]]) {
-      return `val`.asInstanceOf[List[_]]
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case list: List[_] =>
+        list
+      case _ =>
+        throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
     }
-    throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
 
-  @SuppressWarnings(Array("unchecked")) def getUsedStringListSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): List[String] = {
+  @SuppressWarnings(Array("unchecked"))
+  def getUsedStringListSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): java.util.List[String] = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[List[_]]) {
-      return `val`.asInstanceOf[List[String]]
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    if (value.isInstanceOf[List[_]]) {
+      return value.asInstanceOf[List[String]]
     }
     throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
@@ -472,34 +477,40 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   private def check(caster: SkillCaster, skill: Skill, setting: SkillSetting) {
-    checkNotNull(caster, "Cannot check the use configurations for a null caster!")
-    checkNotNull(skill, "Cannot check the use configurations for a null skill!")
-    checkNotNull(setting, "Cannot check the use configurations for a null setting!")
+    checkNotNull(caster, "Cannot check the use configurations for a null caster!", "")
+    checkNotNull(skill, "Cannot check the use configurations for a null skill!", "")
+    checkNotNull(setting, "Cannot check the use configurations for a null setting!", "")
   }
 
-  @SuppressWarnings(Array("unchecked")) def getUsedStringListSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): List[String] = {
+  @SuppressWarnings(Array("unchecked"))
+  def getUsedStringListSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): java.util.List[String] = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[List[_]]) {
-      return `val`.asInstanceOf[List[String]]
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    if (value.isInstanceOf[List[_]]) {
+      import scala.collection.JavaConversions._
+      return value.asInstanceOf[List[String]]
     }
     throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
 
   def getUsedItemStackSetting(caster: SkillCaster, skill: Skill, setting: SkillSetting): ItemStack = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[ItemStack]) {
-      return RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(`val`.asInstanceOf[ItemStack]).build
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case stack: ItemStack =>
+        return RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(stack).build
+      case _ =>
     }
     throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
 
   def getUsedItemStackSetting(caster: SkillCaster, skill: Skill, setting: DataQuery): ItemStack = {
     check(caster, skill, setting)
-    val `val`: AnyRef = getUsedSetting(caster, skill, setting)
-    if (`val`.isInstanceOf[ItemStack]) {
-      return RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(`val`.asInstanceOf[ItemStack]).build
+    val value: AnyRef = getUsedSetting(caster, skill, setting)
+    value match {
+      case stack: ItemStack =>
+        return RpgCommon.getGame.getRegistry.getItemBuilder.fromItemStack(stack).build
+      case _ =>
     }
     throw new IllegalStateException("Illegal default for the following skill: " + skill.getName)
   }
@@ -512,27 +523,27 @@ class RPGSkillConfigManager extends SkillConfigManager {
     if (!isSettingConfigured(skill, setting)) {
       throw new IllegalStateException("The skill: " + skill.getName + " has no configured defaults for: " + setting)
     }
-    if (caster.canPrimaryUseSkill(skill)) {
-      return getSetting(caster.getPrimaryRole.get, skill, setting)
-    }
-    else if (caster.canSecondaryUseSkill(skill)) {
-      return getSetting(caster.getSecondaryRole.get, skill, setting)
-    }
-    else if (caster.canAdditionalUseSkill(skill)) {
-      import scala.collection.JavaConversions._
-      for (role <- caster.getAdditionalRoles) {
-        val optional: Optional[SkillAspect] = role.getAspect(classOf[SkillAspect])
-        if (optional.isPresent && optional.get.hasSkillAtLevel(skill, caster.getLevel(role).get)) {
-          return getSetting(role, skill, setting)
-        }
-      }
-    }
+//    if (caster.canPrimaryUseSkill(skill)) {
+//      return getSetting(caster.getPrimaryRole.get, skill, setting)
+//    }
+//    else if (caster.canSecondaryUseSkill(skill)) {
+//      return getSetting(caster.getSecondaryRole.get, skill, setting)
+//    }
+//    else if (caster.canAdditionalUseSkill(skill)) {
+//      import scala.collection.JavaConversions._
+//      for (role <- caster.getAdditionalRoles) {
+//        val optional: Optional[SkillAspect] = role.getAspect(classOf[SkillAspect])
+//        if (optional.isPresent && optional.get.hasSkillAtLevel(skill, caster.getLevel(role).get)) {
+//          return getSetting(role, skill, setting)
+//        }
+//      }
+//    }
     outsourcedSkillConfig.getNode(skill.getName + "." + setting).getValue
   }
 
   def getSetting(role: Role, skill: Skill, setting: DataQuery): AnyRef = {
     check(role, skill, setting)
-    val config: ConfigurationNode = roleSkillConfigurations.get(role.getName)
+    val config: ConfigurationNode = roleSkillConfigurations.get(role.getName).get
     if (!isSettingConfigured(skill, setting)) {
       throw new IllegalStateException("The skill: " + skill.getName + " has no configured defaults for: " + setting)
     }
@@ -546,20 +557,20 @@ class RPGSkillConfigManager extends SkillConfigManager {
   }
 
   private def check(role: Role, skill: Skill, setting: DataQuery) {
-    checkNotNull(role, "Cannot get a setting for a null role!")
-    checkNotNull(skill, "Cannot get a setting for a null skill!")
-    checkNotNull(setting, "Cannot get a setting for a null path!")
+    checkNotNull(role, "Cannot get a setting for a null role!", "")
+    checkNotNull(skill, "Cannot get a setting for a null skill!", "")
+    checkNotNull(setting, "Cannot get a setting for a null path!", "")
   }
 
   private def check(caster: SkillCaster, skill: Skill, setting: DataQuery) {
-    checkNotNull(caster, "Cannot check the use configurations for a null caster!")
-    checkNotNull(skill, "Cannot check the use configurations for a null skill!")
-    checkNotNull(setting, "Cannot check the use configurations for a null setting!")
+    checkNotNull(caster, "Cannot check the use configurations for a null caster!", "")
+    checkNotNull(skill, "Cannot check the use configurations for a null skill!", "")
+    checkNotNull(setting, "Cannot check the use configurations for a null setting!", "")
   }
 
   def shutdown() {
     this.customSettings.clear()
-    roleSkillConfigurations.clear
+    roleSkillConfigurations = roleSkillConfigurations.empty
   }
 
   def setClassDefaults() {

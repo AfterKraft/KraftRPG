@@ -40,9 +40,9 @@ import org.spongepowered.api.item.inventory.ItemStack
 object ActiveSkillRunner {
 
   def castSkillInitial(caster: SkillCaster, skill: Active, args: Array[String]): SkillCastResult = {
-    if (caster.isDead) {
-      return SkillCastResult.DEAD
-    }
+//    if (caster.isDead) {
+//      return SkillCastResult.DEAD
+//    }
     if (!caster.canUseSkill(skill)) {
       return SkillCastResult.NOT_AVAILABLE
     }
@@ -128,12 +128,12 @@ object ActiveSkillRunner {
     if (reagentQuantity != -1 && reagent != null) {
       reagent.setQuantity(reagentQuantity)
     }
-    if (caster.getHealth < healthCost) {
-      return SkillCastResult.LOW_HEALTH
-    }
-    if (caster.getMana < manaCost) {
-      return SkillCastResult.LOW_MANA
-    }
+//    if (caster.getHealth < healthCost) {
+//      return SkillCastResult.LOW_HEALTH
+//    }
+//    if (caster.getMana < manaCost) {
+//      return SkillCastResult.LOW_MANA
+//    }
     var result: SkillCastResult = null
     try {
       try {
@@ -182,9 +182,9 @@ object ActiveSkillRunner {
       result = SkillCastResult.FAIL
     }
     if (result eq SkillCastResult.NORMAL) {
-      caster.setHealth(caster.getHealth - healthCost)
-      caster.setMana(caster.getMana - manaCost.toInt)
-      caster.modifyStamina(-hungerCost.toInt)
+//      caster.setHealth(caster.getHealth - healthCost)
+//      caster.setMana(caster.getMana - manaCost.toInt)
+//      caster.modifyStamina(-hungerCost.toInt)
       val exp: Double = plugin.getSkillConfigManager.getUsedDoubleSetting(caster, skill, SkillSetting.EXP_ON_CAST)
       if (exp > 0) {
         if (caster.canGainExperience(ExperienceType.SKILL)) {

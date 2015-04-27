@@ -22,5 +22,12 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package com.afterkraft.kraftrpg.roles;
+package com.afterkraft.kraftrpg.util
+
+/**
+ * Exception thrown when a message is not fond in the included message bundle.
+ * Somewhere something is calling for a message that does not exist.
+ */
+@SerialVersionUID(-6004320440305582088L)
+class MessageNotFoundException extends RuntimeException {
+}

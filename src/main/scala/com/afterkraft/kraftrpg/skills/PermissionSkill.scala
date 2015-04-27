@@ -21,18 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.afterkraft.kraftrpg.entities
+
+package com.afterkraft.kraftrpg.skills
+
+import java.{lang, util}
 
 import com.afterkraft.kraftrpg.KraftRPGPlugin
-import com.afterkraft.kraftrpg.api.entity.Insentient
-import com.afterkraft.kraftrpg.conversions.OptionalConversions.ExOpt
-import org.spongepowered.api.entity.living.Living
+import com.afterkraft.kraftrpg.api.entity.{Champion, Sentient, SkillCaster}
+import com.afterkraft.kraftrpg.api.skills.{Permissible, SkillSetting, SkillType}
+import org.spongepowered.api.data.DataView
+import org.spongepowered.api.entity.Entity
+import org.spongepowered.api.text.Text
 
-class RpgInsentient(private val kraftRPGPlugin: KraftRPGPlugin,
-                    private var entity: Living,
-                    private var name: String)
-  extends RpgBeing(kraftRPGPlugin, entity, name) with Insentient {
+class PermissionSkill(plugin: KraftRPGPlugin, s: String) extends Permissible {
 
-  override def getEntity: ExOpt[Living] = super.getEntity.asInstanceOf[ExOpt[Living]]
+  override def getPermissions: util.Map[String, lang.Boolean] = ???
 
+  override def tryLearning(being: Sentient): Unit = ???
+
+  override def tryUnlearning(being: Sentient): Unit = ???
+
+  override def shutdown(): Unit = ???
+
+  override def isType(`type`: SkillType): Boolean = ???
+
+  override def getName: String = ???
+
+  override def getPermissionNode: String = ???
+
+  override def getUsedConfigNodes: util.Collection[SkillSetting] = ???
+
+  override def getDescription: Text = ???
+
+  override def getDefaultConfig: DataView = ???
+
+  override def initialize(): Unit = ???
+
+  override def addSkillTarget(entity: Entity, caster: SkillCaster): Boolean = ???
+
+  override def isInMessageRange(broadcaster: SkillCaster, receiver: Champion): Boolean = ???
 }
