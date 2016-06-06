@@ -1,0 +1,3 @@
+[submodule "KraftRPG-API"]
+	path = KraftRPG-API
+	url = https://github.com/AfterKraft/KraftRPG-API.git

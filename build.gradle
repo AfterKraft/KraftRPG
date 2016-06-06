@@ -1,0 +1,228 @@
+// Gradle dependencies
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = 'gradle-plugins'
+            url = 'https://plugins.gradle.org/m2'
+        }
+        maven {
+            url "http://repository.jboss.org/nexus/content/groups/public/"
+        }
+        maven {
+            name = 'sponge'
+            url = 'http://repo.spongepowered.org/maven'
+        }
+
+    }
+    dependencies {
+        classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
+        classpath 'gradle.plugin.net.minecrell:licenser:0.2.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+        classpath 'org.spongepowered:event-impl-gen:2.0.0-SNAPSHOT'
+        classpath 'org.spongepowered:spongegradle:0.5.1'
+    }
+}
+
+// Plugins
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'checkstyle'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'signing'
+apply plugin: 'org.spongepowered.gradle'
+apply plugin: 'event-impl-gen'
+apply plugin: 'net.minecrell.licenser'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+group 'com.afterkraft.kraftrpg'
+archivesBaseName = 'KraftRPG'
+version '0.0.3-SNAPSHOT'
+
+// Minimum version of Java required
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+// Project dependencies
+repositories {
+    mavenCentral()
+    maven {
+        url "http://nexus.afterkraft.com/content/groups/public/"
+    }
+}
+
+dependencies {
+    compile project('KraftRPG-API')
+    compile 'com.google.guava:guava:18.0'
+    compile 'org.spongepowered:spongeapi:4.1.0'
+
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+
+ext {
+
+    organization = "AfterKraft Dev Team"
+    inceptionYear = '2014'
+    url = 'http://afterkraft.com/'
+    description = "Common API for KraftRPG."
+    pomFile = file("${project.projectDir}/pom.xml")
+    buildNumber = rootProject.hasProperty("buildNumber") ? buildNumber : '0'
+    ciSystem = rootProject.hasProperty("ciSystem") ? ciSystem : 'unknown'
+    commit = rootProject.hasProperty("commit") ? commit : 'unknown'
+}
+
+archivesBaseName = 'KraftRPG'
+
+// Generates javadoc.jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourceJar
+    archives javadocJar
+}
+
+configure([compileJava, compileTestJava]) {
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+    options.deprecation = true
+    options.encoding = 'utf8'
+}
+
+checkstyle {
+    configProperties = [
+            "name"        : project.name,
+            "organization": project.organization,
+            "url"         : project.url,
+            "year"        : project.inceptionYear
+    ]
+    configFile = file(rootProject.file("checkstyle.xml"))
+}
+
+processResources {
+    from 'KRAFTRPG-LICENSE'
+}
+
+
+configurations {
+    pom
+}
+
+signing {
+    required {
+        gradle.taskGraph.hasTask("uploadArchives")
+    }
+    sign configurations.archives
+}
+
+def sonatypeUser = hasProperty('afterkraftUser') ? sonatypeUser : System.getenv('afterkraftUser')
+def sonatypePassword = hasProperty('afterkraftPassword') ? sonatypePassword : System.getenv('afterkraftPassword')
+
+uploadArchives {
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment ->
+            signing.signPom(deployment)
+        }
+        repository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/releases") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
+
+        }
+        snapshotRepository(id: 'afterkraft', url: "http://nexus.afterkraft.com/content/repositories/snapshots") {
+            authentication(userName: sonatypeUser, password: sonatypePassword)
+        }
+        pom {
+            groupId = project.group
+            version = project.version
+            artifactId = project.archivesBaseName
+            project {
+                name project.archivesBaseName
+                packaging 'jar'
+                description 'Common API for KraftRPG.'
+                url 'http://afterkraft.com/'
+                scm {
+                    url 'https://github.com/AfterKraft/KraftRPG-API'
+                    connection 'git'
+                    developerConnection 'git@github.com:AfterKraft/KraftRPG-API.git'
+                }
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'http://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'gabizou'
+                        name 'Gabriel Harris-Rouquette'
+                        email 'gabizou@me.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+apply plugin: 'maven-publish-auth'
+
+
+shadowJar {
+    dependencies {
+        include project(':KraftRPG-API')
+    }
+}
+
+build.dependsOn shadowJar
+
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title": project.name,
+                "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+                "Built-By": System.properties['user.name'],
+                "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+                "Implementation-Vendor": url
+        )
+    }
+    from ("${rootProject}") {
+        include('KRAFTRPG-LICENSE', 'README.md')
+    }
+
+}
+
+license {
+    ext.name = project.name
+    ext.organization = project.organization
+    ext.url = project.url
+    ext.year = project.inceptionYear
+    exclude "**/*.info"
+    exclude "assets/**"
+    header rootProject.file("KRAFTRPG-LICENSE")
+    sourceSets = project.sourceSets
+    ignoreFailures false
+    newLine false
+}
