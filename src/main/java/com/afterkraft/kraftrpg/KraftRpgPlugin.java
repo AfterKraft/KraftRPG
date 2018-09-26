@@ -1,6 +1,10 @@
 package com.afterkraft.kraftrpg;
 
+import com.afterkraft.kraftrpg.api.RpgKeys;
 import com.afterkraft.kraftrpg.api.RpgPlugin;
+import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 @Plugin(
@@ -12,13 +16,10 @@ import org.spongepowered.api.plugin.Plugin;
 )
 public class KraftRpgPlugin implements RpgPlugin {
 
-    @Override
-    public void cancelEnable() {
-
+    @Listener
+    public void keyRegister(GameRegistryEvent.Register<Key<?>> event) {
+        event.register(RpgKeys.RPG_EFFECTS);
+        event.register(RpgKeys.ADDITIONAL_ROLES);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
 }
