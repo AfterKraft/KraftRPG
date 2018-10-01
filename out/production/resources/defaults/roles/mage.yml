@@ -1,0 +1,111 @@
+name: Mage
+description: Ranged Disable with LeatherArmor and Icebolt
+role-type: PRIMARY
+included-in-wildcard: true
+choosable: true
+parents:
+- Weakling
+
+max-health-at-zero: 21.0
+max-health-increase-per-level: 0.25
+max-mana-at-zero: 125
+max-mana-increase-per-level: 1
+mana-regen-at-zero: 2
+mana-regen-increase-per-level: .1
+advancement-level: 20
+
+permitted-armor:
+- LEATHER
+permitted-weapon:
+- WOOD
+- STONE_PICKAXE
+- STONE_AXE
+- STONE_SPADE
+- STONE_HOE
+- IRON_PICKAXE
+
+item-damages:
+  STONE_SHOVEL: 5
+  IRON_SHOVEL: 7
+  GOLD_SHOVEL: 9
+  DIAMOND_SHOVEL: 10
+item-damages-per-level:
+  STONE_SHOVEL: 0.1
+  IRON_SHOVEL: 0.1
+  GOLD_SHOVEL: 0.2
+  DIAMOND_SHOVEL: 0.15
+item-damages-vary:
+  STONE_SHOVEL: false
+  IRON_SHOVEL: false
+  GOLD_SHOVEL: false
+  DIAMOND_SHOVEL: false
+
+allowed-skills:
+    Mark:
+        level: 5
+        mana: 5
+        reagent: BED
+        reagent-cost: 1
+    Recall:
+        level: 5
+        mana: 40
+        cooldown: 60000
+        health-cost: 10
+        delay: 5000
+    Port:
+        level: 1
+    Icebolt:
+        level: 1
+        damage: 4
+        cooldown: 2000
+        slow-duration: 2000
+        mana: 0
+    Piggify:
+        level: 2
+        duration: 8000
+        max-distance: 15
+        cooldown: 30000
+        mana: 25
+    Fireball:
+        level: 20
+        mana: 15
+        cooldown: 25000
+        damage: 10
+        fire-ticks: 5
+    Wisdom:
+        level: 10
+        radius: 1
+        regen-multiplier: 2.0
+        duration: 300000
+        mana: 0
+        cooldown: 301000
+    Wolf:
+        level: 15
+    Blink:
+        level: 25
+        max-distance: 10
+        cooldown: 20000
+    Web:
+        level: 5
+        mana: 25
+        duration: 10000
+experience-types:
+- SKILL
+- PVE
+- PVP
+- MINING
+- ENCHANTING
+- FARMING
+- CRAFTING
+- LOGGING
+- DEATH
+- ADMIN
+- EXTERNAL
+- FISHING
+- QUESTING
+- BUILDING
+- SHEARING
+- TAMING
+
+expLoss: 0.007
+recipes: [ default ]

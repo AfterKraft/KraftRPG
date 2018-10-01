@@ -14,7 +14,7 @@ import org.spongepowered.api.plugin.Plugin;
         description = "Base plugin implementing the KraftRPG API to provide a robust skills and classes framework for SpongeAPI",
         authors = "gabizou"
 )
-public class KraftRpgPlugin implements RpgPlugin {
+public class KraftRpgPlugin {
 
     @Listener
     public void keyRegister(GameRegistryEvent.Register<Key<?>> event) {
