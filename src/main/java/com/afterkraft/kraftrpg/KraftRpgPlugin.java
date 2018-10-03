@@ -2,14 +2,18 @@ package com.afterkraft.kraftrpg;
 
 import com.afterkraft.kraftrpg.api.RpgKeys;
 
+import com.afterkraft.kraftrpg.api.role.Role;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
+import org.spongepowered.api.GameRegistry;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 
+import org.spongepowered.api.data.DataManager;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameRegistryEvent;
@@ -30,6 +34,24 @@ import java.nio.file.Path;
 )
 public class KraftRpgPlugin {
 
+    @Inject
+    @DefaultConfig(sharedRoot = false)
+    private Path configFile;
+
+
+    @Inject
+    @DefaultConfig(sharedRoot = false)
+    private ConfigurationLoader<CommentedConfigurationNode> configManager;
+
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path configDirectory;
+
+    @Inject private GameRegistry registry;
+    @Inject private DataManager dataManager;
+
+    private ConfigurationNode config;
+
     @Listener
     public void keyRegister(GameRegistryEvent.Register<Key<?>> event) {
 
@@ -46,22 +68,6 @@ public class KraftRpgPlugin {
         event.register(RpgKeys.REWARDING_EXPERIENCE);
     }
 
-
-    @Inject
-    @DefaultConfig(sharedRoot = false)
-    private Path configFile;
-
-
-    @Inject
-    @DefaultConfig(sharedRoot = false)
-    private ConfigurationLoader<CommentedConfigurationNode> configManager;
-
-    @Inject
-    @ConfigDir(sharedRoot = false)
-    private Path configDirectory;
-
-    private ConfigurationNode config;
-
     @Listener
     public void preInitialization(GamePreInitializationEvent event) {
         try {
@@ -76,34 +82,13 @@ public class KraftRpgPlugin {
         } catch (IOException e) {
             logger.warn("KraftRPG could not successfully load the configuration!");
         }
-    }
 
-    @Listener
-    public void gameLoaded(GameLoadCompleteEvent event) {
-        
+        // This is where you need to implement some registries, you can look at
+        // HappyTrails for an example.
+        this.registry.registerBuilderSupplier(Role.Builder.class, RoleBuilderImpl::new);
+        this.registry.registerModule(RoleRegistryModule.getInstance());
+        this.dataManager.registerBuilder(Role.class, new RoleBuilderImpl());
 
-    }
-
-
-    //Plugin Logger initialization
-    private Logger logger;
-
-    @Listener
-    //Load up KraftRPG
-    public void onServerStart(GameStartedServerEvent event) {
-        logger.info("KraftRPG was successfully loaded!");
-
-
-    }
-
-    public Path getConfigDirectory() {
-        return configDirectory;
-    }
-
-
-    public Logger getLogger() {
-
-        return logger;
     }
 
 }
