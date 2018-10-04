@@ -3,6 +3,10 @@ package com.afterkraft.kraftrpg;
 import com.afterkraft.kraftrpg.api.RpgKeys;
 
 import com.afterkraft.kraftrpg.api.role.Role;
+import com.afterkraft.kraftrpg.common.data.manipulator.immutable.ImmutableRoleData;
+import com.afterkraft.kraftrpg.common.data.manipulator.mutable.RoleData;
+import com.afterkraft.kraftrpg.role.RoleBuilderImpl;
+import com.afterkraft.kraftrpg.role.RoleRegistry;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -14,6 +18,7 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 
 import org.spongepowered.api.data.DataManager;
+import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameRegistryEvent;
@@ -32,7 +37,8 @@ import java.nio.file.Path;
         description = "Base plugin implementing the KraftRPG API to provide a robust skills and classes framework for SpongeAPI",
         authors = "gabizou"
 )
-public class KraftRpgPlugin {
+public class KraftRpgPlugin  {
+
 
     @Inject
     @DefaultConfig(sharedRoot = false)
@@ -50,7 +56,25 @@ public class KraftRpgPlugin {
     @Inject private GameRegistry registry;
     @Inject private DataManager dataManager;
 
+    @Inject
+    private Logger logger;
+
     private ConfigurationNode config;
+
+
+    public void registerModule(GameRegistryEvent.Register<DataRegistration<?, ?>> event) {
+
+        this.dataManager.registerBuilder(Role.class, new RoleBuilderImpl());
+//        DataRegistration.builder()
+////                .dataClass(RoleData.class)
+////                .immutableClass(ImmutableRoleData.class)
+////                .builder(new RoleBuilderImpl())
+////                .manipulatorId(RpgKeys.)
+////                .dataName("")
+////                .buildAndRegister(this.container);
+//
+    }
+
 
     @Listener
     public void keyRegister(GameRegistryEvent.Register<Key<?>> event) {
@@ -67,6 +91,8 @@ public class KraftRpgPlugin {
         event.register(RpgKeys.SUMMON_DURATION);
         event.register(RpgKeys.REWARDING_EXPERIENCE);
     }
+
+
 
     @Listener
     public void preInitialization(GamePreInitializationEvent event) {
@@ -86,7 +112,7 @@ public class KraftRpgPlugin {
         // This is where you need to implement some registries, you can look at
         // HappyTrails for an example.
         this.registry.registerBuilderSupplier(Role.Builder.class, RoleBuilderImpl::new);
-        this.registry.registerModule(RoleRegistryModule.getInstance());
+        this.registry.registerModule(RoleRegistry.getInstance());
         this.dataManager.registerBuilder(Role.class, new RoleBuilderImpl());
 
     }
