@@ -4,6 +4,8 @@ import com.afterkraft.kraftrpg.api.RpgKeys;
 import com.afterkraft.kraftrpg.api.role.Role;
 import com.afterkraft.kraftrpg.common.data.manipulator.immutable.ImmutableRoleData;
 import com.afterkraft.kraftrpg.common.data.manipulator.mutable.RoleData;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
@@ -57,6 +59,30 @@ public class RoleDataImpl extends AbstractData<RoleData, ImmutableRoleData> impl
         return Sponge.getRegistry().getValueFactory().createListValue(RpgKeys.ADDITIONAL_ROLES,
                 this.additional);
     }
+    Role getPrimary() {
+        return this.primary;
+    }
+
+    void setPrimary(Role primary) {
+        this.primary = primary;
+    }
+
+    Role getSecondary() {
+        return this.secondary;
+    }
+
+    void setSecondary(Role secondary) {
+        this.secondary = secondary;
+    }
+
+    List<Role> getAdditional() {
+        return Collections.unmodifiableList(this.additional);
+    }
+
+
+    void setAdditional(List<Role> additional) {
+        this.additional = ImmutableList.copyOf(additional);
+    }
 
     @Override
     public void registerGettersAndSetters() {
@@ -80,7 +106,7 @@ public class RoleDataImpl extends AbstractData<RoleData, ImmutableRoleData> impl
         if (roleData.isPresent()) {
             final RoleData holderOne = roleData.get();
             final RoleData merged = overlap.merge(this, holderOne);
-            setPrimary(checkNotNull(merged.primary()));
+            setPrimary(checkNotNull(merged.primary().get()));
         }
         return Optional.empty();
     }
@@ -93,7 +119,11 @@ public class RoleDataImpl extends AbstractData<RoleData, ImmutableRoleData> impl
 
     @Override
     public RoleData copy() {
-        return null;
+        final RoleDataImpl roleData = new RoleDataImpl();
+        roleData.primary = this.primary;
+        roleData.secondary = this.secondary;
+        roleData.additional = ImmutableList.copyOf(this.additional);
+        return roleData;
     }
 
     @Override
@@ -101,43 +131,10 @@ public class RoleDataImpl extends AbstractData<RoleData, ImmutableRoleData> impl
         return null;
     }
 
-    @Override
-    public int compareTo(RoleData o) {
-        return 0;
-    }
 
     @Override
     public int getContentVersion() {
         return 1;
     }
 
-    @Override
-    public Role getPrimary() {
-        return null;
-    }
-
-    @Override
-    public void setPrimary(Role primary) {
-
-    }
-
-    @Override
-    public Role getSecondary() {
-        return null;
-    }
-
-    @Override
-    public void setSecondary(Role secondary) {
-
-    }
-
-    @Override
-    public List<Role> getAdditional() {
-        return null;
-    }
-
-    @Override
-    public void setAdditional(List<Role> additional) {
-
-    }
 }
